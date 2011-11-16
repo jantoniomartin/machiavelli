@@ -51,10 +51,6 @@ from condottieri_profiles.models import CondottieriProfile
 ## condottieri_events
 import condottieri_events.paginator as events_paginator
 
-#if "jogging" in settings.INSTALLED_APPS:
-#	from jogging import logging
-#else:
-#	logging = None
 import logging
 logger = logging.getLogger(__name__)
 
