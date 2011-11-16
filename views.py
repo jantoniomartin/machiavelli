@@ -58,10 +58,12 @@ if 'clones' in settings.INSTALLED_APPS:
 else:
 	clones = None
 
-if "jogging" in settings.INSTALLED_APPS:
-	from jogging import logging
-else:
-	logging = None
+#if "jogging" in settings.INSTALLED_APPS:
+#	from jogging import logging
+#else:
+#	logging = None
+import logging
+logger = logging.getLogger(__name__)
 
 if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
@@ -636,7 +638,7 @@ def confirm_orders(request, slug=''):
 		## confirm expenses
 		player.expense_set.all().update(confirmed=True)
 		if logging:
-			logging.info(msg)
+			logger.info(msg)
 		player.end_phase()
 		messages.success(request, _("You have successfully confirmed your actions."))
 	return redirect(game)		

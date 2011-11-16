@@ -42,10 +42,13 @@ if "notification" in settings.INSTALLED_APPS:
 else:
 	notification = None
 
-if "jogging" in settings.INSTALLED_APPS:
-	from jogging import logging
-else:
-	logging = None
+#if "jogging" in settings.INSTALLED_APPS:
+#	from jogging import logging
+#else:
+#	logging = None
+import logging
+logger = logging.getLogger(__name__)
+
 
 if "condottieri_messages" in settings.INSTALLED_APPS:
 	import condottieri_messages as condottieri_messages 
@@ -55,7 +58,7 @@ else:
 ## machiavelli
 from machiavelli.fields import AutoTranslateField
 from machiavelli.graphics import make_map
-from machiavelli.logging import save_snapshot
+#from machiavelli.logging import save_snapshot
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.finances as finances
@@ -503,7 +506,7 @@ class Game(models.Model):
 		if self.slots == 0:
 			#the game has all its players and should start
 			if logging:
-				logging.info("Starting game %s" % self.id)
+				logger.info("Starting game %s" % self.id)
 			if self.private:
 				self.invitation_set.all().delete()
 			self.year = self.scenario.start_year
@@ -739,7 +742,7 @@ class Game(models.Model):
 				return False
 		msg += u"All players done.\n"
 		if logging:
-			logging.info(msg)
+			logger.info(msg)
 		self.all_players_done()
 		self.clear_phase_cache()
 		## If I don't reload players, p.new_phase overwrite the changes made by
@@ -771,7 +774,7 @@ class Game(models.Model):
 	def _next_season(self):
 		## take a snapshot of the units layout
 		#thread.start_new_thread(save_snapshot, (self,))
-		save_snapshot(self)
+		#save_snapshot(self)
 		if self.season == 3:
 			self.season = 1
 			self.year += 1
@@ -967,7 +970,7 @@ class Game(models.Model):
 		die = dice.roll_1d6()
 		if logging:
 			msg = "Varible income: Got a %s in game %s" % (die, self)
-			logging.info(msg)
+			logger.info(msg)
 		## get a list of the ids of the major cities that generate income
 		majors = CityIncome.objects.filter(scenario=self.scenario)
 		majors_ids = majors.values_list('city', flat=True)
@@ -987,7 +990,7 @@ class Game(models.Model):
 				## the loan has exceeded its term
 				if logging:
 					msg = "%s defaulted" % loan.player
-					logging.info(msg)
+					logger.info(msg)
 				loan.player.defaulted = True
 				loan.player.save()
 				loan.player.assassinate()
@@ -1073,7 +1076,7 @@ class Game(models.Model):
 				msg += u"Attempt fails\n"
 		attempts.delete()
 		if logging:
-			logging.info(msg)
+			logger.info(msg)
 
 
 	##------------------------
@@ -1570,7 +1573,7 @@ class Game(models.Model):
 		info += self.announce_retreats()
 		info += u"--- END ---\n"
 		if logging:
-			logging.info(info)
+			logger.info(info)
 		turn_log = TurnLog(game=self, year=self.year,
 							season=self.season,
 							phase=self.phase,
@@ -2062,7 +2065,7 @@ class Player(models.Model):
 			if logging:
 				msg = "Game %s: player %s has been eliminated." % (self.game.pk,
 															self.pk)
-				logging.info(msg)
+				logger.info(msg)
 			for unit in self.unit_set.all():
 				unit.delete()
 			for area in self.gamearea_set.all():
@@ -2079,7 +2082,7 @@ class Player(models.Model):
 			signals.country_conquered.send(sender=self, country=self.country)
 			if logging:
 				msg = "Player %s conquered by player %s" % (self.pk, player.pk)
-				logging.info(msg)
+				logger.info(msg)
 			self.conqueror = player
 			#if self.game.configuration.finances:
 			#	if self.ducats > 0:
@@ -2122,7 +2125,7 @@ class Player(models.Model):
 		signals.country_excommunicated.send(sender=self)
 		if logging:
 			msg = "Player %s excommunicated" % self.pk
-			logging.info(msg)
+			logger.info(msg)
 	
 	def unset_excommunication(self):
 		self.is_excommunicated = False
@@ -2132,7 +2135,7 @@ class Player(models.Model):
 		signals.country_forgiven.send(sender=self)
 		if logging:
 			msg = "Player %s is forgiven" % self.pk
-			logging.info(msg)
+			logger.info(msg)
 
 	def assassinate(self):
 		self.assassinated = True
@@ -2164,7 +2167,7 @@ class Player(models.Model):
 			msg = "Player %s forced to end phase" % self.pk
 		#self.game.check_next_phase()
 		if logging:
-			logging.info(msg)
+			logger.info(msg)
 
 	def new_phase(self):
 		## check that the player is not autonomous and is not eliminated
@@ -2255,7 +2258,7 @@ class Player(models.Model):
 				## create a new possible revolution
 				rev = Revolution(government=self)
 				rev.save()
-				logging.info("New revolution for player %s" % self)
+				logger.info("New revolution for player %s" % self)
 		else:
 			if rev.opposition:
 				if notification:
@@ -2269,7 +2272,7 @@ class Player(models.Model):
 						notification.send_now(user, "got_player", extra_context)	
 					else:
 						notification.send(user, "got_player", extra_context)
-				logging.info("Government of %s is overthrown" % self.country)
+				logger.info("Government of %s is overthrown" % self.country)
 				if signals:
 					signals.government_overthrown.send(sender=self)
 				else:
@@ -2375,7 +2378,7 @@ class Player(models.Model):
 		signals.income_raised.send(sender=self, ducats=d)
 		if logging:
 			msg = "Player %s raised %s ducats." % (self.pk, d)
-			logging.info(msg)
+			logger.info(msg)
 
 	def get_credit(self):
 		""" Returns the number of ducats that the player can borrow from the bank. """
@@ -3220,7 +3223,7 @@ class Expense(models.Model):
 		if logging:
 			msg = "New expense in game %s: %s" % (self.player.game.id,
 													self)
-			logging.info(msg)
+			logger.info(msg)
 	
 	def __unicode__(self):
 		data = {
@@ -3274,7 +3277,7 @@ class Expense(models.Model):
 		if logging:
 			msg = "Deleting expense in game %s: %s." % (self.player.game.id,
 													self)
-			logging.info(msg)
+			logger.info(msg)
 		self.delete()
 
 class Rebellion(models.Model):
