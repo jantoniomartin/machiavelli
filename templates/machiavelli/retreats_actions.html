@@ -1,0 +1,28 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+
+<h2>{% trans "Retreats" %}</h2>
+{% if done %}
+<p>{% blocktrans %}At least one player has not yet retreated his units. You have to wait until all
+players have done it or the time limit is reached.{% endblocktrans %}</p>
+{% else %}
+<form action="{% url show-game game.slug %}" method="post">
+{% csrf_token %}
+{% if retreat_forms %}
+<p>{% blocktrans %}
+Some of your units have been defeated and must retreat. For each unit, you can decide a retreat area
+or even disband the unit. If a unit has been defeated and has no possible retreat, it will be
+disbanded.
+{% endblocktrans %}</p>
+{% for f in retreat_forms %}
+<p>{{ f }}</p>
+{% endfor %}
+<input type="submit" value="{% trans "Retreat" %}" />
+{% endif %}
+</form>
+{% endif %}
+
+{% endblock %}

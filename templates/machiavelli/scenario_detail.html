@@ -1,0 +1,80 @@
+{% extends "machiavelli/base.html" %}
+
+{% load cache %}
+{% load i18n %}
+
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block head_title %}{% trans "Scenario" %}: {{ scenario.title }}{% endblock %}
+
+{% block body %}
+{% cache 1800 "scenario" scenario.id LANGUAGE_CODE %}
+<h1>{% trans "Scenario" %}: {{ scenario.title }}</h1>
+<h2>{% trans "Basic data" %}</h2>
+<dl>
+	<dt>{% trans "Start year" %}</dt>
+	<dd>{{ scenario.start_year }}</dd>
+</dl>
+<h2>{% trans "Setup" %}</h2>
+<table>
+<thead>
+<tr>
+<th>{% trans "Coat of arms" %}</th>
+<th>{% trans "Country" %}</th>
+<th>{% trans "Home provinces" %}</th>
+<th>{% trans "Initial setup" %}</th>
+<th>{% trans "Initial ducats" %}</th>
+<th>{% trans "Double income" %}</th>
+</tr>
+</thead>
+{% for k, v in countries.items %}
+<tr>
+<td class="data_c">
+<img src="{{ STATIC_URL }}machiavelli/img/banner-{{ k }}.png" alt="{{ v.name }}"/>
+</td>
+<td>{{ v.name }}</td>
+<td>{{ v.homes|join:", " }}</td>
+<td>{{ v.setups|join:", " }}</td>
+<td class="data_c">{{ v.ducats }}</td>
+<td class="data_c">{{ v.double|yesno }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<table>
+<thead>
+<tr>
+<th>{% trans "Autonomous garrisons" %}</th>
+</tr>
+</thead>
+<tr>
+<td>{{ autonomous|join:", " }}</td>
+</tr>
+</table>
+
+<table>
+<thead>
+<tr>
+<th>{% trans "Cities that give additional income" %}</th>
+</tr>
+</thead>
+<tr>
+<td>{{ major_cities|join:", " }}</td>
+</tr>
+</table>
+
+<table>
+<thead>
+<tr>
+<th>{% trans "Disabled areas" %}</th>
+</tr>
+</thead>
+<tr>
+<td>{{ disabled_areas|join:", " }}</td>
+</tr>
+</table>
+<div id="scenario_map">
+<img src="{{ MEDIA_URL }}maps/625x890/scenario-{{ scenario.pk }}.jpg" />
+</div>
+{% endcache %}
+{% endblock %}

@@ -1,0 +1,425 @@
+.clear {
+	clear: both;
+}
+
+.uniForm .focused{ background: #444; }
+
+tr.open_game {
+	background: #c4efc2;
+	color: #333;
+}
+
+tr.closed_game {
+	background: #efc2c2;
+	color: #333;
+}
+
+tr.open_game a,
+tr.closed_game a{
+	color: #111;
+}
+
+#game_info {
+	width: 95%;
+	padding: 0;
+	margin-top: 0;
+	margin-bottom: 1em;
+	clear: both;
+	display: table;
+	background: #4f4f4f;
+	color: #ccc;
+	font-weight: bold;
+}
+
+#game_info ul {
+	display: table-row;
+}
+
+#game_info ul li {
+	display: table-cell;
+	padding: 0.5em;
+	text-align: center;
+}
+
+#cities_to_win {
+	background-color: #9f2727;
+	font-size: 110%;
+}
+
+#game_rules {
+	font-size: 70%;
+}
+
+.col1,
+.col2,
+.col3 {
+	float: left;
+	padding-left: 0.5%;
+	padding-right: 0.5%;
+	margin-left: 0;
+	margin-right: 1%;
+	height: 740px;
+	border: solid 1px #444;
+}
+
+.col1 {
+	width: 12%;
+	overflow: auto;
+}
+
+.col2 {
+	width: 56%;
+	padding: 0;
+}
+
+.col3 {
+	width: 25%;
+}
+
+.player {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	line-height: 120%;
+	padding: 0.2em 0.5em;
+	border: solid 1px #111;
+	-moz-border-radius: 10px;
+}
+
+/*
+ * Country styles
+ */
+#powers .france {
+	background: #a375d1;
+	color: black;
+}
+
+#powers .milan {
+	background: #cc0000;
+	color: black;
+}
+
+#powers .florence {
+	background: #66ccff;
+	color: black;
+}
+
+#powers .austria {
+	background: #b8b8b8;
+	color: black;
+}
+
+#powers .papacy {
+	background: #00991a;
+	color: black;
+}
+
+#powers .venice {
+	background: #996600;
+	color: black;
+}
+
+#powers .turks {
+	background: #00cccc;
+	color: black;
+}
+
+#powers .naples {
+	background: #3d3dff;
+	color: black;
+}
+#powers .hre {
+	background: #ffdd11;
+	color: black;
+}
+#powers .savoy {
+	background: #bbffdd;
+	color: black;
+}
+
+.france a,
+.france a:visited,
+.milan a,
+.milan a:visited,
+.florence a,
+.florence a:visited,
+.austria a,
+.austria a:visited,
+.papacy a,
+.papacy a:visited,
+.venice a,
+.venice a:visited,
+.turks a,
+.turks a:visited,
+.naples a,
+.naples a:visited {
+	color: #111;
+}
+
+.unread {
+	font-weight: bold;
+}
+
+/* Season colors
+ * 1:Spring
+ * 2:Summer
+ * 3:Fall
+ */
+.season_1 {
+	background-color: #80CD8D;
+	color: #000;
+}
+.season_2 {
+	background-color: #FFCC00;
+	color: #000;
+}
+.season_3 {
+	background-color: #B47D5B;
+	color: #000;
+}
+
+#map {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 740px;
+}
+
+#log {
+	margin-top: 2.5%;
+	padding-top: 0.5em;
+	overflow: auto;
+	height: 90%;
+}
+
+#letter_box ul, #log ul {
+	padding-left: 0;
+}
+
+#letter_box li {
+	list-style-type: none;
+	margin-left: 0;
+	padding: 0.2em 0.5em;
+	border-top: solid 1px #111;
+}
+
+#log ul li {
+	list-style-type: none;
+	min-height: 38px;
+	margin-left: 0;
+	padding: 0.1em 30px 0 0;
+	border-top: solid 1px #111;
+	background-position: right center;
+	background-repeat: no-repeat;
+}
+
+#log li span {
+	background-position: left 4px;
+	background-repeat: no-repeat;
+	vertical-align: text-bottom;
+	display: block;
+	min-height: 38px;
+	padding-left: 30px;
+}
+
+#log li span.austria {
+	background-image: url('../img/icon-austria.png');
+}
+#log li span.florence {
+	background-image: url('../img/icon-florence.png');
+}
+#log li span.france {
+	background-image: url('../img/icon-france.png');
+}
+#log li span.hre {
+	background-image: url('../img/icon-hre.png');
+}
+#log li span.milan {
+	background-image: url('../img/icon-milan.png');
+}
+#log li span.naples {
+	background-image: url('../img/icon-naples.png');
+}
+#log li span.papacy {
+	background-image: url('../img/icon-papacy.png');
+}
+#log li span.savoy {
+	background-image: url('../img/icon-savoy.png');
+}
+#log li span.turks {
+	background-image: url('../img/icon-turks.png');
+}
+#log li span.venice {
+	background-image: url('../img/icon-venice.png');
+}
+
+#log li.besieging-event {
+	background-image: url('../img/besieging-event.png');
+}
+
+#log li.broken-support-event {
+	background-image: url('../img/broken-support-event.png');
+}
+
+#log li.control-event {
+	background-image: url('../img/control-event.png');
+}
+
+#log li.conversion-event {
+	background-image: url('../img/conversion-event.png');
+}
+
+#log li.disband-event {
+	background-image: url('../img/disband-event.png');
+}
+
+#log li.movement-event {
+	background-image: url('../img/movement-event.png');
+}
+
+#log li.new-unit-event {
+	background-image: url('../img/new-unit-event.png');
+}
+
+#log li.order-event {
+	background-image: url('../img/order-event.png');
+}
+
+#log li.retreat-event {
+	background-image: url('../img/retreat-event.png');
+}
+
+#log li.standoff-event {
+	background-image: url('../img/standoff-event.png');
+}
+
+#log li.surrender-event {
+	background-image: url('../img/surrender-event.png');
+}
+
+#log li.storm-event {
+	background-image: url('../img/storm-event.png');
+}
+
+#diplomacy a {
+	text-decoration: none;
+}
+
+#col .menu {
+	height: 5%;
+}
+
+#diplomacy h3,
+#log h3 {
+	margin-top: 0;
+	text-align: right;
+	font-size: 1em;
+}
+
+#actions {
+	width: 70%;
+	float: left;
+}
+
+#actions form fieldset {
+	width: 90%;
+	margin-left: 5%;
+	border: solid 1px #666;
+}
+
+.action_block {
+	padding: 0 0 0.5em 0;
+	background-color: #4f4f4f;
+	border-bottom: solid 2px #191919;
+}
+.action_block a, .action_block a:visited {
+	color: #d3a152;
+}
+.action_block h1, .action_block h2 {
+	margin-top: 1em;
+	background: #9f2727;
+	padding: 0.2em 0.5em;
+}
+
+.action_block h3 {
+	margin-left: 0;
+	font-size: larger;
+}
+
+.action_block h3 a {
+	margin-left: 0;
+	font-size: larger;
+	text-decoration: none;
+}
+
+.action_block ul {
+	padding-left: 1em;
+}
+
+.action_block li {
+	line-height: 150%;
+}
+
+.action_block table {
+	margin-left: 10%;
+}
+
+.action_form table {
+	margin-left: 0;
+	width: 100%;
+	/*table-layout: fixed;*/
+}
+
+.action_form table td {
+	width: 15%;
+}
+/*.action_form select {
+	width: 98%;
+}*/
+#sent_orders {
+	padding: 0;
+}
+
+#sent_orders li {
+	list-style-type: none;
+	margin: 2px 1em;
+	padding: 0.5em;
+	border: solid 1px #444;
+}
+
+#mini_shoutbox {
+	width: 24%;
+	margin-left: 75%;
+	padding: 0 0 0.5em 0;
+	margin-top: 1em;
+	background-color: #4f4f4f;
+}
+
+#mini_shoutbox h2 {
+	background: #9f2727;
+	padding: 0.2em 0.5em;
+}
+
+#shoutbox ul li, #mini_shoutbox ul li, #latest_gossip ul li {
+	list-style-type: none;
+	padding: 0.5em;
+}
+
+#shoutbox .date, #mini_shoutbox .date, #latest_gossip .date {
+	display: block;
+	font-size: smaller;
+	color: #ccc;
+}
+
+#shoutbox .admin, #mini_shoutbox .admin, #latest_gossip .admin {
+	background-color: #c14200;
+	font-style: italic;
+}
+
+#mini_shoutbox form {
+	margin-left: 5%;
+}
+
+#mini_shoutbox textarea {
+	width: 90%;
+}

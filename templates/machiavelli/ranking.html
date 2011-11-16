@@ -1,0 +1,70 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block body %}
+<h1>{{ title }}</h1>
+
+<table>
+	<thead>
+	<tr>
+	<th>{% trans "Points" %}</th>
+	<th>{% trans "Cities" %}</th>
+	<th>{% trans "Position" %}</th>
+	<th>{% trans "Game" %}</th>
+	{% if key == "user" %}
+	<th>{% trans "Scenario" %}</th>
+	<th>{% trans "Country" %}</th>
+	{% endif %}
+	{% if key == "scenario" %}
+	<th>{% trans "Country" %}</th>
+	<th>{% trans "User" %}</th>
+	{% endif %}
+	{% if key == "country" %}
+	<th>{% trans "Scenario" %}</th>
+	<th>{% trans "User" %}</th>
+	{% endif %}
+	<th>{% trans "Date" %}</th>
+	</tr>
+	</thead>
+	{% for q in qualification.object_list %}
+	<tr>
+	<td>{{ q.points }}</td>
+	<td>{{ q.cities }}</td>
+	<td>{{ q.position }}</td>
+	<td><a href="{% url show-game q.game.slug %}">{{ q.game.slug }}</a></td> 
+	{% if key == "user" %}
+	<td><a href="{% url show-scenario q.game.scenario.pk %}">{{ q.game.scenario }}</a></td>
+	<td>{{ q.country }}</td>
+	{% endif %}
+	{% if key == "scenario" %}
+	<td>{{ q.country }}</td>
+	<td><a href="{% url profile_detail username=q.user.username %}">{{ q.user }}</a></td>
+	{% endif %}
+	{% if key == "country" %}
+	<td><a href="{% url show-scenario q.game.scenario.pk %}">{{ q.game.scenario }}</a></td>
+	<td><a href="{% url profile_detail username=q.user.username %}">{{ q.user }}</a></td>
+	{% endif %}
+	<td>{{ q.created_at|date:"SHORT_DATE_FORMAT" }}
+	</tr>
+	{% endfor %}
+
+</table>
+<div class="pagination">
+	<span class="step-links">
+		{% if qualification.has_previous %}
+			<a href="?page={{ qualification.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ qualification.number }} {% trans "of" %} {{ qualification.paginator.num_pages }}.
+		</span>
+
+		{% if qualification.has_next %}
+			<a href="?page={{ qualification.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+{% endblock %}

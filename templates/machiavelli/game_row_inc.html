@@ -1,0 +1,21 @@
+{% load i18n %}
+{% load game_icons %}
+		<td><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></td>
+		<td><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></td>
+		<td>{{ game.created_by }}</td>
+		<td>{{ game.get_time_limit_display }}</td>
+		<td class="data_c">
+		{% if game.year %}
+			{{ game.year }}
+		{% endif %}
+		</td>
+		<td class="data_c">
+		{% if game.season %}
+			{{ game.get_season_display }}
+		{% endif %}
+		</td>
+		<td class="data_c">{{ game.get_phase_display }}</td>
+		<td>
+		{% rule_icons game.configuration %}
+		</td>
+		<td class="data_c">{{ game.visible|yesno }}</td>

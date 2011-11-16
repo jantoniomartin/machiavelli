@@ -1,0 +1,14 @@
+{% load i18n %}
+
+{% blocktrans with game.slug as slug %}You have neglected your government
+duties in game '{{ slug }}' and someone wants to take your place.{% endblocktrans %}
+
+{% blocktrans %}If you want to keep playing in this game, you have only to
+make your actions, and you will keep your country. If you don't make your
+actions in the current phase, another player will take your country.{% endblocktrans %}
+
+{% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}
+
+{% blocktrans %}If you do not want to play this game, it's better that you
+let the other player to take your country. This way you won't lose more karma
+for not playing this game.{% endblocktrans %}

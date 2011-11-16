@@ -1,0 +1,85 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Expenses" %}</h2>
+{% if not done %}
+<p>{% blocktrans %}You may expend some of your ducats to affect an area or a unit in different ways. Expenses take effect just before the conflicts resolution.{% endblocktrans %}</p>
+<p>{% blocktrans %}Some of the expenses are 'bribes'. You can only bribe a unit that is adjacent to one of your controlled provinces or to one of your units. Note that bribes can be countered, and that you can pay more money to make the bribe more expensive to counter. Also, if a unit is affected by more than one bribe only the best paid is applied, and the money for the others is wasted.{% endblocktrans%}</p>
+<h3>{% trans "Available expenses" %}</h3>
+<p>{% blocktrans %}The following is a summary of all the available expenses:{% endblocktrans %}</p>
+<table style="width: 50%">
+<thead><tr>
+<th>{% trans "Expense" %}</th>
+<th>{% trans "Cost" %}</th>
+<th>{% trans "Bribe" %}</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>{% trans "Famine relief" %}</td><td>3</td><td>{% trans "No" %}</td>
+</tr>
+<tr>
+<td>{% trans "Pacify rebellion" %}</td><td>12</td><td>{% trans "No" %}</td>
+</tr>
+<tr>
+<td>{% trans "Conquered province to rebel" %}</td><td>9</td><td>{% trans "No" %}</td>
+</tr>
+<tr>
+<td>{% trans "Home province to rebel" %}</td><td>15</td><td>{% trans "No" %}</td>
+</tr>
+<tr>
+<td>{% trans "Counter bribe" %}</td><td>3+</td><td>{% trans "No" %}</td>
+</tr>
+<tr>
+<td>{% trans "Disband autonomous garrison" %}</td><td>6+*</td><td>{% trans "Yes" %}</td>
+</tr>
+<tr>
+<td>{% trans "Buy autonomous garrison" %}</td><td>9+&dagger;</td><td>{% trans "Yes" %}</td>
+</tr>
+<tr>
+<td>{% trans "Convert garrison unit" %}</td><td>9+&dagger;</td><td>{% trans "Yes" %}</td>
+</tr>
+<tr>
+<td>{% trans "Disband enemy unit" %}</td><td>12+&dagger;</td><td>{% trans "Yes" %}</td>
+</tr>
+<tr>
+<td>{% trans "Buy enemy unit" %}</td><td>18+&dagger;</td><td>{% trans "Yes" %}</td>
+</tr>
+</tbody>
+</table>
+<p>&dagger; {% blocktrans %}The minimum cost of these bribes is doubled if the bribed unit is a garrison in a major city (the ones with a number inside the circle).{% endblocktrans %}</p>
+{% if form %}
+<h3>{% trans "New expense" %}</h3>
+<div class="action_form">
+<form action="" method="post" id="expenses_form">
+{% csrf_token %}
+<fieldset>
+{{ form }}
+</fieldset>
+<p><input type="submit" value="{% trans "Pay" %}" /></p>
+</form>
+</div>
+{% endif %}
+
+
+{% endif %}{# not done #}
+
+{% if current_expenses %}
+<h3>{% trans "Your expenses for this turn" %}</h3>
+<ul>
+{% for e in current_expenses %}
+<li id="expense_{{ e.id }}">{{ e }}
+{% ifequal e.confirmed 0 %}
+(<a href="{% url undo-expense game.slug e.id %}">{% trans "Delete" %}</a>)
+{% endifequal %}
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+</div>
+{% endblock %}
+

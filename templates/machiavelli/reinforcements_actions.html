@@ -1,0 +1,115 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Military Adjustment" %}</h2>
+{% if done %}
+
+{% if to_place %}
+<p>{% blocktrans %}This year you will place the following new units on the mapboard:{% endblocktrans %}</p>
+<ul>
+{% for u in to_place %}
+<li>{{ u }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if to_disband %}
+<p>{% blocktrans %}The following of your units will be disbanded:{% endblocktrans %}</p>
+<ul>
+{% for u in to_disband %}
+<li>{{ u }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if to_keep %}
+<p>{% blocktrans %}You have paid the wage of the following units to keep them:{% endblocktrans %}</p>
+<ul>
+{% for u in to_keep %}
+<li>{{ u }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<p>{% blocktrans %}At least one player has not yet adjusted his units. You have to wait until all
+players have done it or the time limit is reached.{% endblocktrans %}</p>
+
+{% else %}
+
+<p>{% blocktrans count cities_qty as counter %}You have currently {{ cities_qty }} city
+{% plural %}You have currently {{ cities_qty }} cities
+{% endblocktrans %}
+
+{% blocktrans count cur_units as counter %} and {{ cur_units }} unit.
+{% plural %} and {{ cur_units }} units.
+{% endblocktrans %}</p>
+
+<form action="{% url show-game game.slug %}" method="post">
+{% csrf_token %}
+
+{% if reinforce_form %}
+<p>{% blocktrans count units_to_place as counter %} You have to place <b>{{ units_to_place }}</b> unit in the map.
+{% plural %} You have to place <b>{{ units_to_place }}</b> units in the map.
+{% endblocktrans %}</p>
+<p>{% blocktrans %} Remember the following restrictions when placing units:{% endblocktrans %}</p>
+<ul>
+<li>{% blocktrans %}Any unit: Only in cities with your flag <b>and</b> under your control.{% endblocktrans %}</li>
+<li>{% blocktrans %}Fleets: Only in port cities.{% endblocktrans %}</li>
+<li>{% blocktrans %}Garrisons: Only in fortified cities.{% endblocktrans %}</li>
+<li>{% blocktrans %}You cannot place more than one unit in the same area.{% endblocktrans %}</li>
+</ul>
+<div class="action_form">
+<p>{{ reinforce_form.non_form_errors }}</p>
+{{ reinforce_form.management_form }}
+
+{# Taken from http://djangosnippets.org/snippets/1442/ #}
+<table style="width: 40%; min-width: 30em;">
+{% for form in reinforce_form.forms %}
+	{% if forloop.first %}
+	<thead><tr>
+		{% for field in form.visible_fields %}
+		<th>{{ field.label|capfirst }}</th>
+		{% endfor %}
+	</tr></thead>
+	{% endif %}
+	<tr>
+	{% for field in form.visible_fields %}
+		<td>
+		{% if forloop.first %}
+			{% for hidden in form.hidden_fields %}
+			{{ hidden }}
+			{% endfor %}
+		{% endif %}
+			{{ field.errors.as_ul }}
+			{{ field }}
+		</td>
+	{% endfor %}
+	</tr>
+{% endfor %}
+</table>
+
+
+<p><input type="submit" value="{% trans "Reinforce" %}" /></p>
+</div>
+{% endif %}
+
+{% if disband_form %}
+<p>{% blocktrans count units_to_disband as counter %} You must select exactly {{ units_to_disband }} unit to be disbanded.
+{% plural %} You must select exactly {{ units_to_disband }} units to be disbanded. Use Ctrl key to select more than one unit.
+{% endblocktrans %}</p>
+
+<p>{{ disband_form.non_form_errors }}</p>
+<dl>
+<dt>{{ disband_form.units.label }}:</dt>
+<dd>{{ disband_form.units }}</dd>
+</dl>
+<p><input type="submit" value="{% trans "Disband!" %}"/></p>
+{% endif %}
+
+</form>
+{% endif %}
+</div>
+{% endblock %}

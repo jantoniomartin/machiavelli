@@ -1,0 +1,40 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+{% if loan %}
+
+<h2>{% trans "Repay a loan" %}</h2>
+<p>{% blocktrans with loan.debt as debt %}You owe {{ debt }} ducats to a banker.{% endblocktrans %}</p>
+<p>{% blocktrans with loan.get_season_display as season and loan.year as year %}Your debt must be paid before confirming your orders in the {{ season }} of {{ year }}.{% endblocktrans %}</p>
+<p>{% blocktrans %}If you don't repay your debt in the due term, you will be assassinated and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
+
+{% else %}
+
+<h2>{% trans "Ask for a loan" %}</h2>
+<p>{% blocktrans %}You can borrow some money from a banker or financier. Depending on the term that you choose, you will have to pay an interest. If you can't or don't repay a loan, something very bad will happen to you and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
+{% if credit == 0 %}
+<p>{% blocktrans %}At this moment you cannot borrow any ducats.{% endblocktrans %}</p>
+{% else %}
+<p>{% blocktrans %}At this moment you can borrow a maximum of {{ credit }} ducats.{% endblocktrans %}</p>
+{% endif %}
+
+{% endif %}
+
+<form action="" method="post">
+{% csrf_token %}
+<table>
+{{ form }}
+</table>
+{% if loan %}
+<input type="submit" value="{% trans "Repay loan" %}" />
+{% else %}
+<p><input type="submit" value="{% trans "Confirm" %}" /></p>
+{% endif %}
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+</div>
+{% endblock %}

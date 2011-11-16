@@ -1,0 +1,78 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+{% load game_icons %}
+
+{% block head_title %}
+{% blocktrans %}Finished games{% endblocktrans %}
+{% endblock %}
+
+{% block left_column %}
+{% if only_user %}
+<h1>{% trans "Your finished games" %}</h1>
+<p>
+{% blocktrans %}These are all the finished games that you have played until the end.{% endblocktrans %}
+</p>
+<p>
+<a href="{% url games-all-finished %}">{% trans "See all the finished games" %}</a>
+</p>
+{% else %}
+<h1>{% trans "All the finished games" %}</h1>
+<p>
+{% blocktrans %}These are all the games that are already finished.{% endblocktrans %}
+</p>
+{% endif %}
+
+{% for game in game_list.object_list %}
+<div class="game_info">
+<h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span></h2>
+<div class="map">
+<img src="{{ MEDIA_URL }}maps/thumbnails/map-{{ game.pk }}.jpg" />
+</div>
+{% if game.started and game.finished %}
+<div class="time">
+{% blocktrans with game.finished|date:"SHORT_DATE_FORMAT" as finished and game.finished|timeuntil:game.started as time %}
+Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
+</div>
+{% endif %}
+<dl>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
+<dt>{% trans "Players" %}</dt>
+<dd>
+	<ul>
+	{% for s in game.score_set.all %}
+		<li><a href="{% url profile_detail username=s.user.username %}">{{ s.user.username }}</a> ({{ s.points }})</li>
+	{% endfor %}
+	</ul>
+</dd>
+<dt>{% trans "Winner" %}</dt>
+<dd>
+{% if game.highest_score %}
+	<a href="{% url profile_detail username=game.highest_score.user.username %}">{{ game.highest_score.user }}</a> ({{ game.highest_score.country }})
+{% endif %}
+</dd>
+</dl>
+<ul class="section_menu">
+	<li>{% rule_icons game.configuration %}</li>
+	<li><a href="{% url show-game game.slug %}">{% trans "View scores" %}</a></li>
+</ul>
+</div>
+{% endfor %}
+
+<div class="pagination">
+	<span class="step-links">
+		{% if game_list.has_previous %}
+			<a href="?page={{ game_list.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ game_list.number }} {% trans "of" %} {{ game_list.paginator.num_pages }}.
+		</span>
+
+		{% if game_list.has_next %}
+			<a href="?page={{ game_list.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+{% endblock %}

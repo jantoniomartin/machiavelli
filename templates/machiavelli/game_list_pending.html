@@ -1,0 +1,113 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+{% load game_icons %}
+{% load stars %}
+
+{% block head_title %}
+{% blocktrans %}Pending games{% endblocktrans %}
+{% endblock %}
+
+{% block left_column %}
+{% if joinable %}
+<h1>{% trans "Games you can join" %}</h1>
+	<p>
+	{% if game_list.object_list %}
+		{% blocktrans %}The following games have not yet started, and you can join any of them.{% endblocktrans %}
+	{% else %}
+		{% blocktrans %}At this moment, there is no available games that you can join. Maybe you want to create a new game.{% endblocktrans %}
+		<p><a href="{% url new-game %}">{% trans "New game" %}</a></p>
+	{% endif %}
+	</p>
+{% else %}
+<h1>{% trans "Your not started games" %}</h1>
+	<p>
+	{% if game_list.object_list %}
+		{% blocktrans %}You are subscribed to the following games, but they still have not enough players to begin.{% endblocktrans %}
+	{% else %}
+		{% blocktrans %}All the games that you are subscribed to have already started.{% endblocktrans %}
+	{% endif %}
+	</p>
+{% endif %}
+
+{% if game_list.object_list %}
+
+{% for game in game_list.object_list %}
+<div class="game_info {% if game.fast %}fast{% endif %}">
+<h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span>
+	<span>
+		({% trans "Slots" %}: {{ game.slots }})
+	</span>
+	{% if game.private %}
+	<span>{% trans "Private" %}</span>
+	{% endif %}
+	</h2>
+<div class="map">
+<img src="{{ MEDIA_URL }}maps/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
+</div>
+<dl>
+<dt>{% trans "Average score" %}</dt><dd>{{ game.get_average_score|score_stars }}</dd>
+<dt>{% trans "Average karma" %}</dt><dd>{{ game.get_average_karma|karma_stars }}</dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
+<dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
+<dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
+<dt>{% trans "Players" %}</dt>
+<dd>
+	{% if game.visible %}
+	<ul>
+	{% for p in game.player_set.all %}
+		{% if p.user %}
+		<li><a href="{% url profile_detail username=p.user.username %}">{{ p.user.username }}</a></li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+	{% else %}
+	{% trans "Players are not visible" %}
+	{% endif %}
+</dd>
+{% if game.private %}
+<dt>{% trans "Invited users" %}</dt>
+<dd>{{ game.invitation_set.all|join:", " }}</dd>
+{% endif %}
+{% if game.comment %}
+<dt>{% trans "Comment" %}</dt>
+<dd>{{ game.comment }}</dd>
+{% endif %}
+</dl>
+<ul class="section_menu">
+	<li>{% rule_icons game.configuration %}</li>
+	{% if game.private %}
+		{% ifequal game.created_by user %}
+			<li><a href="{% url invite-users game.slug %}">{% trans "Invitations" %}</a></li>
+			<li><a href="{% url make-public game.slug %}">{% trans "Make public" %}</a></li>
+		{% endifequal %}
+	{% endif %}
+	<li><a href="{% url show-game game.slug %}">{% trans "View game" %}</a></li>
+	{% if joinable %}
+	<li><a href="{% url join-game game.slug %}">{% trans "Join game" %}</a></li>
+	{% else %}
+	<li><a href="{% url leave-game game.slug %}">{% trans "Leave game" %}</a></li>
+	{% endif %}
+</ul>
+</div>
+{% endfor %}
+
+<div class="pagination">
+	<span class="step-links">
+		{% if game_list.has_previous %}
+			<a href="?page={{ game_list.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ game_list.number }} {% trans "of" %} {{ game_list.paginator.num_pages }}.
+		</span>
+
+		{% if game_list.has_next %}
+			<a href="?page={{ game_list.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,4 @@
+{% load i18n %}
+
+{% blocktrans with game.slug as slug %}Someone tries to overthrow you in '{{ slug }}'.{% endblocktrans %}
+<a href="{% url show-game game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>

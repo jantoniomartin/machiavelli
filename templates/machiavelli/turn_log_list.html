@@ -1,0 +1,48 @@
+{% extends 'machiavelli/base.html' %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Log" %}: {{ game.slug }}{% endblock %}
+
+{% block body %}
+<h1>{% trans "Orders processing in game" %} "{{ game.slug }}"</h1>
+<div id="game_info">
+<ul>
+<li>{% trans "Year" %}: {{ game.year }}</li>
+<li>{% trans "Season" %}: {{ game.get_season_display }}</li>
+<li>{% trans "Phase" %}: {{ game.get_phase_display }}</li>
+<li>{% trans "Time left" %}: {{ game.next_phase_change|timeuntil }}</li>
+<li>{% trans "Power" %}: {{ player.country }}</li>
+</ul>
+</div>
+
+<div class="pagination">
+	<span class="step-links">
+		{% if log.has_previous %}
+			<a href="?page={{ log.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ log.number }} {% trans "of" %} {{ log.paginator.num_pages }}.
+		</span>
+
+		{% if log.has_next %}
+			<a href="?page={{ log.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+{% for l in log.object_list %}
+<dl>
+<dt>{% trans "Year" %}:</dt>
+<dd>{{ l.year }}</dd>
+<dt>{% trans "Season" %}:</dt>
+<dd>{{ l.get_season_display }}</dd>
+<dt>{% trans "Timestamp" %}:</dt>
+<dd>{{ l.timestamp }}</dd>
+<dt>{% trans "Log" %}:</dt>
+<dd>{{ l|linebreaksbr }}</dd>
+</dl>
+{% endfor %}
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+
+{% endblock %}

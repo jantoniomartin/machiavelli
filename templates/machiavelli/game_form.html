@@ -1,0 +1,57 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+{% load cache %}
+
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load uni_form_tags %}
+
+{% block head_title %}{% blocktrans %}Games{% endblocktrans %}{% endblock %}
+
+{% block left_column %}
+
+{% cache 3600 new_game LANGUAGE_CODE %}
+<h1>{% trans "New game" %}</h1>
+<p>{% blocktrans %}Here you can create a new game. You will be the first player of any game
+you create. You must choose a short name for the game, that will be used only to identify it.{% endblocktrans %}</p>
+<p>{% blocktrans %}Every game must begin with a <b>scenario</b>. The scenario determines the number
+of players, the available countries and the initial setup.{% endblocktrans %}</p>
+<p>{% blocktrans %}When playing a game, each player has a <b>time limit</b> to complete any of the
+phases of the game. This time limit is reset when all the players have completed their actions.
+{% endblocktrans %}</p>
+<h2>{% trans "Available scenarios" %}</h2>
+<table>
+<thead><tr>
+<th>{% trans "Title" %}</th>
+<th>{% trans "Start year" %}</th>
+<th>{% trans "Players" %}</th>
+</tr></thead>
+{% for s in scenarios %}
+<tr>
+<td><a href="{% url show-scenario s.pk %}">{% trans s.title %}</a></td>
+<td class="data_c">{{ s.start_year }}</td>
+<td class="data_c">{{ s.get_slots }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endcache %}
+
+<h2>{% trans "Create a new game" %}</h2>
+
+<div style="width: 50%">
+<form action="{% url new-game %}" method="post" class="uniForm">
+{% csrf_token %}
+<fieldset class="inlineLabels">
+{{ game_form|as_uni_form }}
+<h3>{% trans "Rules" %}</h3>
+{{ config_form|as_uni_form }}
+<div class="form_block">
+<input type="submit" value="{% trans "Save" %}" />
+</div>
+</fieldset>
+</form>
+</div>
+
+{% endblock %}

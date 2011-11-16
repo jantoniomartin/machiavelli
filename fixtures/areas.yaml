@@ -1,0 +1,803 @@
+- fields:
+    borders: [59, 56, 72, 57]
+    code: ALB
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Albania
+  model: machiavelli.area
+  pk: 58
+- fields:
+    borders: [50, 72, 45, 73, 40]
+    code: ANC
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Ancona
+  model: machiavelli.area
+  pk: 46
+- fields:
+    borders: [46, 52, 48, 72, 49, 51, 45]
+    code: AQU
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Aquila
+  model: machiavelli.area
+  pk: 50
+- fields:
+    borders: [38, 44, 42, 40]
+    code: ARE
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Arezzo
+  model: machiavelli.area
+  pk: 39
+- fields:
+    borders: [16, 5, 17, 3]
+    code: AUS
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Austria
+  model: machiavelli.area
+  pk: 4
+- fields:
+    borders: [65, 6, 7, 2, 10]
+    code: AVI
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Avignon
+  model: machiavelli.area
+  pk: 1
+- fields:
+    borders: [50, 72, 53, 51]
+    code: BARI
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Bari
+  model: machiavelli.area
+  pk: 52
+- fields:
+    borders: [21, 25, 14, 15, 23]
+    code: BER
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Bergamo
+  model: machiavelli.area
+  pk: 22
+- fields:
+    borders: [26, 38, 34, 25, 24, 37, 73, 40]
+    code: BOL
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Bologna
+  model: machiavelli.area
+  pk: 35
+- fields:
+    borders: [33, 54, 56]
+    code: BOS
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Bosnia
+  model: machiavelli.area
+  pk: 55
+- fields:
+    borders: [50, 49, 47, 45, 68]
+    code: CAP
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Capua
+  model: machiavelli.area
+  pk: 48
+- fields:
+    borders: [16, 33, 29, 32, 17, 73]
+    code: CAR
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Carniola
+  model: machiavelli.area
+  pk: 30
+- fields:
+    borders: [4, 30, 29, 14, 17, 15, 3, 23]
+    code: CARIN
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Carinthia
+  model: machiavelli.area
+  pk: 16
+- fields:
+    borders: [71, 62, 68, 64, 67]
+    code: CM
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Central Mediterranean
+  model: machiavelli.area
+  pk: 69
+- fields:
+    borders: [14, 13, 10, 3]
+    code: COMO
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Como
+  model: machiavelli.area
+  pk: 11
+- fields:
+    borders: [65, 66, 61, 68]
+    code: COR
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Corsica
+  model: machiavelli.area
+  pk: 60
+- fields:
+    borders: [22, 25, 14, 20]
+    code: CRE
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Cremona
+  model: machiavelli.area
+  pk: 21
+- fields:
+    borders: [55, 30, 54, 32, 17, 73]
+    code: CRO
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Croatia
+  model: machiavelli.area
+  pk: 33
+- fields:
+    borders: [55, 33, 56, 72, 73]
+    code: DAL
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Dalmatia
+  model: machiavelli.area
+  pk: 54
+- fields:
+    borders: [58, 71, 72]
+    code: DUR
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Durazzo
+  model: machiavelli.area
+  pk: 59
+- fields:
+    borders: [35, 25, 27, 73, 23]
+    code: FER
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Ferrara
+  model: machiavelli.area
+  pk: 26
+- fields:
+    borders: [39, 35, 37, 36, 42, 40]
+    code: FLO
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Florence
+  model: machiavelli.area
+  pk: 38
+- fields:
+    borders: [18, 24, 12, 20, 13]
+    code: FOR
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Fornovo
+  model: machiavelli.area
+  pk: 19
+- fields:
+    borders: [30, 16, 28, 73, 31, 23]
+    code: FRI
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Friuli
+  model: machiavelli.area
+  pk: 29
+- fields:
+    borders: [19, 66, 24, 12, 8]
+    code: GEN
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Genoa
+  model: machiavelli.area
+  pk: 18
+- fields:
+    borders: [1, 60, 66, 6, 7, 61, 68, 67]
+    code: GOL
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Gulf of Lions
+  model: machiavelli.area
+  pk: 65
+- fields:
+    borders: [71, 63, 49, 53, 62, 51, 68]
+    code: GON
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Gulf of Naples
+  model: machiavelli.area
+  pk: 70
+- fields:
+    borders: [58, 55, 54, 72, 57]
+    code: HER
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Herzegovina
+  model: machiavelli.area
+  pk: 56
+- fields:
+    borders: [4, 17]
+    code: HUN
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Hungary
+  model: machiavelli.area
+  pk: 5
+- fields:
+    borders: [69, 59, 70, 72, 63, 53, 62]
+    code: IS
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Ionian Sea
+  model: machiavelli.area
+  pk: 71
+- fields:
+    borders: [30, 33, 73]
+    code: IST
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Istria
+  model: machiavelli.area
+  pk: 32
+- fields:
+    borders: [58, 46, 50, 52, 54, 59, 56, 71, 53, 57]
+    code: LA
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Lower Adriatic
+  model: machiavelli.area
+  pk: 72
+- fields:
+    borders: [60, 18, 65, 34, 24, 41, 36, 7, 8, 68]
+    code: LS
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Ligurian Sea
+  model: machiavelli.area
+  pk: 66
+- fields:
+    borders: [35, 66, 24, 37, 36]
+    code: LUC
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Lucca
+  model: machiavelli.area
+  pk: 34
+- fields:
+    borders: [22, 35, 21, 26, 24, 20, 23]
+    code: MAN
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Mantua
+  model: machiavelli.area
+  pk: 25
+- fields:
+    borders: [1, 65, 7]
+    code: MAR
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Marseille
+  model: machiavelli.area
+  pk: 6
+- fields:
+    borders: [70, 71, 53, 62]
+    code: MES
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Messina
+  model: machiavelli.area
+  pk: 63
+- fields:
+    borders: [22, 16, 11, 21, 20, 13, 15, 3]
+    code: MIL
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Milan
+  model: machiavelli.area
+  pk: 14
+- fields:
+    borders: [35, 19, 18, 66, 34, 25, 20]
+    code: MOD
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Modena
+  model: machiavelli.area
+  pk: 24
+- fields:
+    borders: [19, 18, 13, 8, 10]
+    code: MON
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Montferrat
+  model: machiavelli.area
+  pk: 12
+- fields:
+    borders: [50, 48, 70, 51, 68]
+    code: NAP
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Naples
+  model: machiavelli.area
+  pk: 49
+- fields:
+    borders: [52, 70, 71, 72, 63, 51]
+    code: OTR
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Otranto
+  model: machiavelli.area
+  pk: 53
+- fields:
+    borders: [26, 28, 73, 31, 23]
+    code: PAD
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Padua
+  model: machiavelli.area
+  pk: 27
+- fields:
+    borders: [69, 70, 71, 63, 68]
+    code: PAL
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Palermo
+  model: machiavelli.area
+  pk: 62
+- fields:
+    borders: [21, 19, 25, 14, 24, 13]
+    code: PAR
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Parma
+  model: machiavelli.area
+  pk: 20
+- fields:
+    borders: [44, 47, 42, 68]
+    code: PAT
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Patrimony
+  model: machiavelli.area
+  pk: 43
+- fields:
+    borders: [11, 19, 14, 12, 20, 10]
+    code: PAV
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Pavia
+  model: machiavelli.area
+  pk: 13
+- fields:
+    borders: [39, 43, 47, 42, 45, 40]
+    code: PER
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Perugia
+  model: machiavelli.area
+  pk: 44
+- fields:
+    borders: [66, 36, 42, 68]
+    code: PIO
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Piombino
+  model: machiavelli.area
+  pk: 41
+- fields:
+    borders: [35, 38, 34, 36]
+    code: PIS
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Pistoia
+  model: machiavelli.area
+  pk: 37
+- fields:
+    borders: [38, 66, 34, 41, 37, 42]
+    code: PISA
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Pisa
+  model: machiavelli.area
+  pk: 36
+- fields:
+    borders: [1, 65, 66, 6, 9, 8, 10]
+    code: PRO
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Provence
+  model: machiavelli.area
+  pk: 7
+- fields:
+    borders: [58, 56, 72]
+    code: RAG
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Ragusa
+  model: machiavelli.area
+  pk: 57
+- fields:
+    borders: [48, 43, 44, 45, 68]
+    code: ROME
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Rome
+  model: machiavelli.area
+  pk: 47
+- fields:
+    borders: [50, 52, 70, 49, 53]
+    code: SAL
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Salerno
+  model: machiavelli.area
+  pk: 51
+- fields:
+    borders: [7, 8, 10]
+    code: SALZ
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Saluzzo
+  model: machiavelli.area
+  pk: 9
+- fields:
+    borders: [60, 65, 68, 67]
+    code: SAR
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Sardinia
+  model: machiavelli.area
+  pk: 61
+- fields:
+    borders: [18, 66, 12, 7, 9, 10]
+    code: SAV
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Savoy
+  model: machiavelli.area
+  pk: 8
+- fields:
+    borders: [39, 38, 43, 44, 41, 36, 68]
+    code: SIE
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Siena
+  model: machiavelli.area
+  pk: 42
+- fields:
+    borders: [4, 30, 16, 33, 5]
+    code: SLA
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Slavonia
+  model: machiavelli.area
+  pk: 17
+- fields:
+    borders: [46, 50, 48, 44, 47, 40]
+    code: SPO
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Spoleto
+  model: machiavelli.area
+  pk: 45
+- fields:
+    borders: [1, 10, 3]
+    code: SWI
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Swiss
+  model: machiavelli.area
+  pk: 2
+- fields:
+    borders: [29, 27, 31, 23]
+    code: TRE
+    has_city: true
+    has_port: false
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Treviso
+  model: machiavelli.area
+  pk: 28
+- fields:
+    borders: [22, 16, 14, 23]
+    code: TRENT
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Trent
+  model: machiavelli.area
+  pk: 15
+- fields:
+    borders: [48, 69, 60, 65, 70, 66, 49, 62, 43, 41, 47, 61, 42, 67]
+    code: TS
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Thyrrenian Sea
+  model: machiavelli.area
+  pk: 68
+- fields:
+    borders: [69, 67]
+    code: TUN
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Tunis
+  model: machiavelli.area
+  pk: 64
+- fields:
+    borders: [1, 11, 12, 13, 7, 9, 8, 2, 3]
+    code: TUR
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Turin
+  model: machiavelli.area
+  pk: 10
+- fields:
+    borders: [4, 16, 11, 14, 2, 10]
+    code: TYR
+    has_city: true
+    has_port: false
+    is_coast: false
+    is_fortified: true
+    is_sea: false
+    name: Tyrol
+  model: machiavelli.area
+  pk: 3
+- fields:
+    borders: [46, 35, 30, 33, 54, 26, 29, 32, 27, 40, 31]
+    code: UA
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Upper Adriatic
+  model: machiavelli.area
+  pk: 73
+- fields:
+    borders: [46, 39, 35, 38, 44, 45, 73]
+    code: URB
+    has_city: false
+    has_port: false
+    is_coast: true
+    is_fortified: false
+    is_sea: false
+    name: Urbino
+  model: machiavelli.area
+  pk: 40
+- fields:
+    borders: [29, 27, 28, 73]
+    code: VEN
+    has_city: true
+    has_port: true
+    is_coast: true
+    is_fortified: true
+    is_sea: false
+    name: Venice
+  model: machiavelli.area
+  pk: 31
+- fields:
+    borders: [22, 16, 26, 29, 25, 27, 28, 15]
+    code: VER
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: false
+    name: Verona
+  model: machiavelli.area
+  pk: 23
+- fields:
+    borders: [69, 65, 61, 68, 64]
+    code: WM
+    has_city: false
+    has_port: false
+    is_coast: false
+    is_fortified: false
+    is_sea: true
+    name: Western Mediterranean
+  model: machiavelli.area
+  pk: 67

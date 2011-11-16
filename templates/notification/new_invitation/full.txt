@@ -1,0 +1,11 @@
+{% load i18n %}
+
+{% blocktrans with game.slug as slug %}You have been invited to play the
+private game '{{ slug }}'.{% endblocktrans %}
+
+{% ifnotequal invitation.message "" %}
+{{ invitation.message }}
+{% endifnotequal %}
+
+{% trans "You can join the game now:" %} {{ current_site }}{% url
+games-joinable %}

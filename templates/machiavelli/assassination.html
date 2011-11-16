@@ -1,0 +1,29 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+
+<div class="action_block">
+<h2>{% trans "Assassinations" %}</h2>
+<p>{% blocktrans %}Here you can hire the services of an assassin to kill one of your enemies. You will have to pay at least 12d, and the more money you pay, the higher the possibility of success.{% endblocktrans %}</p>
+<p>{% blocktrans %}You need to have an available assassin in order to kill an enemy. At the moment, these are the assassins that you can hire:{% endblocktrans %}</p>
+<ul>
+{% for a in player.assassin_set.all %}
+	<li>{% blocktrans with a.target as target %}An assassin to kill the leader of {{ target }}.{% endblocktrans %}</li>
+{% endfor %}
+</ul>
+
+
+<form action="" method="post">
+{% csrf_token %}
+<table>
+{{ form }}
+</table>
+<p><input type="submit" value="{% trans "Hire assassin" %}" /></p>
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+
+</div>
+{% endblock %}

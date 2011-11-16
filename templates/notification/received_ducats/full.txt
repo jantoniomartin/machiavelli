@@ -1,0 +1,5 @@
+{% load i18n %}
+
+{% blocktrans with game.slug as slug %}You have received {{ ducats }} ducats from {{ country }} in the game '{{ slug }}'{% endblocktrans %}
+
+{% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}

@@ -1,0 +1,144 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Orders writing" %}</h2>
+{% if done %}
+<p>{% blocktrans %}At least one player has not yet sent his orders. You have to wait until all
+players have done it or the time limit is reached.{% endblocktrans %}</p>
+<p>{% blocktrans %}These are the valid orders (except Hold orders) that you have sent this turn:{% endblocktrans %}</p>
+{% else %}
+<p>{% blocktrans %}
+In the next form, you have to compose an order for each of your units. You cannot give a unit two
+orders. If you want a unit to do nothing, select the "Hold" option for it.
+{% endblocktrans %}</p>
+<p>{% blocktrans %}If you compose an order that break the rules, you should see an error and you will have to fix the order. However, if you compose an impossible order, this unit will hold, instead of carrying out its order. Be careful.{% endblocktrans %}</p>
+{% if order_form %}
+<div class="action_form">
+<form action="{% url show-game game.slug %}" method="post" id="order_form">
+{% csrf_token %}
+<div id="emsg">&nbsp;</div>
+<fieldset>
+{{ order_form.as_p }}
+</fieldset>
+<p><input type="submit" value="{% trans "Send" %}" /></p>
+</form>
+</div>
+{% endif %}
+{% endif %}
+
+<h3>{% trans "Sent orders" %}</h3>
+<div id="so_emsg">&nbsp;</div>
+<ul id="sent_orders">
+{% for order in sent_orders %}
+<li id="order_{{ order.id }}">{{ order.explain }}
+{% ifequal order.confirmed 0 %}
+(<a href="{% url delete-order game.slug order.id %}" class="delete_order">{% trans "Delete" %}</a>)
+{% endifequal %}
+</li>
+{% endfor %}
+</ul>
+{% if undoable %}
+<p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again; otherwise all your ordes will be lost.{% endblocktrans %}</p>
+<form method="POST" action="{% url undo-actions game.slug %}">
+{% csrf_token %}
+<p><input type="submit" value="{% trans "Change orders" %}" /></p>
+</form>
+{% endif %}
+</div>
+
+{% if game.configuration.lenders and not player.defaulted %}
+
+<div class="action_block">
+<h2>{% trans "Loans" %}</h2>
+{% if loan %}
+<p>{% blocktrans with loan.debt as debt %}You owe {{ debt }} ducats to a banker.{% endblocktrans %}</p>
+<p>{% blocktrans with loan.get_season_display as season and loan.year as year %}Your debt must be paid before confirming your orders in the {{ season }} of {{ year }}.{% endblocktrans %}</p>
+<p>{% blocktrans %}If you don't repay your debt in the due term, you will be assassinated and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
+{% if not done %}
+<p><a href="{% url borrow-money game.slug %}">{% trans "Repay your loan" %}</a>.</p>
+{% endif %}
+{% else %}
+{% if not done %}
+<p>{% blocktrans %}You can borrow some money from a banker or financier. Depending on the term that you choose, you will have to pay an interest. If you can't or don't repay a loan, something very bad will happen to you and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
+<p><a href="{% url borrow-money game.slug %}">{% trans "Ask for a loan" %}</a>.</p>
+{% endif %}
+{% endif %}
+</div>
+
+{% endif %}
+
+
+{% if game.configuration.finances %}
+
+<div class="action_block">
+<h2>{% trans "Expenses" %}</h2>
+{% if not done %}
+<p>{% blocktrans %}Finances are applied in this game. If you want to expend some of your ducats, click on the following link.{% endblocktrans %}</p>
+<p><a href="{% url expenses game.slug %}">{% trans "Expenses" %}</a></p>
+{% endif %}
+{% if current_expenses %}
+<h3>{% trans "Your expenses for this turn" %}</h3>
+<ul>
+{% for e in current_expenses %}
+<li id="expense_{{ e.id }}">{{ e }}
+{% ifequal e.confirmed 0 %}
+(<a href="{% url undo-expense game.slug e.id %}">{% trans "Delete" %}</a>)
+{% endifequal %}
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+</div>
+
+{% endif %}
+
+{% if game.configuration.assassinations %}
+
+<div class="action_block">
+<h2>{% trans "Assassination attempts" %}</h2>
+
+{% if assassinations %}
+<p>{% blocktrans %}These are you assassination attempts this turn.{% endblocktrans %}
+<ul>
+{% for a in assassinations %}
+<li>{{ a.explain }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<p><a href="{% url assassination game.slug %}">{% trans "Try an assassination" %}</a></p>
+</div>
+
+{% endif %}
+
+{% ifequal player.done 0 %}
+
+<div class="action_block">
+<h2>{% trans "Confirm your actions" %}</h2>
+<form action="{% url confirm-orders game.slug %}" method="POST" />
+{% csrf_token %}
+<p>{% blocktrans %}The orders above are saved but <strong>are not confirmed</strong>. If you don't confirm your orders, they will be ignored.{% endblocktrans %}</p>
+<p>{% blocktrans %}Once you have confirmed your orders, you will not be able to change or delete them. To confirm the orders and end your phase, click the "Confirm" button.{% endblocktrans %}</p>
+{% if game.configuration.finances %}
+<p>{% blocktrans %}Note that you will not be able to make new expenses once you have clicked the "Confirm" button.{% endblocktrans %}</p>
+{% endif %}
+<p><input type="submit" value="{% trans "Confirm" %}" /></p>
+</form>
+</div>
+
+{% endifequal %}
+
+{% endblock %}
+
+{% block extra_game %}
+{% if order_form %}
+<script>
+	var game_url = "{% url show-game game.slug %}";
+	var delete_text = "{% trans "Delete" %}";
+</script>
+	{{ order_form.media }}
+{% endif %}
+{% endblock %}

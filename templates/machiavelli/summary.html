@@ -1,0 +1,164 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+{% load cache %}
+{% load forum_tags %}
+{% load game_icons %}
+{% load stars %}
+
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block head_title %}{% blocktrans %}A Game Of Diplomacy And War{% endblocktrans %}{% endblock %}
+
+{% block left_column %}
+{% if not user.is_authenticated %}
+<div class="section">
+<h1>{% trans "Condottieri. A Game Of Diplomacy And War" %}</h1>
+<p>{% blocktrans %}Condottieri is a multiplayer, strategic game based on the classic game "Machiavelli" (a variant of "Diplomacy").{% endblocktrans %}</p>
+
+<p>{% blocktrans %}Condottieri is set in Reinassance Italy, and each player controls one of the powers that struggle to dominate the region. You will have to negotiate with other players in order to achieve this goal. Armies, fleets, garrisons and money are your best arguments in this negotiation. But beware: some of your allies will be willing to betray you for a piece of the cake.{% endblocktrans %}</p>
+
+<p>{% blocktrans %}Condottieri is a turn-based, slow-paced game. A typical game session will last for days or weeks, but you will have to spend only a few minutes every one or two days to play the game. Of course, you can play more than one game at a time.{% endblocktrans %}</p>
+</div>
+{% endif %}
+
+<div class="section">
+<h2>{% trans "Unfinished actions" %}</h2>
+{% if actions %}
+	<p>{% blocktrans %}You must complete your actions in the following games:{% endblocktrans %}</p>
+	<dl>
+	{% for player in actions %}
+		<div class="mini_game">
+		<h3><a href="{% url show-game player.game.slug %}">{{ player.game.slug }}</a></h3>
+		<ul>
+		<li>{{ player.game.get_season_display}}, {{ player.game.get_phase_display }} | <span class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</span></li>
+		</ul>
+		</div>
+	{% endfor %}
+	</dl>
+{% else %}
+	<p>{% blocktrans %}You have already completed all of your actions.{% endblocktrans %}</p>
+{% endif %}
+</div>
+
+<div class="section">
+<h2>{% trans "Join a game" %}</h2>
+{% if joinable_game %}
+
+<div class="game_info {% if joinable_game.fast %}fast{% endif %}">
+<h2><span><a href="{{ joinable_game.get_absolute_url }}">{{ joinable_game.slug }}</a></span>
+	<span>
+		({% trans "Slots" %}: {{ joinable_game.slots }})
+	</span>
+	</h2>
+<div class="map">
+<img src="{{ MEDIA_URL }}maps/thumbnails/scenario-{{ joinable_game.scenario.pk }}.jpg" />
+</div>
+<dl>
+<dt>{% trans "Average score" %}</dt><dd>{{ joinable_game.get_average_score|score_stars }}</dd>
+<dt>{% trans "Average karma" %}</dt><dd>{{ joinable_game.get_average_karma|karma_stars }}</dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario joinable_game.scenario.pk %}">{{ joinable_game.scenario.title }}</a></dd>
+<dt>{% trans "Cities to win" %}</dt><dd>{{ joinable_game.cities_to_win }}</dd>
+<dt>{% trans "Time limit" %}</dt><dd>{{ joinable_game.get_time_limit_display }}</dd>
+<dt>{% trans "Creator" %}</dt><dd>{{ joinable_game.created_by.username }}</dd>
+<dt>{% trans "Players" %}</dt>
+<dd>
+	{% if joinable_game.visible %}
+	<ul>
+	{% for p in joinable_game.player_set.all %}
+		{% if p.user %}
+		<li><a href="{% url profile_detail username=p.user.username %}">{{ p.user.username }}</a></li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+	{% else %}
+	{% trans "Players are not visible" %}
+	{% endif %}
+</dd>
+{% if joinable_game.comment %}
+<dt>{% trans "Comment" %}</dt>
+<dd>{{ joinable_game.comment }}</dd>
+{% endif %}
+</dl>
+<ul class="section_menu">
+	<li>{% rule_icons joinable_game.configuration %}</li>
+	<li><a href="{% url join-game joinable_game.slug %}">{% trans "Join game" %}</a></li>
+</ul>
+</div>
+
+<p><a href="{% url games-joinable %}">{% trans "Other games waiting for players" %}</a></p>
+
+{% else %}
+	<p>{% blocktrans %}At this time there are no games waiting for players. Of course you can create a new one.{% endblocktrans %}</p>
+	<p><a href="{% url new-game %}">{% trans "New game" %}</a></p>
+{% endif %}
+
+{% if revolutions %}
+<h3>{% trans "Revolutions" %}</h3>
+<p>
+{% blocktrans %}The following countries are governed by leaders that are not paying enough attention to their duties. If you feel that you could do better, you may try to overthrow a leader.{% endblocktrans %}
+</p>
+<p>
+{% blocktrans %}If you try to overthrow a leader, he will have a chance to recover control in the current phase. If he does not, you will take his place. You will be notified when you get control of the country.{% endblocktrans %}
+</p>
+<p>
+{% blocktrans %}In doing this, you will probably run a damaged country, so you will get some karma for your sacrifice.{% endblocktrans %}
+</p>
+{% for r in revolutions %}
+	<div class="mini_game">
+	<h3><a href="{% url show-game r.government.game.slug %}">{{ r.government.game.slug }}</a></h3>
+	<ul><li>{{ r.government.country }} | <a href="{% url overthrow r.pk %}">{% trans "Overthrow" %}</a></li></ul>
+	</div>
+{% endfor %}
+{% endif %}
+</div>
+
+
+{% if forum %}
+{% cache 600 "forum_latest" LANGUAGE_CODE %}
+<div id="forum_latest" class="section">
+{% forum_latest_thread_activity 5 as latest_activity %}
+<h2>{% trans "Latest forum posts" %}</h2>
+<ul class="thread_list">
+{% for thread in latest_activity %}
+<li>
+<a href="{{ thread.thread_latest_post.get_absolute_url }}">{{ thread.title }}</a>
+<span class="thread_info">{% blocktrans with thread.thread_latest_post.author as author and thread.latest_post_time|timesince as time %}{{ time }} ago by {{ author }}{% endblocktrans %}</span>
+</li>
+{% endfor %}
+</ul>
+</div>
+{% endcache %}
+{% endif %}
+
+
+
+
+{% endblock %}
+
+{% block right_column_extra %}
+
+{% if whispers %}
+<div id="latest_gossip">
+<h2>{% trans "Latest gossip" %}</h2>
+<ul>
+{% for w in whispers %}
+<li>{{ w.text|escape }}
+<a href="{% url show-game w.game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
+<span class="date">{{ w.created_at|timesince }}, {{ w.game.slug }}</span></li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+
+{% if new_notices %}
+<div id="new_notices">
+<h2>{% trans "New notices" %}</h2>
+<ul>
+{% for n in new_notices %}
+<li>{{ n|safe }}</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+{% endblock %}

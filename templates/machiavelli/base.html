@@ -1,0 +1,81 @@
+{% extends 'site_base.html' %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+{% load avatar_tags %}
+
+{% block extra_head %}{% endblock %}
+
+{% block body_class %}machiavelli{% endblock %}
+{% block rtab_id %}id="machiavelli_tab"{% endblock %}
+
+{% block subnav %}
+<ul>
+<li><a href="{% url home %}">{% trans "Home" %}</a></li>
+<li><a href="{% url new-game %}">{% trans "New game" %}</a></li>
+<li><a href="{% url games-joinable %}">{% trans "Join game" %}</a></li> 
+{% if user.is_authenticated %}
+<li><a href="{% url games-my-active %}">{% trans "Active games" %}</a></li>
+<li><a href="{% url games-pending %}">{% trans "Pending games" %}</a></li>
+<li><a href="{% url games-my-finished %}">{% trans "Finished games" %}</a></li>
+{% else %}
+<li><a href="{% url games-other-active %}">{% trans "Active games" %}</a></li>
+<li><a href="{% url games-all-finished %}">{% trans "Finished games" %}</a></li>
+{% endif %}
+<li><a href="{% url scenario-list %}">{% trans "Scenarios" %}</a></li>
+<li><a href="{{ STATIC_URL }}machiavelli/img/{% trans "empty-map_en.jpg" %}" target="_blank">{% trans "Map" %}</a></li>
+</ul>
+{% endblock %}
+
+{% block body %}
+<div id="left_column">
+	{% block left_column %}{% endblock %}
+</div>
+<div id="right_column">
+
+<div id="activity_count">
+{% blocktrans %}<strong>{{ activity }}</strong> people playing right now.{% endblocktrans %}
+</div>
+
+<div id="top_users">
+<h2>{% trans "Best players" %}</h2>
+<ul>
+{% for profile in top_users %}
+	<li
+	{% ifequal user.get_profile profile %}
+	class="my_position"
+	{% endifequal %}
+	>
+	<span>{% cycle "1" "2" "3" "4" "5" %}. </span>
+	<a href="{% url profile_detail username=profile.user.username %}">{% avatar profile.user 24 %}</a>
+	<span>{{ profile.user.username }}</span>:
+	<span>{{ profile.weighted_score }}</span></li>
+{% endfor %}
+	{% if my_position %}
+		<li class="my_position">
+		<span>{{ my_position }}. </span>
+		<a href="{% url profile_detail username=user.username %}">{% avatar user 24 %}</a>
+		<span>{{ user.username }}</span>:
+		<span>{{ user.get_profile.weighted_score }}</span>
+		</li>
+	{% endif %}
+</ul>
+<p style="font-size:smaller">{% trans "Last updated:" %} {{ ranking_last_update|date:"SHORT_DATE_FORMAT" }}</p>
+</div>
+
+{% block right_column_extra %}{% endblock %}
+
+<div style="text-align: center">
+<a href="http://www.twitter.com/condottierigame"><img src="http://twitter-badges.s3.amazonaws.com/twitter-a.png" alt="Follow condottierigame on Twitter"/></a>
+<br />
+<a href="https://plus.google.com/115687950194123813926"><img src="{{ STATIC_URL }}images/g-plus-icon-32x32.png" alt="Follow condottierigame on Google+"/></a>
+</div>
+
+{% if user.is_authenticated %}
+{% ifsetting INCLUDE_HOSTING_BANNER %}
+	{% include 'hosting.html' %}
+{% endifsetting %}
+{% endif %}
+</div>
+{% endblock %}
+

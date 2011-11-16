@@ -1,0 +1,40 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+
+{% load uni_form_tags %}
+
+{% block head_title %}{% blocktrans %}Games{% endblocktrans %}{% endblock %}
+
+{% block left_column %}
+
+{% if game.private %}
+<h1>{% trans "Private game:" %} '{{ game.slug }}'</h1>
+<p>{% blocktrans %}Here you can manage the invitations for this private game that you have created. To join this game, a player must be invited by you first.{% endblocktrans %}</p>
+<p>{% blocktrans with game.slots as slots %}The game is currently waiting for {{ slots }} users to join.{% endblocktrans %}</p>
+<p>{% blocktrans %}The following users have already joined the game:{% endblocktrans %}</p>
+<ul>
+{% for p in players %}
+<li>{{ p.user }}</li>
+{% endfor %}
+</ul>
+<p>{% blocktrans %}The following users have been invited, but have not yet joined the game:{% endblocktrans %}</p>
+<ul>
+{% for i in invitations %}
+<li>{{ i.user }}</li>
+{% endfor %}
+</ul>
+<p>{% blocktrans %}If you want to invite more users, type their user names, separated by commas. There is no limit to the number of users that you can invite.{% endblocktrans %}</p>
+<form action='' method='POST' class="uniForm">
+{% csrf_token %}
+{{ form|as_uni_form }}
+<p><input type="submit" value="{% trans "Invite" %}" /></p>
+</form>
+
+{% else %}
+
+<h1>{% trans "Public game:" %} '{{ game.slug }}'</h1>
+<p>{% blocktrans %}This is a public game. There's nothing to be done here.{% endblocktrans %}</p>
+
+{% endif %}
+{% endblock %}

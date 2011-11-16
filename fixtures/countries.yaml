@@ -1,0 +1,24 @@
+- fields: {name: Naples, css_class: naples}
+  model: machiavelli.country
+  pk: 1
+- fields: {name: Turks, css_class: turks}
+  model: machiavelli.country
+  pk: 2
+- fields: {name: Venice, css_class: venice}
+  model: machiavelli.country
+  pk: 3
+- fields: {name: Papacy, css_class: papacy}
+  model: machiavelli.country
+  pk: 4
+- fields: {name: Austria, css_class: austria}
+  model: machiavelli.country
+  pk: 5
+- fields: {name: Florence, css_class: florence}
+  model: machiavelli.country
+  pk: 6
+- fields: {name: Milan, css_class: milan}
+  model: machiavelli.country
+  pk: 7
+- fields: {name: France, css_class: france}
+  model: machiavelli.country
+  pk: 8

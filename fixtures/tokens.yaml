@@ -1,0 +1,520 @@
+- fields: {area: 1, x: 198, y: 159}
+  model: machiavelli.controltoken
+  pk: 1
+- fields: {area: 58, x: 1776, y: 2108}
+  model: machiavelli.controltoken
+  pk: 2
+- fields: {area: 46, x: 1186, y: 1242}
+  model: machiavelli.controltoken
+  pk: 3
+- fields: {area: 50, x: 1255, y: 1602}
+  model: machiavelli.controltoken
+  pk: 4
+- fields: {area: 39, x: 1020, y: 1048}
+  model: machiavelli.controltoken
+  pk: 5
+- fields: {area: 4, x: 1420, y: 67}
+  model: machiavelli.controltoken
+  pk: 6
+- fields: {area: 52, x: 1320, y: 1822}
+  model: machiavelli.controltoken
+  pk: 7
+- fields: {area: 22, x: 1152, y: 514}
+  model: machiavelli.controltoken
+  pk: 8
+- fields: {area: 35, x: 1104, y: 903}
+  model: machiavelli.controltoken
+  pk: 9
+- fields: {area: 55, x: 1775, y: 1330}
+  model: machiavelli.controltoken
+  pk: 10
+- fields: {area: 48, x: 1052, y: 1485}
+  model: machiavelli.controltoken
+  pk: 11
+- fields: {area: 30, x: 1568, y: 647}
+  model: machiavelli.controltoken
+  pk: 12
+- fields: {area: 16, x: 1445, y: 346}
+  model: machiavelli.controltoken
+  pk: 13
+- fields: {area: 11, x: 1002, y: 247}
+  model: machiavelli.controltoken
+  pk: 14
+- fields: {area: 60, x: 508, y: 973}
+  model: machiavelli.controltoken
+  pk: 15
+- fields: {area: 21, x: 1080, y: 536}
+  model: machiavelli.controltoken
+  pk: 16
+- fields: {area: 33, x: 1669, y: 962}
+  model: machiavelli.controltoken
+  pk: 17
+- fields: {area: 54, x: 1632, y: 1300}
+  model: machiavelli.controltoken
+  pk: 18
+- fields: {area: 59, x: 1748, y: 2400}
+  model: machiavelli.controltoken
+  pk: 19
+- fields: {area: 26, x: 1180, y: 796}
+  model: machiavelli.controltoken
+  pk: 20
+- fields: {area: 38, x: 998, y: 1011}
+  model: machiavelli.controltoken
+  pk: 21
+- fields: {area: 19, x: 862, y: 576}
+  model: machiavelli.controltoken
+  pk: 22
+- fields: {area: 29, x: 1456, y: 652}
+  model: machiavelli.controltoken
+  pk: 23
+- fields: {area: 18, x: 788, y: 639}
+  model: machiavelli.controltoken
+  pk: 24
+- fields: {area: 56, x: 1782, y: 1758}
+  model: machiavelli.controltoken
+  pk: 25
+- fields: {area: 5, x: 1724, y: 51}
+  model: machiavelli.controltoken
+  pk: 26
+- fields: {area: 32, x: 1504, y: 910}
+  model: machiavelli.controltoken
+  pk: 27
+- fields: {area: 34, x: 902, y: 832}
+  model: machiavelli.controltoken
+  pk: 28
+- fields: {area: 25, x: 1086, y: 648}
+  model: machiavelli.controltoken
+  pk: 29
+- fields: {area: 6, x: 174, y: 424}
+  model: machiavelli.controltoken
+  pk: 30
+- fields: {area: 63, x: 787, y: 2296}
+  model: machiavelli.controltoken
+  pk: 31
+- fields: {area: 14, x: 1074, y: 359}
+  model: machiavelli.controltoken
+  pk: 32
+- fields: {area: 24, x: 1040, y: 719}
+  model: machiavelli.controltoken
+  pk: 33
+- fields: {area: 12, x: 712, y: 520}
+  model: machiavelli.controltoken
+  pk: 34
+- fields: {area: 49, x: 1138, y: 1658}
+  model: machiavelli.controltoken
+  pk: 35
+- fields: {area: 53, x: 1224, y: 2066}
+  model: machiavelli.controltoken
+  pk: 36
+- fields: {area: 27, x: 1236, y: 778}
+  model: machiavelli.controltoken
+  pk: 37
+- fields: {area: 62, x: 486, y: 2137}
+  model: machiavelli.controltoken
+  pk: 38
+- fields: {area: 20, x: 990, y: 598}
+  model: machiavelli.controltoken
+  pk: 39
+- fields: {area: 43, x: 914, y: 1230}
+  model: machiavelli.controltoken
+  pk: 40
+- fields: {area: 13, x: 851, y: 419}
+  model: machiavelli.controltoken
+  pk: 41
+- fields: {area: 44, x: 956, y: 1206}
+  model: machiavelli.controltoken
+  pk: 42
+- fields: {area: 41, x: 883, y: 1043}
+  model: machiavelli.controltoken
+  pk: 43
+- fields: {area: 37, x: 983, y: 892}
+  model: machiavelli.controltoken
+  pk: 44
+- fields: {area: 36, x: 897, y: 946}
+  model: machiavelli.controltoken
+  pk: 45
+- fields: {area: 7, x: 388, y: 410}
+  model: machiavelli.controltoken
+  pk: 46
+- fields: {area: 57, x: 1688, y: 1852}
+  model: machiavelli.controltoken
+  pk: 47
+- fields: {area: 47, x: 984, y: 1388}
+  model: machiavelli.controltoken
+  pk: 48
+- fields: {area: 51, x: 1157, y: 1847}
+  model: machiavelli.controltoken
+  pk: 49
+- fields: {area: 9, x: 532, y: 429}
+  model: machiavelli.controltoken
+  pk: 50
+- fields: {area: 61, x: 306, y: 1349}
+  model: machiavelli.controltoken
+  pk: 51
+- fields: {area: 8, x: 528, y: 545}
+  model: machiavelli.controltoken
+  pk: 52
+- fields: {area: 42, x: 935, y: 1070}
+  model: machiavelli.controltoken
+  pk: 53
+- fields: {area: 17, x: 1750, y: 511}
+  model: machiavelli.controltoken
+  pk: 54
+- fields: {area: 45, x: 1060, y: 1294}
+  model: machiavelli.controltoken
+  pk: 55
+- fields: {area: 2, x: 634, y: 52}
+  model: machiavelli.controltoken
+  pk: 56
+- fields: {area: 28, x: 1375, y: 604}
+  model: machiavelli.controltoken
+  pk: 57
+- fields: {area: 15, x: 1294, y: 424}
+  model: machiavelli.controltoken
+  pk: 58
+- fields: {area: 64, x: 72, y: 2050}
+  model: machiavelli.controltoken
+  pk: 59
+- fields: {area: 10, x: 766, y: 237}
+  model: machiavelli.controltoken
+  pk: 60
+- fields: {area: 3, x: 1109, y: 68}
+  model: machiavelli.controltoken
+  pk: 61
+- fields: {area: 40, x: 1173, y: 1023}
+  model: machiavelli.controltoken
+  pk: 62
+- fields: {area: 31, x: 1334, y: 844}
+  model: machiavelli.controltoken
+  pk: 63
+- fields: {area: 23, x: 1276, y: 600}
+  model: machiavelli.controltoken
+  pk: 64
+- fields: {area: 1, x: 188, y: 214}
+  model: machiavelli.gtoken
+  pk: 1
+- fields: {area: 46, x: 1230, y: 1230}
+  model: machiavelli.gtoken
+  pk: 2
+- fields: {area: 39, x: 1022, y: 1096}
+  model: machiavelli.gtoken
+  pk: 3
+- fields: {area: 4, x: 1424, y: 146}
+  model: machiavelli.gtoken
+  pk: 4
+- fields: {area: 52, x: 1386, y: 1877}
+  model: machiavelli.gtoken
+  pk: 5
+- fields: {area: 35, x: 1148, y: 914}
+  model: machiavelli.gtoken
+  pk: 6
+- fields: {area: 21, x: 1057, y: 570}
+  model: machiavelli.gtoken
+  pk: 7
+- fields: {area: 59, x: 1729, y: 2502}
+  model: machiavelli.gtoken
+  pk: 8
+- fields: {area: 26, x: 1190, y: 853}
+  model: machiavelli.gtoken
+  pk: 9
+- fields: {area: 38, x: 1062, y: 1007}
+  model: machiavelli.gtoken
+  pk: 10
+- fields: {area: 18, x: 728, y: 627}
+  model: machiavelli.gtoken
+  pk: 11
+- fields: {area: 34, x: 856, y: 858}
+  model: machiavelli.gtoken
+  pk: 12
+- fields: {area: 25, x: 1116, y: 700}
+  model: machiavelli.gtoken
+  pk: 13
+- fields: {area: 6, x: 150, y: 505}
+  model: machiavelli.gtoken
+  pk: 14
+- fields: {area: 63, x: 848, y: 2324}
+  model: machiavelli.gtoken
+  pk: 15
+- fields: {area: 14, x: 1163, y: 369}
+  model: machiavelli.gtoken
+  pk: 16
+- fields: {area: 24, x: 1020, y: 770}
+  model: machiavelli.gtoken
+  pk: 17
+- fields: {area: 12, x: 753, y: 510}
+  model: machiavelli.gtoken
+  pk: 18
+- fields: {area: 49, x: 1044, y: 1700}
+  model: machiavelli.gtoken
+  pk: 19
+- fields: {area: 27, x: 1276, y: 789}
+  model: machiavelli.gtoken
+  pk: 20
+- fields: {area: 62, x: 466, y: 2072}
+  model: machiavelli.gtoken
+  pk: 21
+- fields: {area: 13, x: 873, y: 476}
+  model: machiavelli.gtoken
+  pk: 22
+- fields: {area: 44, x: 1025, y: 1174}
+  model: machiavelli.gtoken
+  pk: 23
+- fields: {area: 41, x: 836, y: 1033}
+  model: machiavelli.gtoken
+  pk: 24
+- fields: {area: 36, x: 842, y: 927}
+  model: machiavelli.gtoken
+  pk: 25
+- fields: {area: 57, x: 1698, y: 1920}
+  model: machiavelli.gtoken
+  pk: 26
+- fields: {area: 47, x: 981, y: 1332}
+  model: machiavelli.gtoken
+  pk: 27
+- fields: {area: 9, x: 568, y: 429}
+  model: machiavelli.gtoken
+  pk: 28
+- fields: {area: 8, x: 469, y: 618}
+  model: machiavelli.gtoken
+  pk: 29
+- fields: {area: 42, x: 892, y: 1141}
+  model: machiavelli.gtoken
+  pk: 30
+- fields: {area: 28, x: 1362, y: 720}
+  model: machiavelli.gtoken
+  pk: 31
+- fields: {area: 15, x: 1289, y: 480}
+  model: machiavelli.gtoken
+  pk: 32
+- fields: {area: 64, x: 168, y: 2072}
+  model: machiavelli.gtoken
+  pk: 33
+- fields: {area: 10, x: 754, y: 323}
+  model: machiavelli.gtoken
+  pk: 34
+- fields: {area: 3, x: 1206, y: 154}
+  model: machiavelli.gtoken
+  pk: 35
+- fields: {area: 31, x: 1372, y: 851}
+  model: machiavelli.gtoken
+  pk: 36
+- fields: {area: 1, x: 275, y: 181}
+  model: machiavelli.aftoken
+  pk: 1
+- fields: {area: 58, x: 1756, y: 2190}
+  model: machiavelli.aftoken
+  pk: 2
+- fields: {area: 46, x: 1206, y: 1148}
+  model: machiavelli.aftoken
+  pk: 3
+- fields: {area: 50, x: 1317, y: 1656}
+  model: machiavelli.aftoken
+  pk: 4
+- fields: {area: 39, x: 952, y: 1122}
+  model: machiavelli.aftoken
+  pk: 5
+- fields: {area: 4, x: 1500, y: 140}
+  model: machiavelli.aftoken
+  pk: 6
+- fields: {area: 52, x: 1299, y: 1880}
+  model: machiavelli.aftoken
+  pk: 7
+- fields: {area: 22, x: 1128, y: 572}
+  model: machiavelli.aftoken
+  pk: 8
+- fields: {area: 35, x: 1094, y: 812}
+  model: machiavelli.aftoken
+  pk: 9
+- fields: {area: 55, x: 1770, y: 1411}
+  model: machiavelli.aftoken
+  pk: 10
+- fields: {area: 48, x: 978, y: 1548}
+  model: machiavelli.aftoken
+  pk: 11
+- fields: {area: 30, x: 1543, y: 713}
+  model: machiavelli.aftoken
+  pk: 12
+- fields: {area: 16, x: 1462, y: 415}
+  model: machiavelli.aftoken
+  pk: 13
+- fields: {area: 69, x: 246, y: 2425}
+  model: machiavelli.aftoken
+  pk: 14
+- fields: {area: 11, x: 1052, y: 224}
+  model: machiavelli.aftoken
+  pk: 15
+- fields: {area: 60, x: 508, y: 1032}
+  model: machiavelli.aftoken
+  pk: 16
+- fields: {area: 21, x: 1020, y: 462}
+  model: machiavelli.aftoken
+  pk: 17
+- fields: {area: 33, x: 1668, y: 1054}
+  model: machiavelli.aftoken
+  pk: 18
+- fields: {area: 54, x: 1632, y: 1386}
+  model: machiavelli.aftoken
+  pk: 19
+- fields: {area: 59, x: 1776, y: 2465}
+  model: machiavelli.aftoken
+  pk: 20
+- fields: {area: 26, x: 1226, y: 888}
+  model: machiavelli.aftoken
+  pk: 21
+- fields: {area: 38, x: 1034, y: 924}
+  model: machiavelli.aftoken
+  pk: 22
+- fields: {area: 19, x: 876, y: 626}
+  model: machiavelli.aftoken
+  pk: 23
+- fields: {area: 29, x: 1430, y: 723}
+  model: machiavelli.aftoken
+  pk: 24
+- fields: {area: 18, x: 641, y: 616}
+  model: machiavelli.aftoken
+  pk: 25
+- fields: {area: 65, x: 96, y: 817}
+  model: machiavelli.aftoken
+  pk: 26
+- fields: {area: 70, x: 912, y: 2110}
+  model: machiavelli.aftoken
+  pk: 27
+- fields: {area: 56, x: 1770, y: 1823}
+  model: machiavelli.aftoken
+  pk: 28
+- fields: {area: 5, x: 1772, y: 218}
+  model: machiavelli.aftoken
+  pk: 29
+- fields: {area: 71, x: 1316, y: 2416}
+  model: machiavelli.aftoken
+  pk: 30
+- fields: {area: 32, x: 1470, y: 969}
+  model: machiavelli.aftoken
+  pk: 31
+- fields: {area: 72, x: 1531, y: 1636}
+  model: machiavelli.aftoken
+  pk: 32
+- fields: {area: 66, x: 560, y: 722}
+  model: machiavelli.aftoken
+  pk: 33
+- fields: {area: 34, x: 946, y: 811}
+  model: machiavelli.aftoken
+  pk: 34
+- fields: {area: 25, x: 1098, y: 740}
+  model: machiavelli.aftoken
+  pk: 35
+- fields: {area: 6, x: 226, y: 440}
+  model: machiavelli.aftoken
+  pk: 36
+- fields: {area: 63, x: 748, y: 2367}
+  model: machiavelli.aftoken
+  pk: 37
+- fields: {area: 14, x: 1216, y: 346}
+  model: machiavelli.aftoken
+  pk: 38
+- fields: {area: 24, x: 904, y: 754}
+  model: machiavelli.aftoken
+  pk: 39
+- fields: {area: 12, x: 748, y: 422}
+  model: machiavelli.aftoken
+  pk: 40
+- fields: {area: 49, x: 1046, y: 1630}
+  model: machiavelli.aftoken
+  pk: 41
+- fields: {area: 53, x: 1168, y: 2158}
+  model: machiavelli.aftoken
+  pk: 42
+- fields: {area: 27, x: 1268, y: 709}
+  model: machiavelli.aftoken
+  pk: 43
+- fields: {area: 62, x: 558, y: 2234}
+  model: machiavelli.aftoken
+  pk: 44
+- fields: {area: 20, x: 964, y: 658}
+  model: machiavelli.aftoken
+  pk: 45
+- fields: {area: 43, x: 842, y: 1285}
+  model: machiavelli.aftoken
+  pk: 46
+- fields: {area: 13, x: 902, y: 392}
+  model: machiavelli.aftoken
+  pk: 47
+- fields: {area: 44, x: 1059, y: 1146}
+  model: machiavelli.aftoken
+  pk: 48
+- fields: {area: 41, x: 822, y: 1094}
+  model: machiavelli.aftoken
+  pk: 49
+- fields: {area: 37, x: 957, y: 940}
+  model: machiavelli.aftoken
+  pk: 50
+- fields: {area: 36, x: 804, y: 969}
+  model: machiavelli.aftoken
+  pk: 51
+- fields: {area: 7, x: 276, y: 562}
+  model: machiavelli.aftoken
+  pk: 52
+- fields: {area: 57, x: 1664, y: 1964}
+  model: machiavelli.aftoken
+  pk: 53
+- fields: {area: 47, x: 899, y: 1433}
+  model: machiavelli.aftoken
+  pk: 54
+- fields: {area: 51, x: 1141, y: 1916}
+  model: machiavelli.aftoken
+  pk: 55
+- fields: {area: 9, x: 597, y: 346}
+  model: machiavelli.aftoken
+  pk: 56
+- fields: {area: 61, x: 376, y: 1284}
+  model: machiavelli.aftoken
+  pk: 57
+- fields: {area: 8, x: 592, y: 518}
+  model: machiavelli.aftoken
+  pk: 58
+- fields: {area: 42, x: 796, y: 1165}
+  model: machiavelli.aftoken
+  pk: 59
+- fields: {area: 17, x: 1724, y: 590}
+  model: machiavelli.aftoken
+  pk: 60
+- fields: {area: 45, x: 1091, y: 1208}
+  model: machiavelli.aftoken
+  pk: 61
+- fields: {area: 2, x: 634, y: 129}
+  model: machiavelli.aftoken
+  pk: 62
+- fields: {area: 28, x: 1350, y: 769}
+  model: machiavelli.aftoken
+  pk: 63
+- fields: {area: 15, x: 1336, y: 436}
+  model: machiavelli.aftoken
+  pk: 64
+- fields: {area: 68, x: 635, y: 1501}
+  model: machiavelli.aftoken
+  pk: 65
+- fields: {area: 64, x: 34, y: 2142}
+  model: machiavelli.aftoken
+  pk: 66
+- fields: {area: 10, x: 820, y: 244}
+  model: machiavelli.aftoken
+  pk: 67
+- fields: {area: 3, x: 980, y: 96}
+  model: machiavelli.aftoken
+  pk: 68
+- fields: {area: 73, x: 1332, y: 967}
+  model: machiavelli.aftoken
+  pk: 69
+- fields: {area: 40, x: 1138, y: 1099}
+  model: machiavelli.aftoken
+  pk: 70
+- fields: {area: 31, x: 1418, y: 832}
+  model: machiavelli.aftoken
+  pk: 71
+- fields: {area: 23, x: 1205, y: 650}
+  model: machiavelli.aftoken
+  pk: 72
+- fields: {area: 67, x: 68, y: 1750}
+  model: machiavelli.aftoken
+  pk: 73
+

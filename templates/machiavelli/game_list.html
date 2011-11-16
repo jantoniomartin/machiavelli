@@ -1,0 +1,55 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+{% load game_icons %}
+
+{% block head_title %}
+{% blocktrans %}All the games{% endblocktrans %}
+{% endblock %}
+
+{% block body %}
+<h1>{% trans "Game list" %}</h1>
+<p>
+{% blocktrans %}This is a list of all the games in this server, be they active or not.{% endblocktrans %}
+</p>
+<table>
+	<thead>
+	<tr>
+	<th>{% trans "Game" %}</th>
+	<th>{% trans "Scenario" %}</th>
+	<th>{% trans "Time limit" %}</th>
+	<th>{% trans "Rules" %}</th>
+	<th>{% trans "Winner" %}</th>
+	</tr>
+	</thead>
+	{% for game in game_list.object_list %}
+	<tr>
+	<td><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></td>
+	<td><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></td>
+	<td>{{ game.get_time_limit_display }}</td>
+	<td>{% rule_icons game.configuration %}</td>
+	<td>
+	{% if game.highest_score %}
+	<a href="{% url profile_detail username=game.highest_score.user.username %}">{{ game.highest_score.user }}</a> ({{ game.highest_score.country }})
+	{% endif %}
+	</td>
+	</tr>
+	{% endfor %}
+</table>
+
+<div class="pagination">
+	<span class="step-links">
+		{% if game_list.has_previous %}
+			<a href="?page={{ game_list.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ game_list.number }} {% trans "of" %} {{ game_list.paginator.num_pages }}.
+		</span>
+
+		{% if game_list.has_next %}
+			<a href="?page={{ game_list.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+{% endblock %}

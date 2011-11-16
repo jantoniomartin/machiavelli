@@ -1,0 +1,101 @@
+{% load i18n %}
+{% load ifsetting_tag %}
+{% load avatar_tags %}
+{% load game_icons %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" xml:lang="{{ LANGUAGE_CODE }}" lang="{{ LANGUAGE_CODE }}">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>{% if player %}[{% if player.done %}&bull;{% else %} {% endif %}]{% endif %}{% if SITE_NAME %}{{ SITE_NAME }} : {% endif %}{{ game.slug }}</title>
+        <!--[if IE]><style>
+            div {
+                zoom: 1; /* trigger hasLayout */
+            }
+        </style><![endif]-->
+		<link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/newgame.css" type="text/css" />
+		<link rel="stylesheet" href="{{ STATIC_URL }}css/ui-darkness/jquery-ui-1.8.11.custom.css" type="text/css" />
+    </head>
+    
+    <body>
+		<div id="top_bar">
+			<div id="logo"><img src="{{ STATIC_URL }}machiavelli/img/game-logo.png" alt="Condottieri"/></div>
+			<div class="login">
+			{% if user.is_authenticated %}
+				{% avatar user 20 %}
+				<b><a href="{% url profile_detail user %}">{{ user }}</a> (K:{{ user.get_profile.karma }}, P:{{ user.get_profile.total_score }})</b> |
+				<a href="{% url acct_email %}">{% trans "Account" %}</a> |
+				{% if user.is_staff %}<a href="/admin/">{% trans "Admin" %}</a> | {% endif %}
+				<a href="{% url acct_logout %}">{% trans "Logout" %}</a> |
+			{% else %}
+				<a href="{% url acct_login %}">{% trans "Login" %}</a> {% ifsetting ACCOUNT_OPEN_SIGNUP %}{% trans "or" %} <a href="{% url acct_signup %}"><b>{% trans "Sign up" %}</b></a>{% endifsetting %} |
+			{% endif %}
+			<a href="{% url summary %}">{% trans "Home" %}</a>
+			</div>
+		</div>
+		
+		<div id="middle_wrapper">
+			<div id="map" class="viewer">
+			</div>
+
+			<div id="countries_info" class="dialog" title="Countries">
+				<table class="{{ player.country.css_class }}">
+				{% for p in player_list %}
+				<tr class="{{ p.country.css_class }}">
+				<td>{{ p.country.name }}</td>
+					{% if show_users %}
+				<td><a href="{% url profile_detail username=p.user.username %}">{% avatar p.user 20 %}</a>{{ p.user.username }}</p>
+					{% endif %}
+				<td>{{ p.number_of_cities }} {% trans "cities" %}</td>
+				<td>{{ p.placed_units_count }} {% trans "units" %}</td>
+				<td><a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a></td>
+				{% if game.configuration.finances %}
+				<td><a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a></td>
+				{% endif %}
+				</tr>
+				{% endfor %}
+				</table>
+			</div>
+		</div>
+
+		<div id="bottom_bar">
+			<ul id="game_info">
+				<li class="gameicons">{% rule_icons game.configuration %}</li>
+				<li>{{ game.get_season_display|default_if_none:"" }}, {{ game.year|default_if_none:"" }}</li>
+				<li>{{ game.get_phase_display|default_if_none:"" }}</li>
+			</ul>
+			<ul id="player_info">
+				<li class="{{ player.country.css_class }}">{{ player.country }}</li>
+				{% if player and game.slots == 0 %}
+				{% if time_exceeded %}
+				<li style="color: LightCoral">
+				{{ game.next_phase_change|timeuntil }} 
+				</li>
+				{% else %}
+				<li style="color: Green">
+				{{ player.next_phase_change|timeuntil }}
+				</li>
+				{% endif %}
+				{% else %}
+				<li>{{ game.next_phase_change|timeuntil }}</li>
+				{% endif %}
+				<li>{% trans "Treasury" %}: {{ player.ducats }} </li>
+			</ul>
+			<ul id="tools">
+				<li id="countries_show">Countries</li>
+			</ul>
+		</div>
+        <script src="{{ STATIC_URL }}pinax/js/jquery-1.3.2.min.js" type="text/javascript"></script>
+        <script src="{{ STATIC_URL }}js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
+		<script src="{{ STATIC_URL }}js/jquery.mousewheel.js" type="text/javascript"></script>
+		<script src="{{ STATIC_URL }}js/jquery.iviewer.min.js" type="text/javascript"></script>
+		<script src="{{ STATIC_URL }}machiavelli/js/game-ui.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			$( function(){
+				var map_url = "{{ MEDIA_URL }}" + "maps/" + "{{ map }}"
+				makeGameUI(map_url);
+			});
+		</script>
+
+    </body>
+</html>

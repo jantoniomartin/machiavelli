@@ -1,0 +1,135 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-color: #111;
+	color: #bbb;
+    font-family: Arial, Helvetica, Tahoma, sans-serif;
+    font-size: 10pt;
+}
+
+a, a:visited {
+	color: #a87f41;
+}
+
+a:hover {
+	color: #bbb;
+}
+
+#top_bar {
+	height: 40px;
+	border-bottom: #444 solid 1px;
+}
+
+#top_bar .login {
+	position: absolute;
+	top: 6px;
+	right: 15px;
+}
+
+#middle_wrapper {
+	width: 100%;
+	background-color: #303030;
+}
+
+#map {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+}
+
+#bottom_bar {
+	position:fixed;
+	bottom: 0px;
+	/*height: 24px;*/
+	width: 100%;
+	background-color: #191919;
+	border-top: solid 1px #444;
+}
+
+#bottom_bar ul {
+	display: table-row;
+	border-right: solid 5px #444;
+	float: left;
+}
+
+#bottom_bar ul li {
+	display: table-cell;
+	padding: 3px 5px;
+	border-right: solid 1px #444;
+}
+
+#game_info li.gameicons {
+	padding: 0px;
+}
+
+.dialog {
+	font-size: 80%;
+}
+
+.dialog table {
+	border-collapse: collapse;
+}
+
+.dialog td {
+	padding: 2px 2px;
+	border: solid 1px #ccc;
+	vertical-align: baseline;
+}
+
+/*
+ * Country styles
+ */
+tr.france {
+	background: #a375d1;
+	color: black;
+}
+
+tr.milan {
+	background: #cc0000;
+	color: black;
+}
+
+tr.florence {
+	background: #66ccff;
+	color: black;
+}
+
+tr.austria {
+	background: #b8b8b8;
+	color: black;
+}
+
+tr.papacy {
+	background: #00991a;
+	color: black;
+}
+
+tr.venice {
+	background: #996600;
+	color: black;
+}
+
+tr.turks {
+	background: #00cccc;
+	color: black;
+}
+
+tr.naples {
+	background: #3d3dff;
+	color: black;
+}
+
+table.france tr.france,
+table.milan tr.milan,
+table.florence tr.florence,
+table.austria tr.austria,
+table.papacy tr.papacy,
+table.venice tr.venice,
+table.turks tr.turks,
+table.naples tr.naples {
+	font-weight: bold;
+}

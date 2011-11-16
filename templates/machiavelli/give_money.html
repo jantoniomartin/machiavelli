@@ -1,0 +1,20 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Money transfers" %}</h2>
+<p>{% blocktrans %}You can give or loan ducats to other players, and you can even ask for an interest or any other compensation. Note, however, that if you want a repayment, you have to trust in the borrower. There is no penalty for players who don't pay their loans.{% endblocktrans %}</p>
+<p>{% blocktrans with borrower.country as borrower %}Please, enter the number of ducats that you want to give to {{ borrower }}.{% endblocktrans %}</p>
+<form action="" method="post">
+{% csrf_token %}
+<table>
+{{ form }}
+</table>
+<p><input type="submit" value="{% trans "Send" %}" /></p>
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+</div>
+{% endblock %}

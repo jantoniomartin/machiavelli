@@ -1,0 +1,7 @@
+*.pyc
+*.db
+.htaccess
+media/machiavelli/maps/
+static/machiavelli/avatars/
+media/machiavelli/avatars/
+migrations/
