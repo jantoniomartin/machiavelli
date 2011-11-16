@@ -51,12 +51,6 @@ from condottieri_profiles.models import CondottieriProfile
 ## condottieri_events
 import condottieri_events.paginator as events_paginator
 
-## clones detection
-if 'clones' in settings.INSTALLED_APPS:
-	from clones import models as clones
-else:
-	clones = None
-
 #if "jogging" in settings.INSTALLED_APPS:
 #	from jogging import logging
 #else:
@@ -347,20 +341,6 @@ def play_game(request, slug='', **kwargs):
 	except:
 		player = Player.objects.none()
 	if player:
-		##################################
-		## IP TRACKING FOR CLONES DETECTION
-		if clones:
-			if request.method == 'POST' and not request.is_ajax():
-				try:
-					fp = clones.Fingerprint(user=request.user,
-											game=game,
-											ip=request.META[settings.IP_HEADER])
-					fp.save()
-				except:
-					pass
-		##################################
-		#if game.slots == 0:
-		#	game.check_time_limit()
 		if game.phase == PHINACTIVE:
 			context = base_context(request, game, player)
 			return render_to_response('machiavelli/inactive_actions.html',
