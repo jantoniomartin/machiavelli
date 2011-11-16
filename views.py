@@ -19,7 +19,6 @@
 """ Django views definitions for machiavelli application. """
 
 ## stdlib
-from datetime import datetime
 from math import ceil
 
 ## django
