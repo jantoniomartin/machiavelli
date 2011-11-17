@@ -137,14 +137,21 @@ def my_active_games(request):
 							context,
 							context_instance=RequestContext(request))
 
-@never_cache
 def other_active_games(request):
 	""" Gets a paginated list of all the ongoing games in which the user is not a player """
 	context = sidebar_context(request)
 	if request.user.is_authenticated():
-		games = Game.objects.exclude(phase=PHINACTIVE).exclude(player__user=request.user)
+		user_id = request.user.id
 	else:
-		games = Game.objects.exclude(phase=PHINACTIVE)
+		user_id = None
+	cache_key = "other_active_games-%s" % user_id
+	games = cache.get(cache_key)
+	if not games:
+		if not user_id is None:
+			games = LiveGame.objects.exclude(player__user=request.user)
+		else:
+			games = LiveGame.objects.all()
+		cache.set(cache_key, games)
 	paginator = Paginator(games, 10)
 	try:
 		page = int(request.GET.get('page', '1'))
@@ -162,15 +169,19 @@ def other_active_games(request):
 							context,
 							context_instance=RequestContext(request))
 
-
-
-@never_cache
 def finished_games(request, only_user=False):
 	""" Gets a paginated list of the games that are finished """
 	context = sidebar_context(request)
-	games = Game.objects.filter(slots=0, phase=PHINACTIVE).order_by("-finished")
 	if only_user:
-		games = games.filter(score__user=request.user)
+		cache_key = "finished_games-%s" % request.user.id
+	else:
+		cache_key = "finished_games"
+	games = cache.get(cache_key)
+	if not games:
+		games = Game.objects.finished() #.order_by("-finished")
+		if only_user:
+			games = games.filter(score__user=request.user)
+		cache.set(cache_key, games)
 	paginator = Paginator(games, 10)
 	try:
 		page = int(request.GET.get('page', '1'))
@@ -193,10 +204,7 @@ def finished_games(request, only_user=False):
 def joinable_games(request):
 	""" Gets a paginated list of all the games that the user can join """
 	context = sidebar_context(request)
-	if request.user.is_authenticated():
-		games = Game.objects.filter(slots__gt=0).exclude(player__user=request.user)
-	else:
-		games = Game.objects.filter(slots__gt=0)
+	games = Game.objects.joinable_by_user(request.user)
 	paginator = Paginator(games, 10)
 	try:
 		page = int(request.GET.get('page', '1'))
