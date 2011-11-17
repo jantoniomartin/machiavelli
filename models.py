@@ -1739,6 +1739,16 @@ if twitter_api and settings.TWEET_NEW_GAME:
 
 	models.signals.post_save.connect(tweet_new_game, sender=Game)
 
+class LiveGameManager(models.Manager):
+	def get_query_set(self):
+		return super(LiveGameManager, self).get_query_set().filter(finished__isnull=True, started__isnull=False)
+
+class LiveGame(Game):
+	objects = LiveGameManager()
+	
+	class Meta:
+		proxy = True
+
 class GameArea(models.Model):
 	""" This class defines the actual game areas where each game is played. """
 

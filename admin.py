@@ -104,7 +104,19 @@ class ConfigurationInline(admin.TabularInline):
 	extra = 1
 
 class GameAdmin(admin.ModelAdmin):
-	list_display = ('pk', 'slug', 'year', 'season', 'phase', 'slots', 'scenario', 'created_by', 'next_phase_change', 'started', 'finished', 'player_list')
+	list_display = ('pk', 'slug', 'slots', 'scenario', 'created_by', 'started', 'finished', 'player_list')
+	inlines = [ ConfigurationInline, ]
+
+	def player_list(self, obj):
+		users = []
+		for p in obj.player_set.filter(user__isnull=False):
+			users.append(p.user.username)
+		return ", ".join(users)
+
+	player_list.short_description = 'Player list'
+
+class LiveGameAdmin(admin.ModelAdmin):
+	list_display = ('pk', 'slug', 'year', 'season', 'phase', 'next_phase_change', 'started')
 	actions = ['redraw_map',
 				'check_finished_phase',]
 	inlines = [ ConfigurationInline, ]
@@ -119,14 +131,6 @@ class GameAdmin(admin.ModelAdmin):
 			obj.check_finished_phase()
 	check_finished_phase.short_description = "Check finished phase"
 	
-	def player_list(self, obj):
-		users = []
-		for p in obj.player_set.filter(user__isnull=False):
-			users.append(p.user.username)
-		return ", ".join(users)
-
-	player_list.short_description = 'Player list'
-
 class RetreatOrderAdmin(admin.ModelAdmin):
 	pass
 
@@ -161,6 +165,7 @@ class InvitationAdmin(admin.ModelAdmin):
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Game, GameAdmin)
+admin.site.register(LiveGame, LiveGameAdmin)
 admin.site.register(Unit, UnitAdmin)
 admin.site.register(SpecialUnit, SpecialUnitAdmin)
 admin.site.register(GameArea, GameAreaAdmin)
