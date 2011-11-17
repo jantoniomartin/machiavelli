@@ -355,6 +355,16 @@ class CityIncome(models.Model):
 	class Meta:
 		unique_together = (("city", "scenario"),)
 
+class GameManager(models.Manager):
+	def joinable_by_user(self, user):
+		assert isinstance(user, User)
+		if user.is_authenticated():
+			return self.filter(slots__gt=0).exclude(player__user=user)
+		else:
+			return self.filter(slots__gt=0)
+	
+	def finished(self):
+		return self.filter(finished__isnull=False)
 
 class Game(models.Model):
 	""" This is the main class of the machiavelli application. It includes all the
@@ -392,6 +402,8 @@ class Game(models.Model):
 				help_text=_("only invited users can join the game"))
 	comment = models.TextField(max_length=255, blank=True, null=True,
 				help_text=_("optional comment for joining users"))
+
+	objects = GameManager()
 
 	def save(self, *args, **kwargs):
 		if not self.pk:
