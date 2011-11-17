@@ -114,7 +114,6 @@
 </div>
 
 
-{% if forum %}
 {% cache 600 "forum_latest" LANGUAGE_CODE %}
 <div id="forum_latest" class="section">
 {% forum_latest_thread_activity 5 as latest_activity %}
@@ -129,10 +128,6 @@
 </ul>
 </div>
 {% endcache %}
-{% endif %}
-
-
-
 
 {% endblock %}
 
