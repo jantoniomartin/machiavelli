@@ -363,6 +363,9 @@ class GameManager(models.Manager):
 		else:
 			return self.filter(slots__gt=0)
 	
+	def pending_for_user(self, user):
+		return self.filter(started__isnull=True, player__user=user)	
+
 	def finished(self):
 		return self.filter(finished__isnull=False)
 

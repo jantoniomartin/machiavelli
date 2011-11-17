@@ -223,13 +223,16 @@ def joinable_games(request):
 							context,
 							context_instance=RequestContext(request))
 
-@never_cache
 @login_required
 def pending_games(request):
 	""" Gets a paginated list of all the games of the player that have not yet
 	started """
 	context = sidebar_context(request)
-	games = Game.objects.filter(slots__gt=0, player__user=request.user)
+	cache_key = "pending_games-%s" % request.user.id
+	games = cache.get(cache_key)
+	if not games:
+		games = Game.objects.pending_for_user(request.user)
+		cache.set(cache_key, games, 10*60)
 	paginator = Paginator(games, 10)
 	try:
 		page = int(request.GET.get('page', '1'))
