@@ -31,7 +31,7 @@ from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 from django.db.models import Q, F, Sum
 from django.core.cache import cache
-from django.views.decorators.cache import never_cache, cache_page
+from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -703,7 +703,6 @@ def undo_expense(request, slug='', expense_id=''):
 	return redirect(game)
 
 #@login_required
-#@cache_page(60 * 60) # cache 1 hour
 def game_results(request, slug=''):
 	game = get_object_or_404(Game, slug=slug)
 	if game.phase != PHINACTIVE:
@@ -753,7 +752,6 @@ def logs_by_game(request, slug=''):
 							context_instance=RequestContext(request))
 
 @login_required
-#@cache_page(60 * 60)
 def create_game(request):
 	context = sidebar_context(request)
 	context.update( {'user': request.user,})
@@ -980,7 +978,6 @@ def forgive_excommunication(request, slug, player_id):
 		messages.success(request, _("The country has been forgiven."))
 	return redirect(game)
 
-#@cache_page(60 * 60)
 def scenario_list(request):
 	""" Gets a list of all the enabled scenarios. """
 	context = sidebar_context(request)	
@@ -991,7 +988,6 @@ def scenario_list(request):
 							context,
 							context_instance = RequestContext(request))
 
-#@cache_page(60 * 60)
 def show_scenario(request, scenario_id):
 	scenario = get_object_or_404(Scenario, id=scenario_id, enabled=True)
 
@@ -1023,7 +1019,6 @@ def show_scenario(request, scenario_id):
 
 
 #@login_required
-#@cache_page(30 * 60)
 def hall_of_fame(request):
 	profiles_list = CondottieriProfile.objects.all().order_by('-weighted_score')
 	paginator = Paginator(profiles_list, 10)
@@ -1079,7 +1074,6 @@ def ranking(request, key='', val=''):
 							context_instance=RequestContext(request))
 
 @login_required
-#@cache_page(60 * 60) # cache 1 hour
 def turn_log_list(request, slug=''):
 	game = get_object_or_404(Game, slug=slug)
 	log_list = game.turnlog_set.all()
