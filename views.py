@@ -707,7 +707,11 @@ def game_results(request, slug=''):
 	game = get_object_or_404(Game, slug=slug)
 	if game.phase != PHINACTIVE:
 		raise Http404
-	scores = game.score_set.filter(user__isnull=False).order_by('-points')
+	cache_key = "game-scores-%s" % game.id
+	scores = cache.get(cache_key)
+	if not scores:
+		scores = game.score_set.filter(user__isnull=False).order_by('-points')
+		cache.set(cache_key, scores)
 	context = {'game': game,
 				'map' : game.get_map_url(),
 				'players': scores,
