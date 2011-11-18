@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from django.core.management.base import NoArgsCommand, CommandError
 from django.conf import settings
 
-from jogging import logging
+import logging
+logger = logging.getLogger(__name__)
 
 from machiavelli import models
 
@@ -11,16 +12,27 @@ class Command(NoArgsCommand):
 	"""
 This script checks in every active game if the current turn must change. This happens either
 when all the players have finished OR the time limit is exceeded
+
+Of all the live games, it will adjudicate any existing fast games and only one of the normal
+games (to prevent a long running time). To select only one game, it will use the oldest
+value of 'Game.last_phase_change'. 
 	"""
+
 	help = 'This script checks in every active game if the current turn must change. \
 	This happens either when all the players have finished OR the time limit is exceeded.'
 
 	def handle_noargs(self, **options):
 		if settings.MAINTENANCE_MODE:
-			print "App is in maintenance mode. Exiting."
+			logger.warning("App is in maintenance mode. Exiting.")
 			return
-		active_games = models.Game.objects.exclude(phase=0)
-		for game in active_games:
+		try:
+			game = models.LiveGame.objects.filter(fast=False).order_by('last_phase_change')[0]
+		except IndexError: # no live games
+			pass
+		else:
+			game.check_finished_phase()
+		fast_games = models.LiveGame.objects.filter(fast=True)
+		for game in fast_games:
 			try:
 				game.check_finished_phase()
 			except Exception, e:
