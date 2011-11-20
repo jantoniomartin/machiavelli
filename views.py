@@ -73,7 +73,7 @@ def sidebar_context(request):
 	sidebar_context = cache.get(cache_key)
 	if not sidebar_context:
 		sidebar_context = {}
-		activity = Player.objects.only("user").distinct().count()
+		activity = Player.objects.exclude(user__isnull=True).values("user").distinct().count()
 		top_users = CondottieriProfile.objects.all().order_by('-weighted_score')[:5]
 		if not user_id is None:
 			profile = request.user.get_profile()
