@@ -19,35 +19,39 @@
 """ This module defines functions to generate the map. """
 
 import Image
-import os
+import os.path
 
 from django.conf import settings
 
-BASEDIR=os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/tokens')
+#BASE_DIR=os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/tokens')
+APP_ROOT=os.path.abspath(os.path.dirname(__file__))
+TOKENS_DIR=os.path.join(APP_ROOT, 'media/machiavelli/tokens')
+
 BASEMAP='base-map.png'
-if settings.DEBUG:
-	MAPSDIR = os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/maps')
-else:
-	MAPSDIR = os.path.join(settings.MEDIA_ROOT, 'maps')
+#if settings.DEBUG:
+#	MAPSDIR = os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/maps')
+#else:
+#	MAPSDIR = os.path.join(settings.MEDIA_ROOT, 'maps')
+MAPSDIR=os.path.join(settings.MEDIA_ROOT, 'maps')
 
 def make_map(game):
 	""" Opens the base map and add flags, control markers, unit tokens and other tokens. Then saves
 	the map with an appropriate name in the maps directory.
 	"""
-	base_map = Image.open(os.path.join(BASEDIR, BASEMAP))
+	base_map = Image.open(os.path.join(TOKENS_DIR, BASEMAP))
 	if game.configuration.special_units:
-		loyal_army = Image.open("%s/loyal-army.png" % BASEDIR)
-		loyal_fleet = Image.open("%s/loyal-fleet.png" % BASEDIR)
-		loyal_garrison = Image.open("%s/loyal-garrison.png" % BASEDIR)
-		elite_army = Image.open("%s/elite-army.png" % BASEDIR)
-		elite_fleet = Image.open("%s/elite-fleet.png" % BASEDIR)
-		elite_garrison = Image.open("%s/elite-garrison.png" % BASEDIR)
+		loyal_army = Image.open("%s/loyal-army.png" % TOKENS_DIR)
+		loyal_fleet = Image.open("%s/loyal-fleet.png" % TOKENS_DIR)
+		loyal_garrison = Image.open("%s/loyal-garrison.png" % TOKENS_DIR)
+		elite_army = Image.open("%s/elite-army.png" % TOKENS_DIR)
+		elite_fleet = Image.open("%s/elite-fleet.png" % TOKENS_DIR)
+		elite_garrison = Image.open("%s/elite-garrison.png" % TOKENS_DIR)
 	## if there are disabled areas, mark them
-	marker = Image.open("%s/disabled.png" % BASEDIR)
+	marker = Image.open("%s/disabled.png" % TOKENS_DIR)
 	for a in game.get_disabled_areas():
 		base_map.paste(marker, (a.aftoken.x, a.aftoken.y), marker)
 	## mark special city incomes
-	marker = Image.open("%s/chest.png" % BASEDIR)
+	marker = Image.open("%s/chest.png" % TOKENS_DIR)
 	for i in game.scenario.cityincome_set.all():
 		base_map.paste(marker, (i.city.gtoken.x + 48, i.city.gtoken.y), marker)
 	##
@@ -55,19 +59,19 @@ def make_map(game):
 	for player in game.player_set.filter(user__isnull=False):
 		## paste control markers
 		controls = player.gamearea_set.all()
-		marker = Image.open("%s/control-%s.png" % (BASEDIR, player.country.css_class))
+		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.country.css_class))
 		for area in controls:
 			base_map.paste(marker, (area.board_area.controltoken.x, area.board_area.controltoken.y), marker)
 		## paste flags
 		home = player.home_country()
-		flag = Image.open("%s/flag-%s.png" % (BASEDIR, player.country.css_class))
+		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.country.css_class))
 		for game_area in home:
 			area = game_area.board_area
 			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 15), flag)
 		## paste As and Fs (not garrisons because of sieges)
 		units = player.unit_set.all()
-		army = Image.open("%s/A-%s.png" % (BASEDIR, player.country.css_class))
-		fleet = Image.open("%s/F-%s.png" % (BASEDIR, player.country.css_class))
+		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.country.css_class))
+		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.country.css_class))
 		for unit in units:
 			if unit.besieging:
 				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
@@ -90,10 +94,10 @@ def make_map(game):
 	## paste garrisons
 	for player in game.player_set.all():
 		if player.user:
-			garrison = Image.open("%s/G-%s.png" % (BASEDIR, player.country.css_class))
+			garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, player.country.css_class))
 		else:
 			## autonomous
-			garrison = Image.open("%s/G-autonomous.png" % BASEDIR)
+			garrison = Image.open("%s/G-autonomous.png" % TOKENS_DIR)
 		for unit in player.unit_set.filter(type__exact='G'):
 			coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
 			base_map.paste(garrison, coords, garrison)
@@ -103,19 +107,19 @@ def make_map(game):
 				base_map.paste(loyal_garrison, coords, loyal_garrison)
 	## paste famine markers
 	if game.configuration.famine:
-		famine = Image.open("%s/famine-marker.png" % BASEDIR)
+		famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
 		for a in game.gamearea_set.filter(famine=True):
 			coords = (a.board_area.aftoken.x + 16, a.board_area.aftoken.y + 16)
 			base_map.paste(famine, coords, famine)
 	## paste storm markers
 	if game.configuration.storms:
-		storm = Image.open("%s/storm-marker.png" % BASEDIR)
+		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
 		for a in game.gamearea_set.filter(storm=True):
 			coords = (a.board_area.aftoken.x + 16, a.board_area.aftoken.y + 16)
 			base_map.paste(storm, coords, storm)
 	## paste rebellion markers
 	if game.configuration.finances:
-		rebellion_marker = Image.open("%s/rebellion-marker.png" % BASEDIR)
+		rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
 		for r in game.get_rebellions():
 			if r.garrisoned:
 				coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
@@ -132,28 +136,28 @@ def make_map(game):
 def make_scenario_map(s):
 	""" Makes the initial map for an scenario.
 	"""
-	base_map = Image.open(os.path.join(BASEDIR, BASEMAP))
+	base_map = Image.open(os.path.join(TOKENS_DIR, BASEMAP))
 	## if there are disabled areas, mark them
-	marker = Image.open("%s/disabled.png" % BASEDIR)
+	marker = Image.open("%s/disabled.png" % TOKENS_DIR)
 	for d in  s.disabledarea_set.all():
 		base_map.paste(marker, (d.area.aftoken.x, d.area.aftoken.y), marker)
 	## mark special city incomes
-	marker = Image.open("%s/chest.png" % BASEDIR)
+	marker = Image.open("%s/chest.png" % TOKENS_DIR)
 	for i in s.cityincome_set.all():
 		base_map.paste(marker, (i.city.gtoken.x + 48, i.city.gtoken.y), marker)
 	##
 	for c in s.get_countries():
 		## paste control markers and flags
 		controls = s.home_set.filter(country=c, is_home=True)
-		marker = Image.open("%s/control-%s.png" % (BASEDIR, c.static_name))
-		flag = Image.open("%s/flag-%s.png" % (BASEDIR, c.static_name))
+		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, c.static_name))
+		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, c.static_name))
 		for h in controls:
 			base_map.paste(marker, (h.area.controltoken.x, h.area.controltoken.y), marker)
 			base_map.paste(flag, (h.area.controltoken.x, h.area.controltoken.y - 15), flag)
 		## paste units
-		army = Image.open("%s/A-%s.png" % (BASEDIR, c.static_name))
-		fleet = Image.open("%s/F-%s.png" % (BASEDIR, c.static_name))
-		garrison = Image.open("%s/G-%s.png" % (BASEDIR, c.static_name))
+		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, c.static_name))
+		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, c.static_name))
+		garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, c.static_name))
 		for setup in c.setup_set.filter(scenario=s):
 			if setup.unit_type == 'G':
 				coords = (setup.area.gtoken.x, setup.area.gtoken.y)
@@ -167,7 +171,7 @@ def make_scenario_map(s):
 			else:
 				pass
 	## paste autonomous garrisons
-	garrison = Image.open("%s/G-autonomous.png" % BASEDIR)
+	garrison = Image.open("%s/G-autonomous.png" % TOKENS_DIR)
 	for g in s.setup_set.filter(country__isnull=True, unit_type='G'):
 		coords = (g.area.gtoken.x, g.area.gtoken.y)
 		base_map.paste(garrison, coords, garrison)
