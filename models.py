@@ -1135,6 +1135,7 @@ class Game(models.Model):
 				if len(attacks) > 0:
 					info += u"Supporting unit is being attacked.\n"
 					for a in attacks:
+						##TODO: if a unit giving support is dislodged, its support is cut
 						if (s.subcode == '-' and s.subdestination == a.unit.area) or \
 						(s.subcode == '=' and s.subtype in ['A','F'] and s.subunit.area == a.unit.area):
 							info += u"Support is not broken.\n"

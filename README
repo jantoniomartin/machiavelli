@@ -1,0 +1,76 @@
+Condottieri, a web based version of the classic game 'Machiavelli'
+==================================================================
+
+**Condottieri** is a web based version of the Avalon Hill's game **Machiavelli**.
+It's being developed on Django, Pinax and Python, and since October 18th 2010 it
+is free and open source software (see COPYING for details on the license).
+
+This project was started by a fan of Machiavelli, only for fun and learning.
+It's non-profit oriented and in no way affiliated with Avalon Hill. No media,
+images or texts from the original game have been used. However, if you think
+that any of the files in this project repository could infringe your copyright,
+just contact the author and the content will be removed inmediately.
+
+About 'machiavelli' application
+-------------------------------
+
+'machiavelli' is a Django app made to be plugged to a Django project. Before,
+it was part of a common repository (http://github.com/jantoniomartin/condottieri) that integrated the entire Condottieri project. Now, all the applications in
+this project have been separated in different repositories, so that they can be
+used separetely.
+
+'machiavelli' is the main part of the Condottieri project, and defines the
+models and the logic to manage Machiavelli games.
+
+Other applications that were a part of Condottieri and that now have their
+own repositories include:
+
+- condottieri_common
+- condottieri_events
+- condottieri_messages
+- condottieri_profiles
+
+Playing the game
+----------------
+
+You are welcome to play the game at the site http://condottierigame.net.
+
+Contributing
+------------
+
+Feel free to improve the code of the game. Either you can modify the code (as
+stated in the license) or you can suggest improvements by whatever means.
+
+You can also get the official documentation of the game from http://doc.condottierigame.net.
+
+Game rules
+----------
+
+Because of copyright, the rules of Machiavelli are not, and will not,
+distributed in this repository. If you need the rules, you can try buying the
+game (it's not easy, as far as I know) or google them.
+
+The game is based on the official rules of the game, but in no way restricted
+to them, so you can make or propose any changes or optional rules that you
+think appropriate.
+
+License note
+------------
+	Copyright (c) 2010 by Jose Antonio Martin <jantonio.martin AT gmail DOT com>
+	This program is free software: you can redistribute it and/or modify it
+	under the terms of the GNU Affero General Public License as published by the
+	Free Software Foundation, either version 3 of the License, or (at your option
+	any later version.
+
+	This program is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+	FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License
+	for more details.
+
+	You should have received a copy of the GNU Affero General Public License
+	along with this program. If not, see <http://www.gnu.org/licenses/agpl.txt>.
+
+	This license is also included in the file COPYING
+	
+	AUTHOR: Jose Antonio Martin <jantonio.martin AT gmail DOT com>
+
