@@ -162,6 +162,9 @@ class WhisperAdmin(admin.ModelAdmin):
 class InvitationAdmin(admin.ModelAdmin):
 	pass
 
+class GameCommentAdmin(admin.ModelAdmin):
+	list_display = ('__unicode__', 'user', 'game', 'is_public')
+
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Game, GameAdmin)
@@ -184,3 +187,4 @@ admin.site.register(Assassin, AssassinAdmin)
 admin.site.register(Assassination, AssassinationAdmin)
 admin.site.register(Whisper, WhisperAdmin)
 admin.site.register(Invitation, InvitationAdmin)
+admin.site.register(GameComment, GameCommentAdmin)
