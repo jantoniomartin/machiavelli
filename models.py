@@ -1763,11 +1763,17 @@ class GameComment(models.Model):
 	game = models.ForeignKey(Game, editable=False)
 	user = models.ForeignKey(User, editable=False)
 	comment = models.TextField(_('comment'))
+	after_game = models.BooleanField(_('sent after the game'), default=False, editable=False)
 	submit_date = models.DateTimeField(_('submission date'), auto_now_add=True,
 		editable=False)
 	is_public = models.BooleanField(_('is public'), default=True)
 
 	objects = GameCommentManager()
+
+	def save(self, *args, **kwargs):
+		if not self.game.finished is None:
+			self.after_game = True
+		super(GameComment, self).save(*args, **kwargs)
 
 	def __unicode__(self):
 		return self.comment[:50]

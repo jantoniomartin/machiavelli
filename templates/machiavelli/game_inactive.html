@@ -134,7 +134,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 
 <div id="game_comment_list">
 {% for c in comments %}
-	<div class="game_comment">{{ c.comment|linebreaks }}
+	<div class="game_comment {% if c.after_game %}after_game{% endif %}">{{ c.comment|linebreaks }}
 	<span class="date">
 		{% blocktrans with c.submit_date|timesince as time and c.user as user %}{{ time }} ago by {{ user }}
 		{% endblocktrans %}
