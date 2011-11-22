@@ -95,10 +95,11 @@ class GameCommentForm(forms.ModelForm):
 		model = GameComment
 		fields = ('comment',)
 	
-	def __init__(self, user, game, **kwargs):
-		super(GameCommentForm, self).__init__(**kwargs)
+	def save(self, user, game, *args, **kwargs):
 		self.instance.user = user
 		self.instance.game = game
+		comment = super(GameCommentForm, self).save(*args, **kwargs)
+		comment.save()
 
 class UnitForm(forms.ModelForm):
 	type = forms.ChoiceField(required=True, choices=UNIT_TYPES)

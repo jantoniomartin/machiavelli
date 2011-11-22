@@ -375,11 +375,11 @@ def show_inactive_game(request, game):
 	comments = game.gamecomment_set.public()
 	context.update({'comments': comments})
 	if request.method == 'POST':
-		comment_form = forms.GameCommentForm(request.user, game, data=request.POST)
+		comment_form = forms.GameCommentForm(request.POST)
 		if comment_form.is_valid():
-			comment_form.save()
+			comment_form.save(user=request.user, game=game)
 			return redirect(game)
-	comment_form = forms.GameCommentForm(request.user, game)
+	comment_form = forms.GameCommentForm()
 	context.update({'comment_form': comment_form})
 
 	return render_to_response('machiavelli/game_inactive.html',
