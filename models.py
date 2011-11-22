@@ -1755,6 +1755,23 @@ if twitter_api and settings.TWEET_NEW_GAME:
 
 	models.signals.post_save.connect(tweet_new_game, sender=Game)
 
+class GameCommentManager(models.Manager):
+	def public(self):
+		return self.get_query_set().filter(is_public=True)
+
+class GameComment(models.Model):
+	game = models.ForeignKey(Game, editable=False)
+	user = models.ForeignKey(User, editable=False)
+	comment = models.TextField(_('comment'))
+	submit_date = models.DateTimeField(_('submission date'), auto_now_add=True,
+		editable=False)
+	is_public = models.BooleanField(_('is public'), default=True)
+
+	objects = GameCommentManager()
+
+	def __unicode__(self):
+		return self.comment[:50]
+		
 class LiveGameManager(models.Manager):
 	def get_query_set(self):
 		return super(LiveGameManager, self).get_query_set().filter(finished__isnull=True, started__isnull=False)

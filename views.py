@@ -337,21 +337,52 @@ def undo_actions(request, slug=''):
 
 	return redirect('show-game', slug=slug)
 
-def show_pending_game(request, game):
+def show_inactive_game(request, game):
 	context = sidebar_context(request)
 	context.update({'game': game})
-	if request.user.is_authenticated():
-		try:
-			Player.objects.get(game=game, user=request.user)
-		except ObjectDoesNotExist:
-			joinable = True
+	started = (game.started is not None)
+	finished = (game.finished is not None)
+	context.update({'started': started, 'finished': finished})
+	##TODO: move this to Game class
+	## check if the user can join the game
+	if not started:
+		if request.user.is_authenticated():
+			try:
+				Player.objects.get(game=game, user=request.user)
+			except ObjectDoesNotExist:
+				joinable = True
+			else:
+				joinable = False
 		else:
-			joinable = False
+			joinable = True
 	else:
-		joinable = True
+		joinable = False
 	context.update({'joinable': joinable})
+	## if the game is finished, get the scores
+	if finished:
+		cache_key = "game-scores-%s" % game.id
+		scores = cache.get(cache_key)
+		if not scores:
+			scores = game.score_set.filter(user__isnull=False).order_by('-points')
+			cache.set(cache_key, scores)
+		context.update({'map' : game.get_map_url(),
+						'players': scores,})
+		## get the logs, if they still exist
+		log = game.baseevent_set.all()
+		if len(log) > 0:
+			context.update({'show_log': True})
+	## comments section
+	comments = game.gamecomment_set.public()
+	context.update({'comments': comments})
+	if request.method == 'POST':
+		comment_form = forms.GameCommentForm(request.user, game, data=request.POST)
+		if comment_form.is_valid():
+			comment_form.save()
+			return redirect(game)
+	comment_form = forms.GameCommentForm(request.user, game)
+	context.update({'comment_form': comment_form})
 
-	return render_to_response('machiavelli/game_pending.html',
+	return render_to_response('machiavelli/game_inactive.html',
 						context,
 						context_instance=RequestContext(request))
 	
@@ -359,10 +390,8 @@ def show_pending_game(request, game):
 #@login_required
 def play_game(request, slug='', **kwargs):
 	game = get_object_or_404(Game, slug=slug)
-	if game.started is None:
-		return show_pending_game(request, game)
-	if not game.finished is None:
-		return redirect('game-results', slug=game.slug)
+	if game.started is None or not game.finished is None:
+		return show_inactive_game(request, game)
 	try:
 		player = Player.objects.get(game=game, user=request.user)
 	except:
@@ -723,25 +752,25 @@ def undo_expense(request, slug='', expense_id=''):
 	return redirect(game)
 
 #@login_required
-def game_results(request, slug=''):
-	game = get_object_or_404(Game, slug=slug)
-	if game.phase != PHINACTIVE:
-		raise Http404
-	cache_key = "game-scores-%s" % game.id
-	scores = cache.get(cache_key)
-	if not scores:
-		scores = game.score_set.filter(user__isnull=False).order_by('-points')
-		cache.set(cache_key, scores)
-	context = {'game': game,
-				'map' : game.get_map_url(),
-				'players': scores,
-				'show_log': False,}
-	log = game.baseevent_set.all()
-	if len(log) > 0:
-		context['show_log'] = True
-	return render_to_response('machiavelli/game_results.html',
-							context,
-							context_instance=RequestContext(request))
+#def game_results(request, slug=''):
+#	game = get_object_or_404(Game, slug=slug)
+#	if game.phase != PHINACTIVE:
+#		raise Http404
+#	cache_key = "game-scores-%s" % game.id
+#	scores = cache.get(cache_key)
+#	if not scores:
+#		scores = game.score_set.filter(user__isnull=False).order_by('-points')
+#		cache.set(cache_key, scores)
+#	context = {'game': game,
+#				'map' : game.get_map_url(),
+#				'players': scores,
+#				'show_log': False,}
+#	log = game.baseevent_set.all()
+#	if len(log) > 0:
+#		context['show_log'] = True
+#	return render_to_response('machiavelli/game_results.html',
+#							context,
+#							context_instance=RequestContext(request))
 
 @never_cache
 #@login_required

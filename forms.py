@@ -90,6 +90,16 @@ class WhisperForm(forms.ModelForm):
 		self.instance.user = user
 		self.instance.game = game
 
+class GameCommentForm(forms.ModelForm):
+	class Meta:
+		model = GameComment
+		fields = ('comment',)
+	
+	def __init__(self, user, game, **kwargs):
+		super(GameCommentForm, self).__init__(**kwargs)
+		self.instance.user = user
+		self.instance.game = game
+
 class UnitForm(forms.ModelForm):
 	type = forms.ChoiceField(required=True, choices=UNIT_TYPES)
     

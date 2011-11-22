@@ -1,6 +1,7 @@
 {% extends "machiavelli/base.html" %}
 
 {% load i18n %}
+{% load uni_form_tags %}
 {% load game_icons %}
 {% load stars %}
 
@@ -8,27 +9,47 @@
 
 {% block left_column %}
 <h1>{{ game.slug }}</h1>
+{% if not started %}
 <p>{% blocktrans %}This game has not started, because is has not yet enough players.{% endblocktrans %}</p>
+{% endif %}
 
 <div class="game_info {% if game.fast %}fast{% endif %}">
 <h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span>
+{% if not started %}
 	<span>
 		({% trans "Slots" %}: {{ game.slots }})
 	</span>
 	{% if game.private %}
 	<span>{% trans "Private" %}</span>
 	{% endif %}
+{% endif %}
 	</h2>
+
 <div class="map">
 <img src="{{ MEDIA_URL }}maps/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
 </div>
+
+{% if finished %}
+<div class="time">
+{% blocktrans with game.finished|date:"SHORT_DATE_FORMAT" as finished and game.finished|timeuntil:game.started as time %}
+Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
+</div>
+{% endif %}
+
 <dl>
+
+{% if not started %}
 <dt>{% trans "Average score" %}</dt><dd>{{ game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ game.get_average_karma|karma_stars }}</dd>
+{% endif %}
+
 <dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
+
+{% if not started %}
+
 <dt>{% trans "Players" %}</dt>
 <dd>
 	{% if game.visible %}
@@ -47,6 +68,10 @@
 <dt>{% trans "Invited users" %}</dt>
 <dd>{{ game.invitation_set.all|join:", " }}</dd>
 {% endif %}
+
+{% endif %}
+
+
 {% if game.comment %}
 <dt>{% trans "Comment" %}</dt>
 <dd>{{ game.comment }}</dd>
@@ -60,13 +85,72 @@
 			<li><a href="{% url make-public game.slug %}">{% trans "Make public" %}</a></li>
 		{% endifequal %}
 	{% endif %}
-	<li><a href="{% url show-game game.slug %}">{% trans "View game" %}</a></li>
+	
+{% if not started %}
 	{% if joinable %}
 	<li><a href="{% url join-game game.slug %}">{% trans "Join game" %}</a></li>
 	{% else %}
 	<li><a href="{% url leave-game game.slug %}">{% trans "Leave game" %}</a></li>
 	{% endif %}
+{% endif %}
+
 </ul>
 </div>
+
+{% if finished %}
+
+<h2>{% trans "Results of game" %} "{{ game.slug }}"</h2>
+<p>{% blocktrans %}These are the scores for each player in the game{% endblocktrans %}</p>
+
+<table>
+	<thead>
+	<tr>
+	<th>{% trans "Player" %}</th>
+	<th>{% trans "Country" %}</th>
+	<th>{% trans "Score" %}</th>
+	<th>{% trans "Cities" %}</th>
+	</tr>
+	</thead>
+	{% for p in players %}
+	<tr>
+	<td>{{ p.user }}</td>
+	<td>{{ p.country }}</td>
+	<td class="data_c">{{ p.points }}</td>
+	<td class="data_c">{{ p.cities }}</td>
+	</tr>
+	{% endfor %}
+
+</table>
+{% if show_log %}
+<p><a href="{% url game-log game.slug %}">{% trans "Campaign log" %}</a></p>
+{% endif %}
+<p><a href="{{ MEDIA_URL }}maps/{{ map }}">{% trans "Map" %}</a>.</p>
+
+{% endif %}
+
+<h2>{% trans "Comments" %}</h2>
+
+{% if comments %}
+
+<div id="game_comment_list">
+{% for c in comments %}
+	<div class="game_comment">{{ c.comment|linebreaks }}
+	<span class="date">
+		{% blocktrans with c.submit_date|timesince as time and c.user as user %}{{ time }} ago by {{ user }}
+		{% endblocktrans %}
+	</span>
+	</div>
+{% endfor %}
+</div>
+
+{% endif %}
+
+{% if user.is_authenticated %}
+<form action="" method="POST" class="uniForm">
+{% csrf_token %}
+{{ comment_form|as_uni_form }}
+<input type="submit" value="{% trans "Send" %}" />
+</form>
+{% endif %}
 
 {% endblock %}
