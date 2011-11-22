@@ -81,6 +81,7 @@
 {% endif %}
 </dl>
 <ul class="section_menu">
+	<li>{{ num_comments }} {% trans "comments" %}</li>
 	<li>{% rule_icons joinable_game.configuration %}</li>
 	<li><a href="{% url join-game joinable_game.slug %}">{% trans "Join game" %}</a></li>
 </ul>

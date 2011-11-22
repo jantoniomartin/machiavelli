@@ -29,7 +29,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
-from django.db.models import Q, F, Sum
+from django.db.models import Q, F, Sum, Count
 from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
@@ -106,7 +106,9 @@ def summary(request):
 		joinable = Game.objects.filter(slots__gt=0, private=False).order_by('slots').select_related('scenario', 'configuration', 'player__user')
 		context.update( {'revolutions': Revolution.objects.filter(opposition__isnull=True).select_related('government__game__country')} )
 	if joinable:
-		context.update( {'joinable_game': joinable[0]} )
+		num_comments = joinable[0].gamecomment_set.count()
+		context.update( {'joinable_game': joinable[0],
+						'num_comments': num_comments} )
 
 	return render_to_response('machiavelli/summary.html',
 							context,
@@ -178,7 +180,7 @@ def finished_games(request, only_user=False):
 		cache_key = "finished_games"
 	games = cache.get(cache_key)
 	if not games:
-		games = Game.objects.finished() #.order_by("-finished")
+		games = Game.objects.finished().annotate(comments_count=Count('gamecomment')) #.order_by("-finished")
 		if only_user:
 			games = games.filter(score__user=request.user)
 		cache.set(cache_key, games)
@@ -204,7 +206,7 @@ def finished_games(request, only_user=False):
 def joinable_games(request):
 	""" Gets a paginated list of all the games that the user can join """
 	context = sidebar_context(request)
-	games = Game.objects.joinable_by_user(request.user)
+	games = Game.objects.joinable_by_user(request.user).annotate(comments_count=Count('gamecomment'))
 	paginator = Paginator(games, 10)
 	try:
 		page = int(request.GET.get('page', '1'))
@@ -231,7 +233,7 @@ def pending_games(request):
 	cache_key = "pending_games-%s" % request.user.id
 	games = cache.get(cache_key)
 	if not games:
-		games = Game.objects.pending_for_user(request.user)
+		games = Game.objects.pending_for_user(request.user).annotate(comments_count=Count('gamecomment'))
 		cache.set(cache_key, games, 10*60)
 	paginator = Paginator(games, 10)
 	try:

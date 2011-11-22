@@ -76,6 +76,7 @@
 {% endif %}
 </dl>
 <ul class="section_menu">
+	<li>{{ game.comments_count }} {% trans "comments" %}</li>
 	<li>{% rule_icons game.configuration %}</li>
 	{% if game.private %}
 		{% ifequal game.created_by user %}
