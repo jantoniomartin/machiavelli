@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load uni_form_tags %}
+{% load avatar_tags %}
 {% load game_icons %}
 {% load stars %}
 
@@ -135,10 +136,13 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 <div id="game_comment_list">
 {% for c in comments %}
 	<div class="game_comment {% if c.after_game %}after_game{% endif %}">{{ c.comment|linebreaks }}
-	<span class="date">
+	<div>
+	<div class="comment_info">
+	{% avatar c.user 24 %}
 		{% blocktrans with c.submit_date|timesince as time and c.user as user %}{{ time }} ago by {{ user }}
 		{% endblocktrans %}
-	</span>
+	</div>
+	</div>
 	</div>
 {% endfor %}
 </div>
