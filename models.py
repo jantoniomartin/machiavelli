@@ -357,7 +357,6 @@ class CityIncome(models.Model):
 
 class GameManager(models.Manager):
 	def joinable_by_user(self, user):
-		assert isinstance(user, User)
 		if user.is_authenticated():
 			return self.filter(slots__gt=0).exclude(player__user=user)
 		else:
