@@ -545,34 +545,38 @@ def play_finance_reinforcements(request, game, player):
 								formset=forms.BaseReinforceFormSet,
 								extra=max_units)
 			if request.method == 'POST':
-				try:
-					formset = ReinforceFormSet(request.POST)
-				except ValidationError:
-					formset = None
-				if formset and formset.is_valid():
-					total_cost = 0
-					for f in formset.forms:
-						if 'area' in f.cleaned_data:
-							new_unit = Unit(type=f.cleaned_data['type'],
-									area=f.cleaned_data['area'],
-									player=player,
-									placed=False)
-							if 'unit_class' in f.cleaned_data:
-								if not f.cleaned_data['unit_class'] is None:
-									unit_class = f.cleaned_data['unit_class']
-									## it's a special unit
-									new_unit.cost = unit_class.cost
-									new_unit.power = unit_class.power
-									new_unit.loyalty = unit_class.loyalty
-							new_unit.save()
-							total_cost += new_unit.cost
-					player.ducats = player.ducats - total_cost
-					player.save()
-					player.end_phase()
-					messages.success(request, _("You have successfully made your reinforcements."))
-					return HttpResponseRedirect(request.path)
+				if max_units > 0:
+					try:
+						formset = ReinforceFormSet(request.POST)
+					except ValidationError:
+						formset = None
+					if formset and formset.is_valid():
+						total_cost = 0
+						for f in formset.forms:
+							if 'area' in f.cleaned_data:
+								new_unit = Unit(type=f.cleaned_data['type'],
+										area=f.cleaned_data['area'],
+										player=player,
+										placed=False)
+								if 'unit_class' in f.cleaned_data:
+									if not f.cleaned_data['unit_class'] is None:
+										unit_class = f.cleaned_data['unit_class']
+										## it's a special unit
+										new_unit.cost = unit_class.cost
+										new_unit.power = unit_class.power
+										new_unit.loyalty = unit_class.loyalty
+								new_unit.save()
+								total_cost += new_unit.cost
+						player.ducats = player.ducats - total_cost
+				player.save()
+				player.end_phase()
+				messages.success(request, _("You have successfully made your reinforcements."))
+				return HttpResponseRedirect(request.path)
 			else:
-				formset = ReinforceFormSet()
+				if max_units > 0:
+					formset = ReinforceFormSet()
+				else:
+					formset = None
 			context['formset'] = formset
 			context['max_units'] = max_units
 		else:
