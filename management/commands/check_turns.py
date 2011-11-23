@@ -22,13 +22,15 @@ value of 'Game.last_phase_change'.
 	This happens either when all the players have finished OR the time limit is exceeded.'
 
 	def handle_noargs(self, **options):
+		self.stdout.write("Checking phase changes.")
 		if settings.MAINTENANCE_MODE:
 			logger.warning("App is in maintenance mode. Exiting.")
+			self.stderr.write("App is in maintenance mode. Exiting.")
 			return
 		try:
 			game = models.LiveGame.objects.filter(fast=False).order_by('last_phase_change')[0]
 		except IndexError: # no live games
-			pass
+			self.stderr.write("There are no live games.")
 		else:
 			game.check_finished_phase()
 		fast_games = models.LiveGame.objects.filter(fast=True)
@@ -36,8 +38,8 @@ value of 'Game.last_phase_change'.
 			try:
 				game.check_finished_phase()
 			except Exception, e:
-				print "Error while checking if phase is finished in game %s\n\n" % game.pk
-				print e
+				self.stderr.write("Error while checking if phase is finished in game %s\n\n" % game.pk)
+				self.stderr.write(e)
 				continue
 		## check for fast games that have not yet started and are older than
 		## one hour
@@ -46,5 +48,5 @@ value of 'Game.last_phase_change'.
 		for f in fast_games:
 			expiration = f.created + term
 			if datetime.now() > expiration:
-				print "Deleting game %s\n" % f
+				self.stdout.write("Deleting game %s\n" % f)
 				f.delete()
