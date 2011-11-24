@@ -866,11 +866,14 @@ def invite_users(request, slug=''):
 			message = form.cleaned_data['message']
 			user_list = form.cleaned_data['user_list']
 			user_names = user_list.split(',')
+			success_list = []
+			fail_list = []
 			for u in user_names:
 				name = u.strip()
 				try:
 					user = User.objects.get(username=name)
 				except ObjectDoesNotExist:
+					fail_list.append(name)
 					continue
 				else:
 					## check that the user is not already in the game
@@ -886,6 +889,17 @@ def invite_users(request, slug=''):
 							i.user = user
 							i.message = message
 							i.save()
+							success_list.append(name)
+						else:
+							fail_list.append(name)
+					else:
+						fail_list.append(name)
+			if len(success_list) > 0:
+				msg = _("The following users have been invited: %s") % ", ".join(success_list)
+				messages.success(request, msg)
+			if len(fail_list) > 0:
+				msg = _("The following users could not be invited: %s") % ", ".join(fail_list)
+				messages.error(request, msg)
 	else:
 		form = forms.InvitationForm()
 	context.update({'form': form})
