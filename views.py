@@ -835,7 +835,7 @@ def create_game(request):
 			if new_game.private:
 				return redirect('invite-users', slug=new_game.slug)
 			else:
-				return redirect('summary')
+				return redirect(new_game)
 	else:
 		game_form = forms.GameForm(request.user)
 		config_form = forms.ConfigurationForm()
