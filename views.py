@@ -945,6 +945,7 @@ def join_game(request, slug=''):
 			g.player_joined()
 			messages.success(request, _("You have successfully joined the game."))
 			cache.delete('sidebar_activity')
+			return redirect(g)
 		else:
 			messages.error(request, _("You had already joined this game."))
 	return redirect('summary')
