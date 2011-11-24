@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load cache %}
 {% load forum_tags %}
+{% load avatar_tags %}
 {% load machiavelli_tags %}
 {% load condottieri_profiles_tags %}
 
@@ -128,6 +129,28 @@
 {% endfor %}
 </ul>
 </div>
+
+{% if comments %}
+<div id="comments_latest" class="section">
+<h2>{% trans "Latest comments in games" %}</h2>
+<div id="game_comment_list">
+{% for c in comments %}
+	<div class="game_comment {% if c.after_game %}after_game{% endif %}">
+	<p>{{ c.comment|truncatesmart }}</p>
+	<div>
+	<div class="comment_info">
+	{% avatar c.user 24 %}
+		{% blocktrans with c.submit_date|timesince as time and c.user as user and c.game.slug as slug %}{{ time }} ago by {{ user }} in the game {{ slug }}
+		{% endblocktrans %}
+		<a href="{% url show-game c.game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
+	</div>
+	</div>
+	</div>
+{% endfor %}
+</div>
+</div>
+{% endif %}
+
 {% endcache %}
 
 {% endblock %}
