@@ -24,6 +24,7 @@ new Signal is defined, a related Event should be defined, and conversely.
 
 from django.dispatch import Signal
 
+player_joined = Signal(providing_args=[])
 ## unit_placed is sent by Unit when placed
 unit_placed = Signal(providing_args=[])
 ## unit_disbanded is sent by Unit when deleted 

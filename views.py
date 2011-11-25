@@ -41,6 +41,7 @@ from django.contrib import messages
 ## machiavelli
 from machiavelli.models import *
 import machiavelli.forms as forms
+from machiavelli.signals import player_joined 
 
 ## condottieri_common
 from condottieri_common.models import Server
@@ -831,6 +832,7 @@ def create_game(request):
 												instance=new_game.configuration)
 			config_form.save()
 			cache.delete('sidebar_activity')
+			player_joined.send(sender=new_player)
 			messages.success(request, _("Game successfully created."))
 			if new_game.private:
 				return redirect('invite-users', slug=new_game.slug)
@@ -943,6 +945,7 @@ def join_game(request, slug=''):
 			if invitation:
 				invitation.delete()
 			g.player_joined()
+			player_joined.send(sender=new_player)
 			messages.success(request, _("You have successfully joined the game."))
 			cache.delete('sidebar_activity')
 			return redirect(g)
