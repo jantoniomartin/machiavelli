@@ -183,7 +183,7 @@ def finished_games(request, only_user=False):
 		cache_key = "finished_games"
 	games = cache.get(cache_key)
 	if not games:
-		games = Game.objects.finished().annotate(comments_count=Count('gamecomment')) #.order_by("-finished")
+		games = Game.objects.finished().annotate(comments_count=Count('gamecomment'))
 		if only_user:
 			games = games.filter(score__user=request.user)
 		cache.set(cache_key, games)

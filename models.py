@@ -366,7 +366,7 @@ class GameManager(models.Manager):
 		return self.filter(started__isnull=True, player__user=user)	
 
 	def finished(self):
-		return self.filter(finished__isnull=False)
+		return self.filter(finished__isnull=False).order_by('-finished')
 
 class Game(models.Model):
 	""" This is the main class of the machiavelli application. It includes all the
