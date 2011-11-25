@@ -571,10 +571,10 @@ def play_finance_reinforcements(request, game, player):
 								new_unit.save()
 								total_cost += new_unit.cost
 						player.ducats = player.ducats - total_cost
-				player.save()
-				player.end_phase()
-				messages.success(request, _("You have successfully made your reinforcements."))
-				return HttpResponseRedirect(request.path)
+						player.save()
+						player.end_phase()
+						messages.success(request, _("You have successfully made your reinforcements."))
+						return HttpResponseRedirect(request.path)
 			else:
 				if max_units > 0:
 					formset = ReinforceFormSet()
