@@ -103,7 +103,7 @@ def summary(request):
 		context.update( {'actions': Player.objects.filter(user=request.user, game__slots=0, done=False).select_related('game')} )
 		## show unseen notices
 		if notification:
-			new_notices = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)
+			new_notices = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)[:20]
 			context.update({'new_notices': new_notices,})
 	else:
 		joinable = Game.objects.filter(slots__gt=0, private=False).order_by('slots').select_related('scenario', 'configuration', 'player__user')
