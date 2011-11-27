@@ -12,6 +12,7 @@ from machiavelli.models import *
 CITIES_TO_WIN = (
 	(15, _('Normal game (15 cities)')),
 	(23, _('Long game (23 cities)')),
+	(12, _('Short game (12 cities - see help)')),
 )
 
 class GameForm(forms.ModelForm):

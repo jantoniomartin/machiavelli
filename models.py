@@ -399,6 +399,10 @@ class Game(models.Model):
 	finished = models.DateTimeField(blank=True, null=True)
 	cities_to_win = models.PositiveIntegerField(default=15,
 				help_text=_("cities that must be controlled to win a game"))
+	## if true, the player must keep all his home cities to win
+	require_home_cities = models.BooleanField(default=False)
+	## minimum number of conquered cities, apart from home country, to win
+	extra_conquered_cities = models.PositiveIntegerField(default=0)
 	fast = models.BooleanField(default=0)
 	private = models.BooleanField(default=0,
 				help_text=_("only invited users can join the game"))
@@ -410,6 +414,11 @@ class Game(models.Model):
 	def save(self, *args, **kwargs):
 		if not self.pk:
 			self.fast = self.time_limit in FAST_LIMITS
+			## short games
+			## TODO: make this not hardcoded
+			if self.cities_to_win == 12:
+				self.require_home_cities = True
+				self.extra_conquered_cities = 6
 		super(Game, self).save(*args, **kwargs)
 
 	##------------------------
@@ -1654,10 +1663,35 @@ class Game(models.Model):
 	##------------------------
 
 	def check_winner(self):
-		""" Returns True if at least one player has reached the cities_to_win. """
+		""" Returns True if at least one player has reached the victory conditions. """
 
 		for p in self.player_set.filter(user__isnull=False):
 			if p.number_of_cities() >= self.cities_to_win:
+				if self.require_home_cities:
+					try:
+						## find a home city controlled by other player
+						GameArea.objects.exclude(player=p).get(game=self,
+											board_area__home__scenario=self.scenario,
+											board_area__home__country=p.country,
+											board_area__home__is_home=True,
+											board_area__has_city=True)
+					except ObjectDoesNotExist:
+						## the player controls all his home cities
+						pass
+					except MultipleObjectsReturned:
+						## at least two home cities are not controlled by the player
+						continue
+					else:
+						## one home city is not controlled by the player
+						continue
+				if self.extra_conquered_cities > 0:
+					## count the not home cities controled by the player
+					extra = GameArea.objects.filter(player=p, board_area__has_city=True).exclude(
+											board_area__home__scenario=self.scenario,
+											board_area__home__country=p.country,
+											board_area__home__is_home=True).count()
+					if extra < self.extra_conquered_cities:
+						continue
 				return True
 		return False
 		
