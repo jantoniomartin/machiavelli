@@ -2883,8 +2883,8 @@ class Order(models.Model):
 		convoy_areas = GameArea.objects.filter(
 						## in this game
 						(Q(game=self.unit.player.game) &
-						## being sea areas
-						Q(board_area__is_sea=True) &
+						## being sea areas or Venice
+						(Q(board_area__is_sea=True) | Q(board_area__code__exact="VEN")) & 
 						## with convoy orders
 						Q(unit__order__code__exact='C') &
 						## convoying this unit
