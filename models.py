@@ -2484,9 +2484,9 @@ class UnitManager(models.Manager):
 		else:
 			support = int(support_sum['unit__power__sum'])
 		if game.configuration.finances:
-			if not u_order or u_order.code in ('', 'H', 'S', 'C', 'B'):
-				if u.area.has_rebellion(u.player, same=True):
-					support -= 1
+			if u_order.code == '-':
+				if u_order.destination.has_rebellion(u_order.destination.player, same=True):
+					support += 1
 		u.strength = u.power + support
 		return u
 
@@ -2512,13 +2512,11 @@ class UnitManager(models.Manager):
 		WHERE p.game_id=%s" % game.id)
 		result_list = []
 		for row in cursor.fetchall():
-			holding = False
 			support_query = Q(unit__player__game=game,
 							  code__exact='S',
 							  subunit__pk=row[0])
 			if row[11] in (None, '', 'H', 'S', 'C', 'B'): #unit is holding
 				support_query &= Q(subcode__exact='H')
-				holding = True
 			elif row[11] == '=':
 				support_query &= Q(subcode__exact='=',
 						   		subtype__exact=row[13])
@@ -2536,8 +2534,10 @@ class UnitManager(models.Manager):
 							must_retreat=row[5], placed=row[6], paid=row[7],
 							cost=row[8], power=row[9], loyalty=row[10])
 			if game.configuration.finances:
-				if holding and unit.area.has_rebellion(unit.player, same=True):
-					support -= 1
+				if row[11] == '-':
+					destination = GameArea.objects.get(id=row[12])
+					if destination.has_rebellion(destination.player, same=True):
+						support += 1
 			unit.strength = unit.power + support
 			result_list.append(unit)
 		result_list.sort(cmp=lambda x,y: cmp(x.strength, y.strength), reverse=True)
