@@ -576,15 +576,14 @@ class Game(models.Model):
 	
 	def shuffle_countries(self):
 		""" Assign a Country of the Scenario to each Player, randomly. """
-
-		countries_dict = self.scenario.setup_set.values('country').distinct()
-		countries = []
-		for c in countries_dict:
-			for v in c.values():
-				if v:
-					countries.append(v)
-		## the number of players and countries should be the same
-		assert len(countries) == len(self.player_set.filter(user__isnull=False)), "Number of players should be the same as number of countries"
+		countries = self.scenario.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct()
+		countries = list(countries)
+		players = self.player_set.filter(user__isnull=False)
+		neutral_count = len(countries) - players.count()
+		if neutral_count > 0:
+			## there are more countries than players
+			neutral_ids = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
+			countries = [item for item in countries if item not in neutral_ids]
 		## a list of tuples will be returned
 		assignment = []
 		## shuffle the list of countries
@@ -612,13 +611,23 @@ class Game(models.Model):
 
 	def get_disabled_areas(self):
 		""" Returns the disabled Areas in the game scenario """
-		return Area.objects.filter(disabledarea__scenario=self.scenario)
+		enabled = self.gamearea_set.values_list('board_area', flat=True)
+		#return Area.objects.filter(disabledarea__scenario=self.scenario)
+		return Area.objects.exclude(id__in=enabled)
 
 	def create_game_board(self):
 		""" Creates the GameAreas for the Game.	"""
 		disabled_ids = Area.objects.filter(disabledarea__scenario=self.scenario).values_list('id', flat=True)
+		countries = self.scenario.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct()
+		player_count = self.player_set.exclude(user__isnull=True).count()
+		neutral_count = countries.count() - player_count
+		neutral_ids = []
+		if neutral_count > 0:
+			neutrals = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
+			neutrals = list(neutrals)
+			neutral_ids = self.scenario.home_set.filter(country__id__in=neutrals, is_home=True).values_list('area__id', flat=True)
 		for a in Area.objects.all():
-			if not a.id in disabled_ids:
+			if not (a.id in disabled_ids or a.id in neutral_ids):
 				ga = GameArea(game=self, board_area=a)
 				ga.save()
 
