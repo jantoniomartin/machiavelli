@@ -540,35 +540,37 @@ class Game(models.Model):
 	## game starting methods
 	##------------------------
 
+	def start(self):
+		""" Starts the game """
+		if not self.started is None:
+			## the game is already started
+			return
+		if logging:
+			logger.info("Starting game %s" % self.id)
+		if self.private:
+			self.invitation_set.all().delete()
+		self.slots = 0
+		self.year = self.scenario.start_year
+		self.season = 1
+		self.phase = PHORDERS
+		self.create_game_board()
+		self.shuffle_countries()
+		self.copy_country_data()
+		self.home_control_markers()
+		self.place_initial_units()
+		if self.configuration.finances:
+			self.assign_initial_income()
+		if self.configuration.assassinations:
+			self.create_assassins()
+		self.make_map()
+		self.started = datetime.now()
+		self.last_phase_change = datetime.now()
+		self.notify_players("game_started", {"game": self})
+		self.save()
+
 	def player_joined(self):
 		self.slots -= 1
-		#self.map_outdated = True
-		if self.slots == 0:
-			#the game has all its players and should start
-			if logging:
-				logger.info("Starting game %s" % self.id)
-			if self.private:
-				self.invitation_set.all().delete()
-			self.year = self.scenario.start_year
-			self.season = 1
-			self.phase = PHORDERS
-			self.create_game_board()
-			self.shuffle_countries()
-			self.copy_country_data()
-			self.home_control_markers()
-			self.place_initial_units()
-			if self.configuration.finances:
-				self.assign_initial_income()
-			if self.configuration.assassinations:
-				self.create_assassins()
-			#self.map_outdated = True
-			self.make_map()
-			self.started = datetime.now()
-			self.last_phase_change = datetime.now()
-			self.notify_players("game_started", {"game": self})
 		self.save()
-		#if self.map_outdated == True:
-		#	self.make_map()
 	
 	def shuffle_countries(self):
 		""" Assign a Country of the Scenario to each Player, randomly. """
