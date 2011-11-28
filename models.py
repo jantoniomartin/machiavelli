@@ -2518,7 +2518,7 @@ class UnitManager(models.Manager):
 		else:
 			support = int(support_sum['unit__power__sum'])
 		if game.configuration.finances:
-			if u_order.code == '-':
+			if not u_order is None and u_order.code == '-':
 				if u_order.destination.has_rebellion(u_order.destination.player, same=True):
 					support += 1
 		u.strength = u.power + support
