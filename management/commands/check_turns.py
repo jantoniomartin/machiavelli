@@ -29,7 +29,10 @@ when all the players have finished OR the time limit is exceeded
 			try:
 				g.check_finished_phase()
 			except Exception, e:
-				self.stderr.write("Error while checking if phase is finished in game %s\n\n" % game.pk)
+				msg = "Error while checking if phase is finished in game %s\n\n" % game.pk
+				logger.error(msg)
+				logger.error(e)
+				self.stderr.write(msg)
 				self.stderr.write(e)
 				continue
 		fast_games = models.LiveGame.objects.filter(fast=True)
