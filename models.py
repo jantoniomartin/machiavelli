@@ -404,6 +404,7 @@ class Game(models.Model):
 	## minimum number of conquered cities, apart from home country, to win
 	extra_conquered_cities = models.PositiveIntegerField(default=0)
 	fast = models.BooleanField(default=0)
+	uses_karma = models.BooleanField(default=True)
 	private = models.BooleanField(default=0,
 				help_text=_("only invited users can join the game"))
 	comment = models.TextField(max_length=255, blank=True, null=True,
@@ -413,7 +414,9 @@ class Game(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.pk:
-			self.fast = self.time_limit in FAST_LIMITS
+			if self.time_limit in FAST_LIMITS:
+				self.fast = True
+				self.uses_karma = False
 			## short games
 			## TODO: make this not hardcoded
 			if self.cities_to_win == 12:
@@ -679,7 +682,7 @@ class Game(models.Model):
 		""" Returns the Time of the next compulsory phase change. """
 		if self.phase == PHINACTIVE :
 			return False	
-		if self.fast:
+		if not self.uses_karma:
 			## do not use karma
 			time_limit = self.time_limit
 		else:
@@ -2237,7 +2240,7 @@ class Player(models.Model):
 		self.step = 0
 		self.save()
 		if not forced:
-			if not self.game.fast and self.game.check_bonus_time():
+			if self.game.uses_karma and self.game.check_bonus_time():
 				## get a karma bonus
 				#self.user.stats.adjust_karma(1)
 				self.user.get_profile().adjust_karma(1)
@@ -2280,7 +2283,7 @@ class Player(models.Model):
 		if this were the only player (i.e. only his own karma is considered)
 		"""
 		
-		if self.game.fast:
+		if not self.game.uses_karma:
 			karma = 100.
 		else:
 			karma = float(self.user.get_profile().karma)
@@ -2330,13 +2333,13 @@ class Player(models.Model):
 	
 	def force_phase_change(self):
 		## the player didn't take his actions, so he loses karma
-		if not self.game.fast:
+		if self.game.uses_karma:
 			self.user.get_profile().adjust_karma(-10)
 		## if there is a revolution with an overthrowing player, change users
 		try:
 			rev = Revolution.objects.get(government=self)
 		except ObjectDoesNotExist:
-			if not self.game.fast:
+			if self.game.uses_karma:
 				## create a new possible revolution
 				rev = Revolution(government=self)
 				rev.save()
