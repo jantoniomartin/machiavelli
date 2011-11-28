@@ -214,6 +214,20 @@ class Country(models.Model):
 	def __unicode__(self):
 		return self.name
 
+class Neutral(models.Model):
+	""" Defines a country that will not be used when a game has less players
+	than the default. """
+	scenario = models.ForeignKey(Scenario)
+	country = models.ForeignKey(Country)
+	priority = models.PositiveIntegerField(default=0)
+
+	class Meta:
+		ordering = ['scenario', 'priority',]
+		unique_together = (('scenario', 'country'), ('scenario', 'priority'),)
+
+	def __unicode__(self):
+		return "(%s) %s" % (self.priority, self.country)
+
 class Area(models.Model):
 	""" his class describes **only** the area features in the board. The game is
 actually played in GameArea objects.
