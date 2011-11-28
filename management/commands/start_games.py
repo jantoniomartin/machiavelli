@@ -19,7 +19,9 @@ class Command(NoArgsCommand):
 			logger.warning("App is in maintenance mode. Exiting.\n")
 			self.stderr.write("App is in maintenance mode. Exiting.\n")
 			return
-		games = models.Game.objects.filter(slots=0, started__isnull=True)
+		games = models.Game.objects.filter(slots=0,
+											started__isnull=True,
+											autostart=True)
 		if games.count() > 0:
 			for g in games:
 				msg = "Starting game %s\n" % g.slug

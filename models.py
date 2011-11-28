@@ -411,6 +411,8 @@ class Game(models.Model):
 	created = models.DateTimeField(blank=True, null=True, auto_now_add=True)
 	started = models.DateTimeField(blank=True, null=True)
 	finished = models.DateTimeField(blank=True, null=True)
+	## if true, the game will start when it has all the players
+	autostart = models.BooleanField(default=True)
 	cities_to_win = models.PositiveIntegerField(default=15,
 				help_text=_("cities that must be controlled to win a game"))
 	## if true, the player must keep all his home cities to win
