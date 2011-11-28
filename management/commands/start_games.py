@@ -21,6 +21,7 @@ class Command(NoArgsCommand):
 			return
 		games = models.Game.objects.filter(slots=0,
 											started__isnull=True,
+											finished__isnull=True,
 											autostart=True)
 		if games.count() > 0:
 			for g in games:
