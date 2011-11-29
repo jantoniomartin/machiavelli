@@ -2267,6 +2267,8 @@ class Player(models.Model):
 			Unit.objects.get(player=self, paid=True, cost__gt=3)
 		except ObjectDoesNotExist:
 			return False
+		except MultipleObjectsReturned:
+			return True
 		else:
 			return True
 
