@@ -1169,31 +1169,48 @@ class Game(models.Model):
 		orders.
 		"""
 
-		info = u"Step 2: Cancel supports from units under attack.\n"
-		support_orders = Order.objects.filter(unit__player__game=self, code__exact='S')
-		for s in support_orders:
-			info += u"Checking order %s.\n" % s
-			if s.unit.type != 'G' and s.unit.area in self.get_conflict_areas():
-				attacks = Order.objects.filter(~Q(unit__player=s.unit.player) &
+		conflict_areas = self.get_conflict_areas()
+		for step in (1, 2):
+			## This for sequence is run twice.
+			## In the first pass, all the supporting units under attack are deleted, except the ones
+			## where the attack comes from the area they are supporting an advance to.
+			## In the second pass, every support order being attacked by a superior force is deleted
+			## because the unit will be dislodged.
+			if step == 1:
+				info = u"Step 2a: Cancel supports from units under attack.\n"
+			elif step == 2:
+				info += u"Step 2b: Cancel supports from units that will be dislodged.\n"
+			support_orders = Order.objects.filter(unit__player__game=self, code__exact='S')
+			for s in support_orders:
+				info += u"Checking order %s.\n" % s
+				if s.unit.type != 'G' and s.unit.area in conflict_areas:
+					attacks = Order.objects.filter(~Q(unit__player=s.unit.player) &
 												((Q(code__exact='-') & Q(destination=s.unit.area)) |
 												(Q(code__exact='=') & Q(unit__area=s.unit.area) &
 												Q(unit__type__exact='G'))))
-				if len(attacks) > 0:
-					info += u"Supporting unit is being attacked.\n"
-					for a in attacks:
-						##TODO: if a unit giving support is dislodged, its support is cut
-						if (s.subcode == '-' and s.subdestination == a.unit.area) or \
-						(s.subcode == '=' and s.subtype in ['A','F'] and s.subunit.area == a.unit.area):
-							info += u"Support is not broken.\n"
-							continue
-						else:
-							info += u"Attack from %s breaks support.\n" % a.unit
-							if signals:
-								signals.support_broken.send(sender=s.unit)
+					if len(attacks) > 0:
+						info += u"Supporting unit is being attacked.\n"
+						for a in attacks:
+							if (s.subcode == '-' and s.subdestination == a.unit.area) or \
+							(s.subcode == '=' and s.subtype in ['A','F'] and s.subunit.area == a.unit.area):
+								if step == 1:
+									info += u"Attack comes from area where support is given. Support is not broken.\n"
+									info += u"Support will be broken if the unit is dislodged.\n"
+									continue
+								elif step == 2:
+									a_unit = Unit.objects.get_with_strength(self, id=a.unit.id)
+									d_unit = Unit.objects.get_with_strength(self, id=s.unit.id)
+									if a_unit.strength > d_unit.strength:
+										info += u"Attack from %s breaks support (unit dislodged).\n" % a_unit
+										signals.support_broken.send(sender=s.unit)
+										s.delete()
+										break
 							else:
-								self.log_event(UnitEvent, type=s.unit.type, area=s.unit.area.board_area, message=0)
-							s.delete()
-							break
+								if step == 1:
+									info += u"Attack from %s breaks support.\n" % a.unit
+									signals.support_broken.send(sender=s.unit)
+									s.delete()
+									break
 		return info
 
 	def filter_convoys(self):
