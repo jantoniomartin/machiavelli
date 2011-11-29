@@ -165,6 +165,14 @@ class Scenario(models.Model):
 	def get_slots(self):
 		#slots = len(self.setup_set.values('country').distinct()) - 1
 		return self.number_of_players
+	
+	def get_max_players(self):
+		return self.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct().count()
+
+	def get_min_players(self):
+		max_players = self.get_max_players()
+		neutrals = self.neutral_set.count()
+		return max_players - neutrals
 
 	def __unicode__(self):
 		return self.title
