@@ -94,7 +94,7 @@ def sidebar_context(request):
 
 def summary(request):
 	context = sidebar_context(request)
-	comments = GameComment.objects.public().order_by('-id')[:5]
+	comments = GameComment.objects.public().order_by('-id')[:3]
 	context.update({'comments': comments})
 	if request.user.is_authenticated():
 		joinable = Game.objects.exclude(player__user=request.user).filter(slots__gt=0, private=False).order_by('slots').select_related('scenario', 'configuration', 'player__user')
