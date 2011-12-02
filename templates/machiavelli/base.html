@@ -30,6 +30,13 @@
 <div id="left_column">
 	{% block left_column %}{% endblock %}
 </div>
+
+{% if ad_banner %}
+<div id="banner">
+	<a href="{{ banner_url }}"><img src="{{ STATIC_URL }}img/{{ ad_banner }}" /></a>
+</div>
+{% endif %}
+
 <div id="right_column">
 
 <div id="activity_count">
