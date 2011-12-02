@@ -121,9 +121,11 @@ class GameAdmin(admin.ModelAdmin):
 	player_list.short_description = 'Player list'
 
 class LiveGameAdmin(admin.ModelAdmin):
-	list_display = ('pk', 'slug', 'year', 'season', 'phase', 'next_phase_change', 'started')
+	list_display = ('pk', 'slug', 'paused', 'year', 'season', 'phase', 'next_phase_change', 'started')
 	actions = ['redraw_map',
-				'check_finished_phase',]
+				'check_finished_phase',
+				'pause',
+				'resume',]
 	inlines = [ ConfigurationInline, ]
 
 	def redraw_map(self, request, queryset):
@@ -135,6 +137,14 @@ class LiveGameAdmin(admin.ModelAdmin):
 		for obj in queryset:
 			obj.check_finished_phase()
 	check_finished_phase.short_description = "Check finished phase"
+
+	def pause(self, request, queryset):
+		queryset.update(paused=True)
+	pause.short_description = "Pause the games"
+
+	def resume(self, request, queryset):
+		queryset.update(paused=False)
+	resume.short_description = "Resume paused games"
 	
 class RetreatOrderAdmin(admin.ModelAdmin):
 	pass

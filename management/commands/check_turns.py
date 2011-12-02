@@ -23,7 +23,7 @@ when all the players have finished OR the time limit is exceeded
 			logger.warning("App is in maintenance mode. Exiting.")
 			self.stderr.write("App is in maintenance mode. Exiting.")
 			return
-		games = models.LiveGame.objects.filter(fast=False)
+		games = models.LiveGame.objects.filter(fast=False, paused=False)
 		for g in games:
 			self.stdout.write("Checking game %s" % g.slug)
 			try:
@@ -35,7 +35,7 @@ when all the players have finished OR the time limit is exceeded
 				self.stderr.write(msg)
 				self.stderr.write(e)
 				continue
-		fast_games = models.LiveGame.objects.filter(fast=True)
+		fast_games = models.LiveGame.objects.filter(fast=True, paused=False)
 		for game in fast_games:
 			try:
 				game.check_finished_phase()

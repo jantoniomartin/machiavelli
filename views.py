@@ -395,7 +395,7 @@ def show_inactive_game(request, game):
 #@login_required
 def play_game(request, slug='', **kwargs):
 	game = get_object_or_404(Game, slug=slug)
-	if game.started is None or not game.finished is None:
+	if game.started is None or not game.finished is None or game.paused:
 		return show_inactive_game(request, game)
 	try:
 		player = Player.objects.get(game=game, user=request.user)

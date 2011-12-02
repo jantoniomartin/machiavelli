@@ -429,6 +429,7 @@ class Game(models.Model):
 	extra_conquered_cities = models.PositiveIntegerField(default=0)
 	fast = models.BooleanField(default=0)
 	uses_karma = models.BooleanField(default=True)
+	paused = models.BooleanField(default=False)
 	private = models.BooleanField(default=0,
 				help_text=_("only invited users can join the game"))
 	comment = models.TextField(max_length=255, blank=True, null=True,
