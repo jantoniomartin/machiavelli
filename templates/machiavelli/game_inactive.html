@@ -10,8 +10,17 @@
 
 {% block left_column %}
 <h1>{{ game.slug }}</h1>
-{% if not started %}
-<p>{% blocktrans %}This game has not started, because is has not yet enough players.{% endblocktrans %}</p>
+{% if started %}
+	{% if game.paused %}
+	<p>{% trans "This game is paused for maintenance. It will be resumed soon." %}</p>
+	{% endif %}
+{% else %}
+	{% if game.slots > 0 %}
+	<p>{% blocktrans %}This game has not started, because is has not yet enough players.{% endblocktrans %}</p>
+	{% endif %}
+	{% if game.slots == 0 %}
+	<p>{% trans "This game will start in a few minutes." %}</p>
+	{% endif %}
 {% endif %}
 
 <div class="game_info {% if game.fast %}fast{% endif %}">
