@@ -3146,7 +3146,7 @@ class Order(models.Model):
 		elif self.code == '=':
 			if self.unit.area.board_area.is_fortified:
 				if self.unit.type == 'G':
-					if self.type == 'A' and not self.unit.area.board_area.is_sea:
+					if self.type == 'A' and not self.unit.area.board_area.is_sea and not self.unit.area.board_area.code == 'VEN':
 						return True
 					if self.type == 'F' and self.unit.area.board_area.has_port:
 						return True
