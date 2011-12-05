@@ -556,6 +556,8 @@ def play_finance_reinforcements(request, game, player):
 				else:
 					formset = None
 					player.end_phase()
+					messages.success(request, _("You have successfully made your reinforcements."))
+					return HttpResponseRedirect(request.path)
 				if formset and formset.is_valid():
 					total_cost = 0
 					for f in formset.forms:
@@ -576,8 +578,10 @@ def play_finance_reinforcements(request, game, player):
 					player.ducats = player.ducats - total_cost
 					player.save()
 					player.end_phase()
-				messages.success(request, _("You have successfully made your reinforcements."))
-				return HttpResponseRedirect(request.path)
+					messages.success(request, _("You have successfully made your reinforcements."))
+					return HttpResponseRedirect(request.path)
+				else:
+					messages.error(request, _("There are one or more errors in the form below."))
 			else:
 				if max_units > 0:
 					formset = ReinforceFormSet()
