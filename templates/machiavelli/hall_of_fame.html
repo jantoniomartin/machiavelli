@@ -15,10 +15,10 @@ server{% endblocktrans %}</p>
 	<thead>
 	<tr>
 	<th colspan=2>{% trans "User" %}</th>
-	<th>{% trans "Karma" %}</th>
-	<th>{% trans "Ranking score" %}</th>
-	<th>{% trans "Total score" %}</th>
-	<th>{% trans "Details" %}</th>
+	<th><a href="?o=karma">{% trans "Karma" %}</a></th>
+	<th><a href="?o=weighted_score">{% trans "Ranking score" %}</a></th>
+	<th><a href="?o=total_score">{% trans "Total score" %}</a></th>
+	<th><a href="?o=overthrows">{% trans "Overthrows" %}</a></th>
 	</tr>
 	</thead>
 	{% for p in profiles.object_list %}
@@ -26,7 +26,7 @@ server{% endblocktrans %}</p>
 	<td>{% avatar p.user %}</td>
 	<td><a href="{% url profile_detail username=p.user.username %}">{{ p }}</a></td>
 	<td>{{ p.karma|karma_stars }}</td>
-	<td class="data_c">{{ p.weighted_score }}</td>
+	<td class="data_c"><a href="{% url ranking "user" p.user.username %}">{{ p.weighted_score }}</a></td>
 	<td class="data_c">
 	{% if p.total_score %}
 		{{ p.total_score|score_stars }} ({{ p.total_score }})
@@ -34,7 +34,7 @@ server{% endblocktrans %}</p>
 		{{ 0|score_stars }} (0)
 	{% endif %}
 	</td>
-	<td><a href="{% url ranking "user" p.user.username %}">{% trans "Details" %}</a></td>
+	<td class="data_c">{{ p.overthrows }}</td>
 	</tr>
 	{% endfor %}
 
