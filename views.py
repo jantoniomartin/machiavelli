@@ -1163,8 +1163,10 @@ def ranking(request, key='', val=''):
 def scenario_stats(request, scenario_id):
 	scenario = get_object_or_404(Scenario, id=scenario_id)
 	context = {'scenario': scenario, }
+	games = Game.objects.filter(finished__isnull=False, scenario=scenario).count()
 	countries = Country.objects.scenario_stats(scenario)
-	context.update({'countries': countries })
+	context.update({'countries': countries,
+					'games': games,})
 	return render_to_response('machiavelli/scenario_stats.html',
 							context,
 							context_instance=RequestContext(request))

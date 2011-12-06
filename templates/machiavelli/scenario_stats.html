@@ -8,6 +8,8 @@
 
 <h1>{% blocktrans with scenario.title as title %}Stats by country in "{{ title }}"{% endblocktrans %}</h1>
 
+<p>{% blocktrans %}This scenario has been played a total of {{ games }} times.{% endblocktrans %}</p>
+
 <table>
 <thead><tr>
 	<th>{% trans "Country" %}</th>
