@@ -75,6 +75,7 @@ def sidebar_context(request):
 	if not sidebar_context:
 		sidebar_context = {}
 		activity = Player.objects.exclude(user__isnull=True).values("user").distinct().count()
+		games = LiveGame.objects.count()
 		top_users = CondottieriProfile.objects.all().order_by('-weighted_score')[:5]
 		if not user_id is None:
 			profile = request.user.get_profile()
@@ -86,6 +87,7 @@ def sidebar_context(request):
 		server = Server.objects.get()
 		ranking_last_update = server.ranking_last_update
 		sidebar_context.update({ 'activity': activity,
+				'games': games,
 				'top_users': top_users,
 				'whispers': latest_gossip,
 				'ranking_last_update': ranking_last_update,})
