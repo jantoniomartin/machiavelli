@@ -1,0 +1,29 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Stats for " %}{{ scenario.title }}{% endblock %}
+
+{% block body %}
+
+<h1>{% blocktrans with scenario.title as title %}Stats by country in "{{ title }}"{% endblocktrans %}</h1>
+
+<table>
+<thead><tr>
+	<th>{% trans "Country" %}</th>
+	<th>{% trans "Average score" %}</th>
+	<th>{% trans "Average position" %}</th>
+</tr></thead>
+
+{% for c in countries %}
+	<tr>
+	<td class="data_c">{{ c.name }}</td>
+	<td class="data_c">{{ c.avg_points }}</td>
+	<td class="data_c">{{ c.avg_position }}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<p><a href="{% url show-scenario scenario_id=scenario.id %}">{% trans "Return to scenario details." %}</a></p>
+
+{% endblock %}
