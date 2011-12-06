@@ -4,21 +4,6 @@
 
 .uniForm .focused{ background: #444; }
 
-tr.open_game {
-	background: #c4efc2;
-	color: #333;
-}
-
-tr.closed_game {
-	background: #efc2c2;
-	color: #333;
-}
-
-tr.open_game a,
-tr.closed_game a{
-	color: #111;
-}
-
 #game_info {
 	width: 95%;
 	padding: 0;
@@ -153,10 +138,6 @@ tr.closed_game a{
 .naples a,
 .naples a:visited {
 	color: #111;
-}
-
-.unread {
-	font-weight: bold;
 }
 
 /* Season colors

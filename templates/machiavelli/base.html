@@ -3,7 +3,9 @@
 {% load i18n %}
 {% load avatar_tags %}
 
-{% block extra_head %}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/machiavelli.css" />
+{% endblock %}
 
 {% block body_class %}machiavelli{% endblock %}
 {% block rtab_id %}id="machiavelli_tab"{% endblock %}
