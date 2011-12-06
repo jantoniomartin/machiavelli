@@ -1160,6 +1160,15 @@ def ranking(request, key='', val=''):
 							context,
 							context_instance=RequestContext(request))
 
+def scenario_stats(request, scenario_id):
+	scenario = get_object_or_404(Scenario, id=scenario_id)
+	context = {'scenario': scenario, }
+	countries = Country.objects.scenario_stats(scenario)
+	context.update({'countries': countries })
+	return render_to_response('machiavelli/scenario_stats.html',
+							context,
+							context_instance=RequestContext(request))
+
 @login_required
 def turn_log_list(request, slug=''):
 	game = get_object_or_404(Game, slug=slug)

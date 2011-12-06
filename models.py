@@ -210,6 +210,11 @@ class SpecialUnit(models.Model):
 																		'power': self.power,
 																		'loyalty': self.loyalty}
 
+class CountryManager(models.Manager):
+	def scenario_stats(self, scenario):
+		return self.filter(score__game__scenario=scenario).distinct().annotate(avg_points=Avg('score__points'),
+													avg_position=Avg('score__position')).order_by('avg_position')
+
 class Country(models.Model):
 	""" This class defines a Machiavelly country. """
 
@@ -218,6 +223,8 @@ class Country(models.Model):
 	can_excommunicate = models.BooleanField(default=False)
 	static_name = models.CharField(max_length=20, default="")
 	special_units = models.ManyToManyField(SpecialUnit)
+	
+	objects = CountryManager()
 
 	def __unicode__(self):
 		return self.name
