@@ -1119,7 +1119,8 @@ def hall_of_fame(request):
 		profiles = paginator.page(page)
 	except (EmptyPage, InvalidPage):
 		profiles = paginator.page(paginator.num_pages)
-	context = {'profiles': profiles}
+	context = {'profiles': profiles,
+				'order': order,}
 	return render_to_response('machiavelli/hall_of_fame.html',
 							context,
 							context_instance=RequestContext(request))
