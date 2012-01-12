@@ -51,6 +51,14 @@ class PlayerAdmin(admin.ModelAdmin):
 	list_filter = ('game', 'done')
 	ordering = ['game']
 
+class PlayerInline(admin.TabularInline):
+	model = Player
+	extra = 0
+	ordering = ['user__username']
+	can_delete = False
+	fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	readonly_fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+
 class RevolutionAdmin(admin.ModelAdmin):
 	list_display = ('government', 'opposition')
 
@@ -58,6 +66,14 @@ class ScoreAdmin(admin.ModelAdmin):
 	list_display = ('user', 'game', 'country', 'points', 'cities', 'position')
 	list_filter = ('game', 'user', 'country')
 	ordering = ['game']
+
+class ScoreInline(admin.TabularInline):
+	model = Score
+	extra = 0
+	ordering = ['user__username']
+	can_delete = False
+	fields = ('user', 'game', 'country', 'points', 'cities', 'position')
+	readonly_fields = ('user', 'game', 'country', 'points', 'cities')
 
 class UnitAdmin(admin.ModelAdmin):
 	list_display = ('__unicode__', 'player', 'must_retreat', 'power', 'loyalty', 'placed', 'paid')
@@ -71,7 +87,7 @@ class GameAreaAdmin(admin.ModelAdmin):
 	list_display = ('game', 'board_area', 'player', 'standoff', 'famine', 'storm')
 	list_per_page = 73
 	ordering = ['board_area']
-	list_filter = ('game', 'player', 'standoff', 'famine', 'storm')
+	list_filter = ('player', )
 
 class SetupAdmin(admin.ModelAdmin):
 	list_display = ('scenario', 'country', 'area', 'unit_type')
@@ -110,7 +126,7 @@ class ConfigurationInline(admin.TabularInline):
 
 class GameAdmin(admin.ModelAdmin):
 	list_display = ('pk', 'slug', 'slots', 'scenario', 'created_by', 'started', 'finished', 'player_list')
-	inlines = [ ConfigurationInline, ]
+	inlines = [ ConfigurationInline, ScoreInline,]
 
 	def player_list(self, obj):
 		users = []
@@ -126,7 +142,7 @@ class LiveGameAdmin(admin.ModelAdmin):
 				'check_finished_phase',
 				'pause',
 				'resume',]
-	inlines = [ ConfigurationInline, ]
+	inlines = [ ConfigurationInline, PlayerInline, ]
 
 	def redraw_map(self, request, queryset):
 		for obj in queryset:
