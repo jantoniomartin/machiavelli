@@ -1311,7 +1311,7 @@ msgstr "Mapa"
 msgid ""
 "<strong>%(activity)s</strong> people playing <strong>%(games)s</strong> "
 "games."
-msgstr "<strong>%(activity)s</strong> personas jugando <strong>%(games)s</strong> "
+msgstr "<strong>%(activity)s</strong> personas jugando <strong>%(games)s</strong> partidas."
 
 #: templates/machiavelli/base.html:47
 msgid "Best players"
