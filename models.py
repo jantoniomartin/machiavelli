@@ -1607,6 +1607,10 @@ class Game(models.Model):
 				signals.forced_to_retreat.send(sender=u)
 			else:
 				self.log_event(UnitEvent, type=u.type, area=u.area.board_area, message=1)
+			## if the unit has no possible retreat, disband it
+			options = u.get_possible_retreats().count()
+			if options == 0:
+				u.delete()
 		return info
 
 	def preprocess_orders(self):
