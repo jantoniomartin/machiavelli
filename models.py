@@ -906,10 +906,13 @@ class Game(models.Model):
 					## reset storm markers
 					self.gamearea_set.all().update(storm=False)
 				## check if any users are eliminated
+				to_eliminate = []
 				for p in self.player_set.filter(eliminated=False,
 												user__isnull=False):
 					if p.check_eliminated():
-						p.eliminate()
+						to_eliminate.append(p)
+				for p in to_eliminate():
+					p.eliminate()
 				self.update_controls()
 				## if conquering is enabled, check conquerings
 				if self.configuration.conquering:
