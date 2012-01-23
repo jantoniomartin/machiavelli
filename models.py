@@ -911,7 +911,7 @@ class Game(models.Model):
 												user__isnull=False):
 					if p.check_eliminated():
 						to_eliminate.append(p)
-				for p in to_eliminate():
+				for p in to_eliminate:
 					p.eliminate()
 				self.update_controls()
 				## if conquering is enabled, check conquerings
