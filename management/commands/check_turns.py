@@ -29,7 +29,7 @@ when all the players have finished OR the time limit is exceeded
 			try:
 				g.check_finished_phase()
 			except Exception, e:
-				msg = "Error while checking if phase is finished in game %s\n\n" % game.pk
+				msg = "Error while checking if phase is finished in game %s\n\n" % g.pk
 				logger.error(msg)
 				logger.error(e)
 				self.stderr.write(msg)
