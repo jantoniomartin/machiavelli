@@ -157,8 +157,10 @@
 <div id="actions">
 {% block actions %}{% endblock %}
 </div>
-{% if game.configuration.gossip %}
 <div id="mini_shoutbox">
+<h2>{% trans "Journal" %}</h2>
+<p><a href="{% url edit-journal game.slug %}">{% trans "Edit journal" %}</a></p>
+{% if game.configuration.gossip %}
 <h2>{% trans "Gossip" %}</h2>
 <ul>
 {% for w in whispers %}
@@ -173,8 +175,8 @@
 </form>
 {% endif %}
 <p><a href="{% url whisper-list game.slug %}">{% trans "Show all" %}</a></p>
-</div>
 {% endif %}
+</div>
 
 {% endblock %}
 

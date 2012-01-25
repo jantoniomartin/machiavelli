@@ -1,0 +1,18 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Game journal" %}</h2>
+<form action="" method="post">
+{% csrf_token %}
+<fieldset>
+{{ form.content }}
+</fieldset>
+<p><input type="submit" value="{% trans "Save" %}" /></p>
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+</div>
+{% endblock %}

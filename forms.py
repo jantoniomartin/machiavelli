@@ -91,6 +91,16 @@ class WhisperForm(forms.ModelForm):
 		self.instance.user = user
 		self.instance.game = game
 
+class JournalForm(forms.ModelForm):
+	class Meta:
+		model = Journal
+		fields = ('content',)
+
+	def __init__(self, user, game, **kwargs):
+		super(JournalForm, self).__init__(**kwargs)
+		self.instance.user = user
+		self.instance.game = game
+
 class GameCommentForm(forms.ModelForm):
 	class Meta:
 		model = GameComment

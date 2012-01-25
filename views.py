@@ -1368,3 +1368,25 @@ def whisper_list(request, slug):
 	return render_to_response('machiavelli/whisper_list.html',
 							context,
 							context_instance=RequestContext(request))
+
+@login_required
+def edit_journal(request, slug):
+	game = get_object_or_404(Game, slug=slug)
+	player = get_object_or_404(Player, game=game, user=request.user)
+	context = base_context(request, game, player)
+	try:
+		journal = Journal.objects.get(user=request.user, game=game)
+	except ObjectDoesNotExist:
+		journal = Journal()
+	if request.method == 'POST':
+		form = forms.JournalForm(request.user, game, instance=journal, data=request.POST)
+		if form.is_valid():
+			journal = form.save()
+	else:
+		form = forms.JournalForm(request.user, game, instance=journal)
+	context.update({'journal': journal,
+					'form': form,})
+	return render_to_response('machiavelli/edit_journal.html',
+							context,
+							context_instance=RequestContext(request))
+

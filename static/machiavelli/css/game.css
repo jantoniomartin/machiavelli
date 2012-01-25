@@ -308,6 +308,10 @@
 	border: solid 1px #666;
 }
 
+#actions form textarea {
+	width: 100%;
+}
+
 .action_block {
 	padding: 0 0 0.5em 0;
 	background-color: #4f4f4f;

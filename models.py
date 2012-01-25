@@ -3569,3 +3569,13 @@ def notify_new_invitation(sender, instance, created, **kw):
 
 models.signals.post_save.connect(notify_new_invitation, sender=Invitation)
 
+class Journal(models.Model):
+	user = models.ForeignKey(User)
+	game = models.ForeignKey(Game)
+	content = models.TextField(default="", blank=True)
+
+	class Meta:
+		unique_together = (('user', 'game'),)
+
+	def __unicode__(self):
+		return u"%s in %s" % (self.user, self.game)
