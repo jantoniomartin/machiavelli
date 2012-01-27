@@ -20,6 +20,7 @@
 
 ## stdlib
 from math import ceil
+from datetime import datetime, timedelta
 
 ## django
 from django.http import HttpResponseRedirect, Http404, HttpResponse
@@ -98,8 +99,14 @@ def summary(request):
 	context = sidebar_context(request)
 	comments = GameComment.objects.public().order_by('-id')[:3]
 	context.update({'comments': comments})
+	joinable = Game.objects.filter(slots__gt=0, private=False)
+	week = timedelta(0, 7*24*60*60)
+	threshold = datetime.now() - week
+	promoted = joinable.filter(created__gt=threshold)
+	promoted_game = None
 	if request.user.is_authenticated():
-		joinable = Game.objects.exclude(player__user=request.user).filter(slots__gt=0, private=False).order_by('slots').select_related('scenario', 'configuration', 'player__user')
+		joinable = joinable.exclude(player__user=request.user)
+		promoted = promoted.exclude(player__user=request.user)
 		my_games_ids = Game.objects.filter(player__user=request.user).values('id')
 		context.update( {'revolutions': Revolution.objects.filter(opposition__isnull=True).exclude(government__game__id__in=my_games_ids).select_related('gorvernment__game__country')} )
 		context.update( {'actions': Player.objects.filter(user=request.user, game__started__isnull=False, done=False).select_related('game')} )
@@ -107,12 +114,14 @@ def summary(request):
 		if notification:
 			new_notices = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)[:20]
 			context.update({'new_notices': new_notices,})
-	else:
-		joinable = Game.objects.filter(slots__gt=0, private=False).order_by('slots').select_related('scenario', 'configuration', 'player__user')
+	joinable_count = joinable.count()
+	context.update({'joinable_count': joinable_count})
+	if promoted.count() > 0:
+		promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
 		context.update( {'revolutions': Revolution.objects.filter(opposition__isnull=True).select_related('government__game__country')} )
-	if joinable:
+	if promoted_game is not None:
 		num_comments = joinable[0].gamecomment_set.count()
-		context.update( {'joinable_game': joinable[0],
+		context.update( {'promoted_game': promoted_game,
 						'num_comments': num_comments} )
 
 	return render_to_response('machiavelli/summary.html',
