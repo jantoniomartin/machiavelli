@@ -120,7 +120,7 @@ def summary(request):
 		promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
 		context.update( {'revolutions': Revolution.objects.filter(opposition__isnull=True).select_related('government__game__country')} )
 	if promoted_game is not None:
-		num_comments = joinable[0].gamecomment_set.count()
+		num_comments = promoted_game.gamecomment_set.count()
 		context.update( {'promoted_game': promoted_game,
 						'num_comments': num_comments} )
 
