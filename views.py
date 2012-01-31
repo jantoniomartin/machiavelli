@@ -288,7 +288,7 @@ def base_context(request, game, player):
 		if game.slots == 0:
 			context['time_exceeded'] = player.time_exceeded()
 		if game.phase == PHORDERS:
-			if player.done and not player.in_last_seconds():
+			if player.done and not player.in_last_seconds() and not player.eliminated:
 				context.update({'undoable': True,})
 	log = log.exclude(season__exact=game.season,
 							phase__exact=game.phase)
