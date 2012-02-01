@@ -68,7 +68,8 @@ class ConfigurationForm(forms.ModelForm):
 
 	class Meta:
 		model = Configuration
-		exclude = ('bribes',
+		exclude = ('gossip',
+				'bribes',
 				'strategic')
 
 class InvitationForm(forms.Form):

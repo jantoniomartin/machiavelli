@@ -3292,7 +3292,7 @@ class Configuration(models.Model):
 	famine = models.BooleanField(_('famine'), default=False)
 	plague = models.BooleanField(_('plague'), default=False)
 	storms = models.BooleanField(_('storms'), default=False)
-	gossip = models.BooleanField(_('gossip'), default=False)
+	gossip = models.BooleanField(_('gossip'), default=True)
 
 	def __unicode__(self):
 		return unicode(self.game)
