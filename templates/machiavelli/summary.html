@@ -28,23 +28,17 @@
 {% if actions %}
 	<p>{% blocktrans %}You must complete your actions in the following games:{% endblocktrans %}</p>
 	{% for player in actions %}
-	<div class="game_info {% if player.game.fast %}fast{% endif %}">
-	<h2 style="background: #191919 url('{{ STATIC_URL }}machiavelli/img/badge-{{ player.country.static_name }}.png') no-repeat top right"><span>
+	<div class="game_short">
+	<h2 style="background: url('{{ STATIC_URL }}machiavelli/img/icon-{{ player.country.static_name }}.png') no-repeat top right"><span>
 	<a href="{{ player.game.get_absolute_url }}">{{ player.game.slug }}</a>
 	</span></h2>
 	{% if player.game.started %}
-	<div class="time">
-	{% blocktrans with player.game.started|timesince as time %}Started {{ time }} ago{% endblocktrans %}
-	</div>
 	{% endif %}
-<dl>
-<dt>{% trans "Turn" %}</dt><dd>{{ player.game.get_season_display }}, {{ player.game.year }} - {{ player.game.get_phase_display }}</dd>
-	<dt>{% trans "Time to play" %}</dt>
-	<dd class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</dd>
-</dl>
+	<p><span>{{ player.game.get_season_display }}, {{ player.game.year }} - {{ player.game.get_phase_display }}</span> |
+	<span class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</span></p>
 <ul class="section_menu">
+	<li class="time">{% blocktrans with player.game.started|timesince as time %}Started {{ time }} ago{% endblocktrans %}</li>
 	<li>{% rule_icons player.game.configuration %}</li>
-	<li><a href="{% url show-game player.game.slug %}">{% trans "View game" %}</a></li>
 	<li><a href="{% url game-log player.game.slug %}">{% trans "Log" %}</a></li> 
 	<li><a href="{% url condottieri_messages_inbox player.game.slug %}">{% trans "Inbox" %}</a></li>
 	<li><a href="{% url condottieri_messages_outbox player.game.slug %}">{% trans "Outbox" %}</a></li>
