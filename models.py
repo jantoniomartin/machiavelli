@@ -884,6 +884,8 @@ class Game(models.Model):
 			self.process_retreats()
 			end_season = True
 		if end_season:
+			## delete repressed rebellions
+			Rebellion.objects.filter(player__game=self, repressed=True).delete()
 			if self.season == 1:
 				## delete units in famine areas
 				if self.configuration.famine:
@@ -2817,10 +2819,10 @@ class Unit(models.Model):
 			self.check_rebellion()
 
 	def check_rebellion(self):
-		## if there is a rebellion against other player, put it down
+		## if there is a rebellion against other player, mark it as repressed
 		reb = self.area.has_rebellion(self.player, same=False)
 		if reb:
-			reb.delete()
+			reb.repress()
 
 	def delete_order(self):
 		order = self.get_order()
@@ -3478,6 +3480,10 @@ class Rebellion(models.Model):
 			if signals:
 				signals.rebellion_started.send(sender=self.area)
 		super(Rebellion, self).save(*args, **kwargs)
+
+	def repress(self):
+		self.repressed = True
+		self.save()
 	
 class Loan(models.Model):
 	""" A Loan describes a quantity of money that a player borrows from the bank, with a term """
