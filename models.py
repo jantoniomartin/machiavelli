@@ -2591,7 +2591,7 @@ class UnitManager(models.Manager):
 			support = int(support_sum['unit__power__sum'])
 		if game.configuration.finances:
 			if not u_order is None and u_order.code == '-':
-				if u_order.destination.has_rebellion(u_order.destination.player, same=True):
+				if u_order.destination.has_rebellion(u.player, same=False):
 					support += 1
 		u.strength = u.power + support
 		return u
@@ -2642,7 +2642,8 @@ class UnitManager(models.Manager):
 			if game.configuration.finances:
 				if row[11] == '-':
 					destination = GameArea.objects.get(id=row[12])
-					if destination.has_rebellion(destination.player, same=True):
+					player = Player.objects.get(id=row[3])
+					if destination.has_rebellion(player, same=False):
 						support += 1
 			unit.strength = unit.power + support
 			result_list.append(unit)
