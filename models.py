@@ -3455,28 +3455,29 @@ class Rebellion(models.Model):
 														'player': self.player}
 	
 	def save(self, *args, **kwargs):
-		## area must be controlled by a player, who is assigned to the rebellion
-		try:
-			self.player = self.area.player
-		except:
-			return False
-		## a rebellion cannot be placed in a sea area
-		if self.area.board_area.is_sea:
-			return False
-		## check if the rebellion is to be garrisoned
-		if self.area.board_area.is_fortified:
+		if self.id is None:
+			## area must be controlled by a player, who is assigned to the rebellion
 			try:
-				Unit.objects.get(area=self.area, type='G')
-			except ObjectDoesNotExist:
-				self.garrisoned = True
-			else:
-				## there is a garrison in the city
-				if self.area.board_area.code == 'VEN':
-					## there cannot be a rebellion in Venice sea area
-					return False
+				self.player = self.area.player
+			except:
+				return False
+			## a rebellion cannot be placed in a sea area
+			if self.area.board_area.is_sea:
+				return False
+			## check if the rebellion is to be garrisoned
+			if self.area.board_area.is_fortified:
+				try:
+					Unit.objects.get(area=self.area, type='G')
+				except ObjectDoesNotExist:
+					self.garrisoned = True
+				else:
+					## there is a garrison in the city
+					if self.area.board_area.code == 'VEN':
+						## there cannot be a rebellion in Venice sea area
+						return False
+			if signals:
+				signals.rebellion_started.send(sender=self.area)
 		super(Rebellion, self).save(*args, **kwargs)
-		if signals:
-			signals.rebellion_started.send(sender=self.area)
 	
 class Loan(models.Model):
 	""" A Loan describes a quantity of money that a player borrows from the bank, with a term """
