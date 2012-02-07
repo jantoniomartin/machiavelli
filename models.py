@@ -3445,6 +3445,10 @@ class Rebellion(models.Model):
 	area = models.ForeignKey(GameArea, unique=True)
 	player = models.ForeignKey(Player)
 	garrisoned = models.BooleanField(default=False)
+	"""
+	A rebellion marked as repressed will be deleted at the end of the season
+	"""
+	repressed = models.BooleanField(default=False)
 
 	def __unicode__(self):
 		return "Rebellion in %(area)s against %(player)s" % {'area': self.area,
