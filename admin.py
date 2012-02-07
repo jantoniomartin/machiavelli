@@ -175,7 +175,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 	list_filter = ('player', 'type',)
 
 class RebellionAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'player', 'garrisoned',)
+	list_display = ('__unicode__', 'player', 'garrisoned', 'repressed',)
 	list_filter = ('player',)
 
 class LoanAdmin(admin.ModelAdmin):
