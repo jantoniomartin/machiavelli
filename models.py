@@ -2169,6 +2169,9 @@ class Player(models.Model):
 			## exclude areas where a unit has not been paid
 			for u in self.unit_set.filter(placed=True, paid=False):
 				excludes.append(u.area.id)
+			## exclude areas with rebellion units
+			rebellion_ids = Rebellion.objects.filter(player=self).values_list('area', flat=True)
+			excludes += rebellion_ids
 		areas = areas.exclude(id__in=excludes)
 		return areas
 
