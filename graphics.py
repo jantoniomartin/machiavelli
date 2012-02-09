@@ -127,7 +127,8 @@ def make_map(game):
 				coords = (r.area.board_area.aftoken.x, r.area.board_area.aftoken.y)
 			base_map.paste(rebellion_marker, coords, rebellion_marker)
 	## save the map
-	result = base_map #.resize((1250, 1780), Image.ANTIALIAS)
+	#result = base_map
+	result = base_map.resize((1250, 1780), Image.ANTIALIAS)
 	filename = os.path.join(MAPSDIR, "map-%s.jpg" % game.pk)
 	result.save(filename)
 	make_thumb(filename, 187, 267, "thumbnails")
