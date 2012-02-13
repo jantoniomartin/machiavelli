@@ -462,8 +462,26 @@ class Game(models.Model):
 	def __unicode__(self):
 		return "%d" % (self.pk)
 
+	def _get_map_filename(self):
+		return "%s_%s_%s_%s.jpg" % (self.id, self.year, self.season, self.phase)
+
+	map_filename = property(_get_map_filename)
+
+	def _get_map_dir(self):
+		return "%s" % self.slug
+
+	map_dir = property(_get_map_dir)
+
 	def get_map_url(self):
-		return "map-%s.jpg" % self.id
+		#return "map-%s.jpg" % self.id
+		return "%s/%s" % (self.map_dir, self.map_filename)
+
+	map_url = property(get_map_url)
+	
+	def _get_thumbnail_url(self):
+		return "%s/thumb/%s" % (self.map_dir, self.map_filename)
+
+	thumbnail_url = property(_get_thumbnail_url)
 	
 	def get_absolute_url(self):
 		return ('show-game', None, {'slug': self.slug})
