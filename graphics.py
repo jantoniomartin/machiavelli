@@ -19,6 +19,7 @@
 """ This module defines functions to generate the map. """
 
 import Image
+import os
 import os.path
 
 from django.conf import settings
@@ -33,6 +34,12 @@ BASEMAP='base-map.png'
 #else:
 #	MAPSDIR = os.path.join(settings.MEDIA_ROOT, 'maps')
 MAPSDIR=os.path.join(settings.MEDIA_ROOT, 'maps')
+SCENARIOSDIR=os.path.join(settings.MEDIA_ROOT, 'scenarios')
+
+def ensure_dir(f):
+	d = os.path.dirname(f)
+	if not os.path.exists(d):
+		os.makedirs(d)
 
 def make_map(game):
 	""" Opens the base map and add flags, control markers, unit tokens and other tokens. Then saves
@@ -129,9 +136,10 @@ def make_map(game):
 	## save the map
 	#result = base_map
 	result = base_map.resize((1250, 1780), Image.ANTIALIAS)
-	filename = os.path.join(MAPSDIR, "map-%s.jpg" % game.pk)
+	filename = os.path.join(MAPSDIR, game.map_dir, game.map_filename)
+	ensure_dir(filename)
 	result.save(filename)
-	make_thumb(filename, 187, 267, "thumbnails")
+	make_game_thumb(game, 187, 267)
 	return True
 
 def make_scenario_map(s):
@@ -178,17 +186,32 @@ def make_scenario_map(s):
 		base_map.paste(garrison, coords, garrison)
 	## save the map
 	result = base_map #.resize((1250, 1780), Image.ANTIALIAS)
-	filename = os.path.join(MAPSDIR, "scenario-%s.jpg" % s.pk)
+	filename = os.path.join(SCENARIOSDIR, "scenario-%s.jpg" % s.pk)
+	ensure_dir(filename)
 	result.save(filename)
-	make_thumb(filename, 187, 267, "thumbnails")
-	make_thumb(filename, 625, 890, "625x890")
+	make_scenario_thumb(s, 187, 267, "thumbnails")
+	make_scenario_thumb(s, 625, 890, "625x890")
 	return True
 
-def make_thumb(fd, w, h, dirname):
-	""" Make a thumbnail of the map image """
+def make_game_thumb(game, w, h):
+	""" Make a thumbnail of the game map image """
 	size = w, h
-	filename = os.path.split(fd)[1]
-	outfile = os.path.join(MAPSDIR, dirname, filename)
+	fd = os.path.join(MAPSDIR, game.map_dir, game.map_filename)
+	outfile = os.path.join(MAPSDIR, game.map_dir, "thumb", game.map_filename)
 	im = Image.open(fd)
 	im.thumbnail(size, Image.ANTIALIAS)
+	ensure_dir(outfile)
 	im.save(outfile, "JPEG")
+
+def make_scenario_thumb(scenario, w, h, dirname):
+	""" Make thumbnails of the scenario map image """
+	size = w, h
+	fd = os.path.join(SCENARIOSDIR, "scenario-%s.jpg" % scenario.pk)
+	ensure_dir(fd)
+	filename = os.path.split(fd)[1]
+	outfile= os.path.join(SCENARIOSDIR, dirname, filename)
+	im = Image.open(fd)
+	im.thumbnail(size, Image.ANTIALIAS)
+	ensure_dir(outfile)
+	im.save(outfile, "JPEG")
+
