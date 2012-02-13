@@ -463,6 +463,8 @@ class Game(models.Model):
 		return "%d" % (self.pk)
 
 	def _get_map_filename(self):
+		if self.finished:
+			return "%s_final.jpg" % self.id
 		return "%s_%s_%s_%s.jpg" % (self.id, self.year, self.season, self.phase)
 
 	map_filename = property(_get_map_filename)
@@ -1824,6 +1826,7 @@ class Game(models.Model):
 		self.phase = PHINACTIVE
 		self.finished = datetime.now()
 		self.save()
+		self.make_map()
 		if signals:
 			signals.game_finished.send(sender=self)
 		self.notify_players("game_over", {"game": self})
