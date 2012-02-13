@@ -36,7 +36,11 @@
 	</h2>
 
 <div class="map">
-<img src="{{ MEDIA_URL }}maps/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
+{% if game.started %}
+<img src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
+{% else %}
+<img src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
+{% endif %}
 </div>
 
 {% if finished %}
@@ -134,7 +138,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 {% if show_log %}
 <p><a href="{% url game-log game.slug %}">{% trans "Campaign log" %}</a></p>
 {% endif %}
-<p><a href="{{ MEDIA_URL }}maps/{{ map }}">{% trans "Map" %}</a>.</p>
+<p><a href="{{ MEDIA_URL }}maps/{{ game.map_url }}">{% trans "Map" %}</a>.</p>
 
 {% endif %}
 

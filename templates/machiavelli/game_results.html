@@ -30,5 +30,5 @@
 {% if show_log %}
 <p><a href="{% url game-log game.slug %}">{% trans "Campaign log" %}</a></p>
 {% endif %}
-<p><a href="{{ MEDIA_URL }}maps/{{ map }}">{% trans "Map" %}</a>.</p>
+<p><a href="{{ MEDIA_URL }}maps/{{ game.map_url }}">{% trans "Map" %}</a>.</p>
 {% endblock %}
