@@ -121,9 +121,8 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 <form action="{% url confirm-orders game.slug %}" method="POST" />
 {% csrf_token %}
 <p>{% blocktrans %}The orders above are saved but <strong>are not confirmed</strong>. If you don't confirm your orders, they will be ignored.{% endblocktrans %}</p>
-<p>{% blocktrans %}Once you have confirmed your orders, you will not be able to change or delete them. To confirm the orders and end your phase, click the "Confirm" button.{% endblocktrans %}</p>
+<p>{% blocktrans %}To confirm the orders and end your phase, click the "Confirm" button.{% endblocktrans %}</p>
 {% if game.configuration.finances %}
-<p>{% blocktrans %}Note that you will not be able to make new expenses once you have clicked the "Confirm" button.{% endblocktrans %}</p>
 {% endif %}
 <p><input type="submit" value="{% trans "Confirm" %}" /></p>
 </form>
