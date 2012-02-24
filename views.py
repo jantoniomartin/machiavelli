@@ -287,9 +287,8 @@ def base_context(request, game, player):
 		context['can_forgive'] = player.can_forgive()
 		if game.slots == 0:
 			context['time_exceeded'] = player.time_exceeded()
-		if game.phase == PHORDERS:
-			if player.done and not player.in_last_seconds() and not player.eliminated:
-				context.update({'undoable': True,})
+		if player.done and not player.in_last_seconds() and not player.eliminated:
+			context.update({'undoable': True,})
 	log = log.exclude(season__exact=game.season,
 							phase__exact=game.phase)
 	if len(log) > 0:
@@ -340,16 +339,40 @@ def undo_actions(request, slug=''):
 	game = get_object_or_404(Game, slug=slug)
 	player = get_object_or_404(Player, game=game, user=request.user)
 	profile = request.user.get_profile()
-	if request.method == 'POST':
-		if game.phase == PHORDERS:
-			if player.done and not player.in_last_seconds():
-				player.done = False
-				player.order_set.update(confirmed=False)
-				player.expense_set.update(confirmed=False)
-				if game.check_bonus_time():
-					profile.adjust_karma( -1 )
-				player.save()
-				messages.success(request, _("Your actions are now unconfirmed. You'll have to confirm then again."))
+	if request.method == 'POST' and player.done and not player.in_last_seconds():
+		player.done = False
+		if game.phase == PHREINFORCE:
+			if game.configuration.finances:
+				## first, delete new, not placed units
+				units = Unit.objects.filter(player=player, placed=False)
+				if units.count() > 0:
+					costs = units.aggregate(Sum('cost'))
+					ducats = costs['cost__sum']
+				else:
+					ducats = 0
+				units.delete()
+				## then mark all units as not paid, refund the money
+				units = Unit.objects.filter(player=player, paid=True)
+				if units.count() > 0:
+					costs = units.aggregate(Sum('cost'))
+					ducats += costs['cost__sum']
+					units.update(paid=False)
+				player.ducats += ducats
+			else:
+				## first, delete new, not placed units
+				Unit.objects.filter(player=player, placed=False).delete()
+				## then, mark all units as paid
+				Unit.objects.filter(player=player).update(paid=True)
+		elif game.phase == PHORDERS:
+			player.order_set.update(confirmed=False)
+			player.expense_set.update(confirmed=False)
+			messages.success(request, _("Your actions are now unconfirmed. You'll have to confirm then again."))
+		elif game.phase == PHRETREATS:
+			RetreatOrder.objects.filter(unit__player=player).delete()
+			messages.success(request, _("Your retreat orders have been undone."))
+		if game.check_bonus_time():
+			profile.adjust_karma( -1 )
+		player.save()
 
 	return redirect('show-game', slug=slug)
 
@@ -465,8 +488,6 @@ def play_reinforcements(request, game, player):
 								player=player,
 								placed=False)
 						new_unit.save()
-						#new_unit.place()
-					#game.map_changed()
 					## not sure, but i think i could remove the fol. line
 					player = Player.objects.get(id=player.pk) ## see below
 					player.end_phase()

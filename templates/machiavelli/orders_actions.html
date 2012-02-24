@@ -41,7 +41,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 {% endfor %}
 </ul>
 {% if undoable %}
-<p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again; otherwise all your ordes will be lost.{% endblocktrans %}</p>
+<p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again; otherwise all your orders will be lost.{% endblocktrans %}</p>
 <form method="POST" action="{% url undo-actions game.slug %}">
 {% csrf_token %}
 <p><input type="submit" value="{% trans "Change orders" %}" /></p>

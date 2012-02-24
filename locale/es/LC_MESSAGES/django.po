@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-24 10:29+0100\n"
+"POT-Creation-Date: 2012-02-24 13:03+0100\n"
 "PO-Revision-Date: 2010-03-07 10:35+0100\n"
 "Last-Translator: José Antonio Martín <jantonio.martin@gmail.com>\n"
 "Language-Team: ES <LL@li.org>\n"
@@ -927,222 +927,226 @@ msgstr "Profesionales de élite"
 msgid "Create an acccount on %(domain)s"
 msgstr "Crear una cuenta en %(domain)s"
 
-#: views.py:352
+#: views.py:369
 msgid "Your actions are now unconfirmed. You'll have to confirm then again."
 msgstr ""
 "Ahora tus acciones no están confirmadas. Tendrás que confirmarlas de nuevo."
 
-#: views.py:473 views.py:500 views.py:570 views.py:592
+#: views.py:372
+msgid "Your retreat orders have been undone."
+msgstr ""
+
+#: views.py:494 views.py:521 views.py:591 views.py:613
 msgid "You have successfully made your reinforcements."
 msgstr "Has hecho tus refuerzos correctamente."
 
-#: views.py:545
+#: views.py:566
 msgid "You have successfully paid your units."
 msgstr "Has pagado a tus unidades correctamente."
 
-#: views.py:595
+#: views.py:616
 msgid "There are one or more errors in the form below."
 msgstr "Hay uno o más errores en el formulario."
 
-#: views.py:705
+#: views.py:726
 msgid "You have successfully confirmed your actions."
 msgstr "Has confirmado tus acciones correctamente."
 
-#: views.py:734
+#: views.py:755
 msgid "You have successfully retreated your units."
 msgstr "Has retirado tus unidades correctamente."
 
-#: views.py:756
+#: views.py:777
 msgid "Expense successfully saved."
 msgstr "Gasto guardado correctamente."
 
-#: views.py:775
+#: views.py:796
 msgid "Expense could not be undone."
 msgstr "El gasto no se ha podido anular."
 
-#: views.py:777
+#: views.py:798
 msgid "Expense successfully undone."
 msgstr "Gasto anulado correctamente."
 
-#: views.py:854
+#: views.py:875
 msgid "Game successfully created."
 msgstr "Juego creado correctamente."
 
-#: views.py:918
+#: views.py:939
 #, python-format
 msgid "The following users have been invited: %s"
 msgstr "Los siguientes usuarios han sido invitados: %s"
 
-#: views.py:921
+#: views.py:942
 #, python-format
 msgid "The following users could not be invited: %s"
 msgstr "Los siguientes usuarios no han podido ser invitados: %s"
 
-#: views.py:936
+#: views.py:957
 msgid "You must define at least one known language before joining a game."
 msgstr ""
 "Debes declarar al menos un idioma conocido antes de unirte a una partida."
 
-#: views.py:937
+#: views.py:958
 msgid "Define your languages and then, try again."
 msgstr "Declara tus idiomas y después, inténtalo de nuevo."
 
-#: views.py:944
+#: views.py:965
 msgid "This game is private and you have not been invited."
 msgstr "Esta partida es privada y no has sido invitado."
 
-#: views.py:949 views.py:1018
+#: views.py:970 views.py:1039
 #, python-format
 msgid "You need a minimum karma of %s to join a game."
 msgstr "Necesitas un karma mínimo de %s para unirte a una partida."
 
-#: views.py:953
+#: views.py:974
 #, python-format
 msgid "You need a minimum karma of %s to join a fast game."
 msgstr "Necesitas un karma mínimo de %s para unirte a una partida rápida."
 
-#: views.py:967
+#: views.py:988
 msgid "You have successfully joined the game."
 msgstr "Te has unido a la partida correctamente."
 
-#: views.py:971
+#: views.py:992
 msgid "You had already joined this game."
 msgstr "Ya te habías unido a esta partida."
 
-#: views.py:981
+#: views.py:1002
 msgid "You had not joined this game."
 msgstr "No te habías unido a esta partida."
 
-#: views.py:987
+#: views.py:1008
 msgid "You have left the game."
 msgstr "Has abandonado la partida."
 
-#: views.py:991
+#: views.py:1012
 msgid "The game has been deleted."
 msgstr "La partida se ha borrado."
 
-#: views.py:1001
+#: views.py:1022
 msgid "The game is now open to all users."
 msgstr "Ahora el juego está abierto a todos los usuarios."
 
-#: views.py:1023
+#: views.py:1044
 msgid "Your overthrow attempt has been saved."
 msgstr "Tu intento de derrocamiento se ha guardado."
 
-#: views.py:1025
+#: views.py:1046
 msgid ""
 "You are already attempting an overthrow on another player in the same game."
 msgstr "Ya estabas intentando derrocar a otro jugador en la misma partida."
 
-#: views.py:1027
+#: views.py:1048
 msgid "You are already playing this game."
 msgstr "Ya estás jugando esta partida."
 
-#: views.py:1034
+#: views.py:1055
 msgid "You cannot excommunicate in this game."
 msgstr "No puedes excomulgar en este juego."
 
-#: views.py:1040
+#: views.py:1061
 msgid "You cannot excommunicate in the current season."
 msgstr "No puedes excomulgar durante la estación actual."
 
-#: views.py:1046
+#: views.py:1067
 msgid "You cannot excommunicate this country."
 msgstr "No puedes excomulgar a este país."
 
-#: views.py:1051
+#: views.py:1072
 msgid "The country has been excommunicated."
 msgstr "El país ha sido excomulgado."
 
-#: views.py:1058
+#: views.py:1079
 msgid "You cannot forgive excommunications in this game."
 msgstr "No puedes perdonar excomuniones en este juego."
 
-#: views.py:1064
+#: views.py:1085
 msgid "You cannot forgive excommunications in the current season."
 msgstr "No puedes perdonar excomuniones en la estación actual."
 
-#: views.py:1070
+#: views.py:1091
 msgid "You cannot forgive this country."
 msgstr "No puedes perdonar a este país.."
 
-#: views.py:1075
+#: views.py:1096
 msgid "The country has been forgiven."
 msgstr "El país ha sido perdonado."
 
-#: views.py:1144
+#: views.py:1165
 msgid "Ranking for the user"
 msgstr "Clasificación del jugador"
 
-#: views.py:1148
+#: views.py:1169
 msgid "Ranking for the scenario"
 msgstr "Clasificación del escenario"
 
-#: views.py:1152
+#: views.py:1173
 msgid "Ranking for the country"
 msgstr "Clasificación del país"
 
-#: views.py:1212
+#: views.py:1233
 msgid "You cannot give money in this game."
 msgstr "No puedes entregar dinero en este juego."
 
-#: views.py:1224
+#: views.py:1245
 msgid "You cannot give more money than you have"
 msgstr "No puedes entregar más dinero del que tienes"
 
-#: views.py:1230
+#: views.py:1251
 msgid "The money has been successfully sent."
 msgstr "El dinero se ha enviado correctamente."
 
-#: views.py:1255
+#: views.py:1276
 msgid "You cannot borrow money in this moment."
 msgstr "No puedes pedir un préstamo en este momento."
 
-#: views.py:1269
+#: views.py:1290
 msgid "You cannot borrow so much money."
 msgstr "No puedes pedir prestado tanto dinero."
 
-#: views.py:1277
+#: views.py:1298
 msgid "The chosen term is not valid."
 msgstr "El plazo elegido no es válido."
 
-#: views.py:1283
+#: views.py:1304
 msgid "You have got the loan."
 msgstr "Has conseguido el préstamo."
 
-#: views.py:1295
+#: views.py:1316
 msgid "You have repaid the loan."
 msgstr "Has saldado el préstamo."
 
-#: views.py:1297
+#: views.py:1318
 msgid "You don't have enough money to repay the loan."
 msgstr "No tienes suficiente dinero para saldar el préstamo."
 
-#: views.py:1313
+#: views.py:1334
 msgid "You cannot buy an assassination in this moment."
 msgstr "No puedes comprar un asesinato en este momento."
 
-#: views.py:1324
+#: views.py:1345
 msgid "You don't have enough ducats for the assassination."
 msgstr "No tienes suficiente dinero para pagar el asesinato."
 
-#: views.py:1327
+#: views.py:1348
 msgid "You cannot kill an eliminated player."
 msgstr "No puedes asesinar a un jugador eliminado."
 
-#: views.py:1330
+#: views.py:1351
 msgid "You cannot kill yourself."
 msgstr "No puedes matarte a ti mismo."
 
-#: views.py:1335
+#: views.py:1356
 msgid "You don't have any assassins to kill this leader."
 msgstr "No tienes asesinos para matar a este líder."
 
-#: views.py:1345
+#: views.py:1366
 msgid "The assassination attempt has been saved."
 msgstr "El intento de asesinato se ha guardado."
 
-#: views.py:1361
+#: views.py:1382
 msgid "You cannot write messages in this game"
 msgstr "No puedes escribir mensajes en este juego."
 
@@ -1363,9 +1367,8 @@ msgid "Sign up"
 msgstr "Registrar"
 
 #: templates/machiavelli/base_game.html:40
-#, fuzzy
 msgid "Countries"
-msgstr "Estado"
+msgstr "Países"
 
 #: templates/machiavelli/base_game.html:60
 #: templates/machiavelli/game_base.html:51
@@ -2318,7 +2321,7 @@ msgstr "Órdenes enviadas"
 msgid ""
 "If you wish, you can change your orders. To do so, push the following "
 "button. Remember that you will need to confirm your actions again; otherwise "
-"all your ordes will be lost."
+"all your orders will be lost."
 msgstr ""
 "Si lo deseas, puedes cambiar tus órdenes. Para hacerlo pulsa el siguiente "
 "botón. Recuerda que tendrás que confirmar tus acciones de nuevo; si no lo "
@@ -2366,7 +2369,8 @@ msgstr ""
 
 #: templates/machiavelli/orders_actions.html:124
 msgid "To confirm the orders and end your phase, click the \"Confirm\" button."
-msgstr "Para confirmar las órdenes y terminar la fase, pulsa el botón \"Confirmar\"."
+msgstr ""
+"Para confirmar las órdenes y terminar la fase, pulsa el botón \"Confirmar\"."
 
 #: templates/machiavelli/ranking.html:13
 msgid "Points"
@@ -2392,21 +2396,34 @@ msgstr "Las siguientes unidades serán desbandadas:"
 msgid "You have paid the wage of the following units to keep them:"
 msgstr "Has pagado el salario de las siguientes unidades para mantenerlas:"
 
-#: templates/machiavelli/reinforcements_actions.html:42
+#: templates/machiavelli/reinforcements_actions.html:41
+msgid ""
+"If you wish, you can undo your reinforcements. To do so, push the following "
+"button. Remember that you will need to make them again."
+msgstr ""
+"Si lo deseas, puedes deshacer tus refuerzos. Para hacerlo pulsa el siguiente "
+"botón. Recuerda que tendrás que hacerlos de nuevo."
+
+#: templates/machiavelli/reinforcements_actions.html:44
+#: templates/machiavelli/retreats_actions.html:16
+msgid "Undo"
+msgstr "Deshacer"
+
+#: templates/machiavelli/reinforcements_actions.html:50
 #, python-format
 msgid "You have currently %(cities_qty)s city\n"
 msgid_plural "You have currently %(cities_qty)s cities\n"
 msgstr[0] "En este momento tienes %(cities_qty)s ciudad\n"
 msgstr[1] "En este mometno tienes %(cities_qty)s ciudades\n"
 
-#: templates/machiavelli/reinforcements_actions.html:46
+#: templates/machiavelli/reinforcements_actions.html:54
 #, python-format
 msgid " and %(cur_units)s unit.\n"
 msgid_plural " and %(cur_units)s units.\n"
 msgstr[0] " y %(cur_units)s unidad.\n"
 msgstr[1] " y %(cur_units)s unidades.\n"
 
-#: templates/machiavelli/reinforcements_actions.html:54
+#: templates/machiavelli/reinforcements_actions.html:62
 #, python-format
 msgid " You have to place <b>%(units_to_place)s</b> unit in the map.\n"
 msgid_plural " You have to place <b>%(units_to_place)s</b> units in the map.\n"
@@ -2414,32 +2431,32 @@ msgstr[0] " Tienes que colocar <b>%(units_to_place)s</b> unidad en el mapa.\n"
 msgstr[1] ""
 " Tienes que colocar <b>%(units_to_place)s</b> unidades en el mapa.\n"
 
-#: templates/machiavelli/reinforcements_actions.html:57
+#: templates/machiavelli/reinforcements_actions.html:65
 msgid " Remember the following restrictions when placing units:"
 msgstr "Recuerda las siguientes restricciones para colocar unidades:"
 
-#: templates/machiavelli/reinforcements_actions.html:59
+#: templates/machiavelli/reinforcements_actions.html:67
 msgid "Any unit: Only in cities with your flag <b>and</b> under your control."
 msgstr ""
 "Cualquier unidad: Sólo en ciudades con tu bandera <b>y</b> bajo tu control."
 
-#: templates/machiavelli/reinforcements_actions.html:60
+#: templates/machiavelli/reinforcements_actions.html:68
 msgid "Fleets: Only in port cities."
 msgstr "Flotas: Sólo en ciudades con puerto."
 
-#: templates/machiavelli/reinforcements_actions.html:61
+#: templates/machiavelli/reinforcements_actions.html:69
 msgid "Garrisons: Only in fortified cities."
 msgstr "Guarniciones: Sólo en ciudades fortificadas."
 
-#: templates/machiavelli/reinforcements_actions.html:62
+#: templates/machiavelli/reinforcements_actions.html:70
 msgid "You cannot place more than one unit in the same area."
 msgstr "No puedes colocar más de una unidad en la misma área."
 
-#: templates/machiavelli/reinforcements_actions.html:95
+#: templates/machiavelli/reinforcements_actions.html:103
 msgid "Reinforce"
 msgstr "Refuerzos"
 
-#: templates/machiavelli/reinforcements_actions.html:100
+#: templates/machiavelli/reinforcements_actions.html:108
 #, python-format
 msgid " You must select exactly %(units_to_disband)s unit to be disbanded.\n"
 msgid_plural ""
@@ -2452,7 +2469,7 @@ msgstr[1] ""
 "Debes elegir exactamente %(units_to_disband)s unidades para que sean "
 "desbandadas.\n"
 
-#: templates/machiavelli/reinforcements_actions.html:109
+#: templates/machiavelli/reinforcements_actions.html:117
 msgid "Disband!"
 msgstr "¡Desbandar!"
 
@@ -2466,7 +2483,15 @@ msgstr ""
 "esperar hasta que todos\n"
 "lo hayan hecho, o se alcance el límite de tiempo."
 
-#: templates/machiavelli/retreats_actions.html:15
+#: templates/machiavelli/retreats_actions.html:13
+msgid ""
+"If you wish, you can undo your retreats. To do so, push the following "
+"button. Remember that you will need to make them again."
+msgstr ""
+"Si lo deseas, puedes deshacer tus retiradas. Para hacerlo pulsa el siguiente "
+"botón. Recuerda que tendrás que hacerlas de nuevo."
+
+#: templates/machiavelli/retreats_actions.html:24
 msgid ""
 "\n"
 "Some of your units have been defeated and must retreat. For each unit, you "
@@ -2481,7 +2506,7 @@ msgstr ""
 "una unidad ha sido derrotada y no tiene un área a la que retirarse, será\n"
 "desbandada.\n"
 
-#: templates/machiavelli/retreats_actions.html:23
+#: templates/machiavelli/retreats_actions.html:32
 msgid "Retreat"
 msgstr "Retirar"
 
