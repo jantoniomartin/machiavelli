@@ -728,8 +728,10 @@ def confirm_orders(request, slug=''):
 	
 def play_retreats(request, game, player):
 	context = base_context(request, game, player)
+	units = Unit.objects.filter(player=player).exclude(must_retreat__exact='')
+	if units.count() <= 0:
+		context.update({'undoable': False })
 	if not player.done:
-		units = Unit.objects.filter(player=player).exclude(must_retreat__exact='')
 		retreat_forms = []
 		if request.method == 'POST':
 			data = request.POST
