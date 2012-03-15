@@ -592,6 +592,7 @@ def play_finance_reinforcements(request, game, player):
 					return HttpResponseRedirect(request.path)
 				if formset and formset.is_valid():
 					total_cost = 0
+					new_units = []
 					for f in formset.forms:
 						if 'area' in f.cleaned_data:
 							new_unit = Unit(type=f.cleaned_data['type'],
@@ -605,12 +606,17 @@ def play_finance_reinforcements(request, game, player):
 									new_unit.cost = unit_class.cost
 									new_unit.power = unit_class.power
 									new_unit.loyalty = unit_class.loyalty
-							new_unit.save()
+							new_units.append(new_unit)
 							total_cost += new_unit.cost
-					player.ducats = player.ducats - total_cost
-					player.save()
-					player.end_phase()
-					messages.success(request, _("You have successfully made your reinforcements."))
+					if total_cost > player.ducats:
+						messages.error(request, _("You don't have enough ducats to buy these units."))
+					else:
+						for u in new_units:
+							u.save()
+						player.ducats = player.ducats - total_cost
+						player.save()
+						player.end_phase()
+						messages.success(request, _("You have successfully made your reinforcements."))
 					return HttpResponseRedirect(request.path)
 				else:
 					messages.error(request, _("There are one or more errors in the form below."))
