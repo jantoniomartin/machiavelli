@@ -12,6 +12,8 @@ _("Turks")
 _("Venice")
 _("Savoy")
 _("H. Roman Empire")
+_("Genoa")
+_("Spanish Empire")
 
 ## scenario names
 _("Development")
