@@ -64,9 +64,10 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 
 {% if not started %}
 
+<dt>{% trans "Visible players?" %}</dt>
+<dd>{{ promoted_game.visible|yesno }}</dd>
 <dt>{% trans "Players" %}</dt>
 <dd>
-	{% if game.visible %}
 	<ul>
 	{% for p in game.player_set.all %}
 		{% if p.user %}
@@ -74,9 +75,6 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 		{% endif %}
 	{% endfor %}
 	</ul>
-	{% else %}
-	{% trans "Players are not visible" %}
-	{% endif %}
 </dd>
 {% if game.private %}
 <dt>{% trans "Invited users" %}</dt>
