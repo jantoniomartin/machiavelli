@@ -52,6 +52,8 @@
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
+<dt>{% trans "Visible players?" %}</dt>
+<dd>{{ game.visible|yesno }}</dd>
 <dt>{% trans "Players" %}</dt>
 <dd>
 	<ul>
