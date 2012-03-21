@@ -54,7 +54,6 @@
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
 <dt>{% trans "Players" %}</dt>
 <dd>
-	{% if game.visible %}
 	<ul>
 	{% for p in game.player_set.all %}
 		{% if p.user %}
@@ -62,9 +61,6 @@
 		{% endif %}
 	{% endfor %}
 	</ul>
-	{% else %}
-	{% trans "Players are not visible" %}
-	{% endif %}
 </dd>
 {% if game.private %}
 <dt>{% trans "Invited users" %}</dt>
