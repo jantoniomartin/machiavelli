@@ -128,7 +128,7 @@
 
 {% cache 600 "forum_latest" LANGUAGE_CODE %}
 <div id="forum_latest" class="section">
-{% forum_latest_thread_activity 5 as latest_activity %}
+{% forum_latest_thread_activity 8 as latest_activity %}
 <h2>{% trans "Latest forum posts" %}</h2>
 <ul class="thread_list">
 {% for thread in latest_activity %}
