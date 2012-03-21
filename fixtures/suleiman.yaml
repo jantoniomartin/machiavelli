@@ -1,0 +1,317 @@
+- fields:
+    can_excommunicate: false
+    css_class: spain
+    name: Spanish Empire
+    special_units: [2, 3]
+    static_name: spain
+  model: machiavelli.country
+  pk: 13
+- fields:
+    can_excommunicate: false
+    css_class: genoa
+    name: Genoa
+    special_units: [2]
+    static_name: genoa
+  model: machiavelli.country
+  pk: 14
+
+
+- fields: {cities_to_win: 15, enabled: true, name: suleiman, number_of_players: 7,
+    start_year: 1566, title: The Death of Suleiman}
+  model: machiavelli.scenario
+  pk: 9
+
+
+- fields: {area: 1, country: 8, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 271
+- fields: {area: 6, country: 8, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 272
+- fields: {area: 7, country: 8, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 273
+- fields: {area: 9, country: 8, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 274
+- fields: {area: 18, country: 14, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 275
+- fields: {area: 60, country: 14, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 276
+- fields: {area: 19, country: 14, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 277
+- fields: {area: 14, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 278
+- fields: {area: 13, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 279
+- fields: {area: 21, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 280
+- fields: {area: 61, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 281
+- fields: {area: 49, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 282
+- fields: {area: 52, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 283
+- fields: {area: 62, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 284
+- fields: {area: 63, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 285
+- fields: {area: 11, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 286
+- fields: {area: 48, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 287
+- fields: {area: 50, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 288
+- fields: {area: 51, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 289
+- fields: {area: 53, country: 13, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 290
+- fields: {area: 57, country: 2, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 291
+- fields: {area: 59, country: 2, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 292
+- fields: {area: 58, country: 2, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 293
+- fields: {area: 5, country: 2, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 294
+- fields: {area: 56, country: 2, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 295
+- fields: {area: 55, country: 2, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 296
+- fields: {area: 31, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 297
+- fields: {area: 27, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 298
+- fields: {area: 28, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 299
+- fields: {area: 54, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 300
+- fields: {area: 22, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 301
+- fields: {area: 23, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 302
+- fields: {area: 29, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 303
+- fields: {area: 32, country: 3, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 304
+- fields: {area: 38, country: 6, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 305
+- fields: {area: 39, country: 6, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 306
+- fields: {area: 42, country: 6, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 307
+- fields: {area: 36, country: 6, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 308
+- fields: {area: 37, country: 6, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 309
+- fields: {area: 47, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 310
+- fields: {area: 44, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 311
+- fields: {area: 46, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 312
+- fields: {area: 35, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 313
+- fields: {area: 45, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 314
+- fields: {area: 43, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 315
+- fields: {area: 40, country: 4, is_home: true, scenario: 9}
+  model: machiavelli.home
+  pk: 316
+
+
+- fields: {area: 1, country: 8, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 324
+- fields: {area: 9, country: 8, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 325
+- fields: {area: 6, country: 8, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 326
+- fields: {area: 18, country: 14, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 327
+- fields: {area: 60, country: 14, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 328
+- fields: {area: 62, country: 14, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 329
+- fields: {area: 13, country: 13, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 330
+- fields: {area: 21, country: 13, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 331
+- fields: {area: 14, country: 13, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 332
+- fields: {area: 49, country: 13, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 333
+- fields: {area: 52, country: 13, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 334
+- fields: {area: 63, country: 13, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 335
+- fields: {area: 64, country: 13, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 336
+- fields: {area: 58, country: 2, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 337
+- fields: {area: 5, country: 2, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 338
+- fields: {area: 33, country: 2, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 339
+- fields: {area: 59, country: 2, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 340
+- fields: {area: 57, country: 2, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 341
+- fields: {area: 64, country: 2, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 342
+- fields: {area: 27, country: 3, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 343
+- fields: {area: 28, country: 3, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 344
+- fields: {area: 31, country: 3, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 345
+- fields: {area: 54, country: 3, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 346
+- fields: {area: 38, country: 6, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 347
+- fields: {area: 42, country: 6, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 348
+- fields: {area: 39, country: 6, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 349
+- fields: {area: 36, country: 6, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 350
+- fields: {area: 47, country: 4, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 351
+- fields: {area: 44, country: 4, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 352
+- fields: {area: 35, country: 4, scenario: 9, unit_type: A}
+  model: machiavelli.setup
+  pk: 353
+- fields: {area: 46, country: 4, scenario: 9, unit_type: F}
+  model: machiavelli.setup
+  pk: 354
+- fields: {area: 4, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 355
+- fields: {area: 3, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 356
+- fields: {area: 10, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 357
+- fields: {area: 8, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 358
+- fields: {area: 12, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 359
+- fields: {area: 15, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 360
+- fields: {area: 34, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 361
+- fields: {area: 24, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 362
+- fields: {area: 25, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 363
+- fields: {area: 26, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 364
+- fields: {area: 41, country: null, scenario: 9, unit_type: G}
+  model: machiavelli.setup
+  pk: 365
+
+
+- fields: {country: 8, double: false, ducats: 2, scenario: 9}
+  model: machiavelli.treasury
+  pk: 43
+- fields: {country: 14, double: true, ducats: 8, scenario: 9}
+  model: machiavelli.treasury
+  pk: 44
+- fields: {country: 13, double: false, ducats: 3, scenario: 9}
+  model: machiavelli.treasury
+  pk: 45
+- fields: {country: 6, double: false, ducats: 6, scenario: 9}
+  model: machiavelli.treasury
+  pk: 46
+- fields: {country: 4, double: false, ducats: 4, scenario: 9}
+  model: machiavelli.treasury
+  pk: 47
+- fields: {country: 3, double: false, ducats: 3, scenario: 9}
+  model: machiavelli.treasury
+  pk: 48
+- fields: {country: 2, double: false, ducats: 4, scenario: 9}
+  model: machiavelli.treasury
+  pk: 49
+
+- fields: {city: 49, scenario: 9}
+  model: machiavelli.cityincome
+  pk: 15
