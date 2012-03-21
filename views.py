@@ -285,6 +285,11 @@ def base_context(request, game, player):
 			context['ducats'] = player.ducats
 		context['can_excommunicate'] = player.can_excommunicate()
 		context['can_forgive'] = player.can_forgive()
+		try:
+			journal = Journal.objects.get(user=request.user, game=game)
+		except ObjectDoesNotExist:
+			journal = Journal()
+		context.update({'excerpt': journal.excerpt})
 		if game.slots == 0:
 			context['time_exceeded'] = player.time_exceeded()
 		if player.done and not player.in_last_seconds() and not player.eliminated:
@@ -1415,11 +1420,16 @@ def edit_journal(request, slug):
 	try:
 		journal = Journal.objects.get(user=request.user, game=game)
 	except ObjectDoesNotExist:
-		journal = Journal()
+		tip = _("What you write above these symbols\n\n%%\n\nwill be shown in the sidebar")
+		journal = Journal(content=tip)
 	if request.method == 'POST':
 		form = forms.JournalForm(request.user, game, instance=journal, data=request.POST)
 		if form.is_valid():
 			journal = form.save()
+			messages.success(request, _("Your journal has been updated."))
+			return redirect(game)
+		else:
+			messages.error(request, _("Your journal could not be saved."))
 	else:
 		form = forms.JournalForm(request.user, game, instance=journal)
 	context.update({'journal': journal,

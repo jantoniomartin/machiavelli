@@ -3615,3 +3615,8 @@ class Journal(models.Model):
 
 	def __unicode__(self):
 		return u"%s in %s" % (self.user, self.game)
+
+	def _get_excerpt(self):
+		return self.content.split("%%")[0]
+	
+	excerpt = property(_get_excerpt)
