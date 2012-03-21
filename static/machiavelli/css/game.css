@@ -120,6 +120,14 @@
 	background: #bbffdd;
 	color: black;
 }
+#powers .spain {
+	background: #fcfcfc;
+	color: black;
+}
+#powers .genoa {
+	background: #0080ff;
+	color: black;
+}
 
 .france a,
 .france a:visited,
@@ -232,6 +240,12 @@
 }
 #log li span.venice {
 	background-image: url('../img/icon-venice.png');
+}
+#log li span.spain {
+	background-image: url('../img/icon-spain.png');
+}
+#log li span.genoa {
+	background-image: url('../img/icon-genoa.png');
 }
 
 #log li.besieging-event {
