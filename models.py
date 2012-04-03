@@ -397,6 +397,13 @@ class GameManager(models.Manager):
 	def finished(self):
 		return self.filter(finished__isnull=False).order_by('-finished')
 
+def get_default_version():
+	try:
+		v = int(settings.RULES_VERSION)
+	except:
+		v = 0
+	return v
+
 class Game(models.Model):
 	""" This is the main class of the machiavelli application. It includes all the
 	logic to control the flow of the game, and to resolve conflicts.
@@ -441,6 +448,9 @@ class Game(models.Model):
 				help_text=_("only invited users can join the game"))
 	comment = models.TextField(max_length=255, blank=True, null=True,
 				help_text=_("optional comment for joining users"))
+	## version of the rules that are used in this game
+	## RULES_VERSION must be defined in settings module
+	version = models.PositiveIntegerField(default=get_default_version)
 
 	objects = GameManager()
 

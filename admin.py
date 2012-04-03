@@ -125,7 +125,7 @@ class ConfigurationInline(admin.TabularInline):
 	extra = 1
 
 class GameAdmin(admin.ModelAdmin):
-	list_display = ('pk', 'slug', 'slots', 'scenario', 'created_by', 'started', 'finished', 'player_list')
+	list_display = ('pk', 'slug', 'slots', 'scenario', 'created_by', 'started', 'finished', 'player_list', 'version')
 	inlines = [ ConfigurationInline, ScoreInline,]
 
 	def player_list(self, obj):
@@ -137,7 +137,7 @@ class GameAdmin(admin.ModelAdmin):
 	player_list.short_description = 'Player list'
 
 class LiveGameAdmin(admin.ModelAdmin):
-	list_display = ('pk', 'slug', 'paused', 'year', 'season', 'phase', 'next_phase_change', 'started')
+	list_display = ('pk', 'slug', 'paused', 'year', 'season', 'phase', 'next_phase_change', 'started', 'version')
 	actions = ['redraw_map',
 				'check_finished_phase',
 				'pause',
