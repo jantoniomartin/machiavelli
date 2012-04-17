@@ -770,6 +770,9 @@ class Game(models.Model):
 			else:
 				k = highest / 100
 			time_limit = self.time_limit * k
+			## if extended_deadline, add the base time limit
+			if self.extended_deadline:
+				time_limit += self.time_limit
 		
 		duration = timedelta(0, time_limit)
 
@@ -777,40 +780,46 @@ class Game(models.Model):
 	
 
 	def force_phase_change(self):
-		""" When the time limit is reached and one or more of the players are not
-		done, a phase change is forced.
+		""" When the time limit is reached and one or more of the players are
+		not done, if game is not in extended deadline, make extended_deadline
+		true. If game is already in extended deadline, force next turn.
 		"""
-
-		for p in self.player_set.all():
-			if p.done:
-				continue
-			else:
-				if self.phase == PHREINFORCE:
-					if self.configuration.finances:
-						units = Unit.objects.filter(player=p).order_by('id')
-						ducats = p.ducats
-						payable = ducats / 3
-						cost = 0
-						if payable > 0:
-							for u in units[:payable]:
-								u.paid = True
-								u.save()
-								cost += 3
-						p.ducats = ducats - cost
-						p.save()
-					else:
-						units = Unit.objects.filter(player=p).order_by('-id')
-						reinforce = p.units_to_place()
-						if reinforce < 0:
-							## delete the newest units
-							for u in units[:-reinforce]:
-								u.delete()
-				elif self.phase == PHORDERS:
-					pass
-				elif self.phase == PHRETREATS:
-					## disband the units that should retreat
-					Unit.objects.filter(player=p).exclude(must_retreat__exact='').delete()
-				p.end_phase(forced=True)
+		if not self.extended_deadline:
+			self.extended_deadline = True
+			self.save()
+			## create or update revolutions for lazy players
+			for p in self.player_set.all():
+				if not p.done:
+					p.check_revolution()
+		else: #game in extended deadline
+			for p in self.player_set.all():
+				if not p.done:
+					if self.phase == PHREINFORCE:
+						if self.configuration.finances:
+							units = Unit.objects.filter(player=p).order_by('id')
+							ducats = p.ducats
+							payable = ducats / 3
+							cost = 0
+							if payable > 0:
+								for u in units[:payable]:
+									u.paid = True
+									u.save()
+									cost += 3
+							p.ducats = ducats - cost
+							p.save()
+						else:
+							units = Unit.objects.filter(player=p).order_by('-id')
+							reinforce = p.units_to_place()
+							if reinforce < 0:
+								## delete the newest units
+								for u in units[:-reinforce]:
+									u.delete()
+					elif self.phase == PHORDERS:
+						pass
+					elif self.phase == PHRETREATS:
+						## disband the units that should retreat
+						Unit.objects.filter(player=p).exclude(must_retreat__exact='').delete()
+					p.end_phase(forced=True)
 		
 	def time_to_limit(self):
 		""" Calculates the time to the next phase change and returns it as a
@@ -985,6 +994,7 @@ class Game(models.Model):
 		self.phase = next_phase
 		self.last_phase_change = datetime.now()
 		#self.map_changed()
+		self.extended_deadline = False
 		self.save()
 		self.make_map()
 		self.notify_players("new_phase", {"game": self})
@@ -2350,13 +2360,11 @@ class Player(models.Model):
 				## get a karma bonus
 				#self.user.stats.adjust_karma(1)
 				self.user.get_profile().adjust_karma(1)
-			## delete possible revolutions
-			Revolution.objects.filter(government=self).delete()
+			## close possible revolutions
+			self.close_revolution()
 			msg = "Player %s ended phase" % self.pk
 		else:
-			self.force_phase_change()
 			msg = "Player %s forced to end phase" % self.pk
-		#self.game.check_next_phase()
 		if logging:
 			logger.info(msg)
 
@@ -2436,29 +2444,31 @@ class Player(models.Model):
 		if now <= safe:
 			return 'safe_time'
 		return 'unsafe_time'
-	
-	def force_phase_change(self):
+
+	def check_revolution(self):
 		## the player didn't take his actions, so he loses karma
 		if self.game.uses_karma:
 			self.user.get_profile().adjust_karma(-10)
-		## if there is a revolution with an overthrowing player, change users
-		try:
-			rev = Revolution.objects.get(government=self)
-		except ObjectDoesNotExist:
-			if self.game.uses_karma:
-				## create a new possible revolution
-				rev = Revolution(government=self)
-				rev.save()
-				logger.info("New revolution for player %s" % self)
+		revolution, created = Revolution.objects.get_or_create(game=self.game,
+				government=self.user, overthrow=False)
+		revolution.active = datetime.now()
+		if created:
+			logger.info("New revolution for player %s" % self)
+			if notification:
+				user = [self.user,]
+				extra_context = {'game': self.game,}
+				notification.send(user, "new_revolution", extra_context,
+					on_site=True)
 		else:
-			if rev.opposition:
+			if revolution.opposition:
 				if notification:
 					## notify the old player
 					user = [self.user,]
 					extra_context = {'game': self.game,}
-					notification.send(user, "lost_player", extra_context, on_site=True)
+					notification.send(user, "lost_player", extra_context,
+						on_site=True)
 					## notify the new player
-					user = [rev.opposition]
+					user = [revolution.opposition]
 					if self.game.fast:
 						notification.send_now(user, "got_player", extra_context)	
 					else:
@@ -2467,13 +2477,26 @@ class Player(models.Model):
 				if signals:
 					signals.government_overthrown.send(sender=self)
 				else:
-					self.game.log_event(CountryEvent,
-								country=self.country,
+					self.game.log_event(CountryEvent, country=self.country,
 								message=0)
-				self.user = rev.opposition
+				self.user = revolution.opposition
 				self.save()
-				rev.delete()
 				self.user.get_profile().adjust_karma(10)
+				revolution.active = None
+				revolution.overthrow = True
+		revolution.save()
+
+	def close_revolution(self):
+		""" The player made his actions, and any revolutions are closed """
+		try:
+			revolution = Revolution.objects.get(game=self.game,
+				government=self.user, active__isnull=False)
+		except ObjectDoesNotExist:
+			return
+		else:
+			revolution.active = None
+			revolution.save()
+			logger.info("Revolution closed for player %s" % self)
 
 	def unread_count(self):
 		""" Gets the number of unread received letters """
@@ -2586,13 +2609,11 @@ class Player(models.Model):
 class Revolution(models.Model):
 	""" A Revolution instance means that ``government`` is not playing, and
 	``opposition`` is trying to replace it.
-	``turns`` is the number of times that the player has not acted.
 	"""
 
 	game = models.ForeignKey(Game)
 	government = models.ForeignKey(User, related_name="revolutions")
-	turns = models.PositiveIntegerField(default=1)
-	active = models.DateTimeField()
+	active = models.DateTimeField(null=True, blank=True)
 	opposition = models.ForeignKey(User, blank=True, null=True,
 		related_name="overthrows")
 	overthrow = models.BooleanField(default=False)
@@ -2605,10 +2626,16 @@ class Revolution(models.Model):
 	def __unicode__(self):
 		return "%s (%s)" % (self.government, self.game)
 
+	def _get_country(self):
+		player = Player.objects.get(game=self.game, user=self.government)
+		return player.country
+
+	country = property(_get_country)
+
 def notify_overthrow_attempt(sender, instance, created, **kw):
 	if notification and isinstance(instance, Revolution) and not created:
-		user = [instance.government.user,]
-		extra_context = {'game': instance.government.game,}
+		user = [instance.government,]
+		extra_context = {'game': instance.game,}
 		notification.send(user, "overthrow_attempt", extra_context , on_site=True)
 
 models.signals.post_save.connect(notify_overthrow_attempt, sender=Revolution)
