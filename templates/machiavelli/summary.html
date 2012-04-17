@@ -116,8 +116,8 @@
 </p>
 {% for r in revolutions %}
 	<div class="mini_game">
-	<h3><a href="{% url show-game r.government.game.slug %}">{{ r.government.game.slug }}</a></h3>
-	<ul><li>{{ r.government.country }} | <a href="{% url overthrow r.pk %}">{% trans "Overthrow" %}</a></li></ul>
+	<h3><a href="{% url show-game r.game.slug %}">{{ r.game.slug }}</a></h3>
+	<ul><li>{{ r.country }} | <a href="{% url overthrow r.pk %}">{% trans "Overthrow" %}</a></li></ul>
 	</div>
 {% endfor %}
 {% endif %}
