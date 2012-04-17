@@ -8,6 +8,11 @@ replace (overthrow) you in the game if you don't make your actions soon.
 Please, keep in mind that if you are overthrown, this will be shown when the
 game is finished.{% endblocktrans %}
 
+{% blocktrans %}WARNING: This revolution won't be deleted even if you make
+your actions. If you skip your turn again and there is a player trying to
+overthrow you, you will lose your country without further notice.{%
+endblocktrans %}
+
 {% blocktrans %}If you want to keep playing in this game, you have only to
 make your actions, and you will keep your country.{% endblocktrans %}
 
