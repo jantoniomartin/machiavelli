@@ -2585,13 +2585,24 @@ class Player(models.Model):
 class Revolution(models.Model):
 	""" A Revolution instance means that ``government`` is not playing, and
 	``opposition`` is trying to replace it.
+	``turns`` is the number of times that the player has not acted.
 	"""
 
-	government = models.ForeignKey(Player)
-	opposition = models.ForeignKey(User, blank=True, null=True)
+	game = models.ForeignKey(Game)
+	government = models.ForeignKey(User, related_name="revolutions")
+	turns = models.PositiveIntegerField(default=1)
+	active = models.DateTimeField()
+	opposition = models.ForeignKey(User, blank=True, null=True,
+		related_name="overthrows")
+	overthrow = models.BooleanField(default=False)
+
+	class Meta:
+		verbose_name = _("Revolution")
+		verbose_name_plural = _("Revolutions")
+		unique_together = [('game', 'government'), ('game', 'opposition')]
 
 	def __unicode__(self):
-		return "%s" % self.government
+		return "%s (%s)" % (self.government, self.game)
 
 def notify_overthrow_attempt(sender, instance, created, **kw):
 	if notification and isinstance(instance, Revolution) and not created:
