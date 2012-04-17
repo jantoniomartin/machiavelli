@@ -2409,6 +2409,8 @@ class Player(models.Model):
 		else:
 			k = karma / 100
 		time_limit = self.game.time_limit * k
+		if self.game.extended_deadline:
+			time_limit += self.game.time_limit
 		
 		duration = timedelta(0, time_limit)
 
@@ -2461,29 +2463,7 @@ class Player(models.Model):
 					on_site=True)
 		else:
 			if revolution.opposition:
-				if notification:
-					## notify the old player
-					user = [self.user,]
-					extra_context = {'game': self.game,}
-					notification.send(user, "lost_player", extra_context,
-						on_site=True)
-					## notify the new player
-					user = [revolution.opposition]
-					if self.game.fast:
-						notification.send_now(user, "got_player", extra_context)	
-					else:
-						notification.send(user, "got_player", extra_context)
-				logger.info("Government of %s is overthrown" % self.country)
-				if signals:
-					signals.government_overthrown.send(sender=self)
-				else:
-					self.game.log_event(CountryEvent, country=self.country,
-								message=0)
-				self.user = revolution.opposition
-				self.save()
-				self.user.get_profile().adjust_karma(10)
-				revolution.active = None
-				revolution.overthrow = True
+				revolution.resolve()
 		revolution.save()
 
 	def close_revolution(self):
@@ -2631,6 +2611,29 @@ class Revolution(models.Model):
 		return player.country
 
 	country = property(_get_country)
+
+	def resolve(self):
+		if notification:
+			## notify the old player
+			user = [self.government,]
+			extra_context = {'game': self.game,}
+			notification.send(user, "lost_player", extra_context, on_site=True)
+			## notify the new player
+			user = [self..opposition]
+			if self.game.fast:
+				notification.send_now(user, "got_player", extra_context)	
+			else:
+				notification.send(user, "got_player", extra_context)
+			logger.info("Government of %s is overthrown" % self.country)
+		if signals:
+			signals.government_overthrown.send(sender=self)
+		player = Player.objects.get(game=self.game, user=self.government)
+		player.user = self.opposition
+		player.save()
+		self.opposition.get_profile().adjust_karma(10)
+		self.active = None
+		self.overthrow = True
+		self.save()
 
 def notify_overthrow_attempt(sender, instance, created, **kw):
 	if notification and isinstance(instance, Revolution) and not created:
