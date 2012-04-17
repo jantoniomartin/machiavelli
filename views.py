@@ -108,7 +108,9 @@ def summary(request):
 		joinable = joinable.exclude(player__user=request.user)
 		promoted = promoted.exclude(player__user=request.user)
 		my_games_ids = Game.objects.filter(player__user=request.user).values('id')
-		context.update( {'revolutions': Revolution.objects.filter(opposition__isnull=True).exclude(government__game__id__in=my_games_ids).select_related('gorvernment__game__country')} )
+		my_rev_ids = Revolution.objects.filter(opposition=request.user).values('game__id')
+		revolutions = Revolution.objects.exclude(game__id__in=my_games_ids).exclude(game__id__in=my_rev_ids).filter(active__isnull=False, opposition__isnull=True)
+		context.update( {'revolutions': revolutions})
 		context.update( {'actions': Player.objects.filter(user=request.user, game__started__isnull=False, done=False).select_related('game')} )
 		## show unseen notices
 		if notification:
@@ -118,7 +120,6 @@ def summary(request):
 	context.update({'joinable_count': joinable_count})
 	if promoted.count() > 0:
 		promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
-		context.update( {'revolutions': Revolution.objects.filter(opposition__isnull=True).select_related('government__game__country')} )
 	if promoted_game is not None:
 		num_comments = promoted_game.gamecomment_set.count()
 		context.update( {'promoted_game': promoted_game,
@@ -1038,14 +1039,14 @@ def make_public(request, slug=''):
 @login_required
 def overthrow(request, revolution_id):
 	revolution = get_object_or_404(Revolution, pk=revolution_id)
-	g = revolution.government.game
+	g = revolution.game
 	try:
 		## check that overthrowing user is not a player
 		Player.objects.get(user=request.user, game=g)
 	except ObjectDoesNotExist:
 		try:
 			## check that there is not another revolution with the same player
-			Revolution.objects.get(government__game=g, opposition=request.user)
+			Revolution.objects.get(game=g, opposition=request.user)
 		except ObjectDoesNotExist:
 			karma = request.user.get_profile().karma
 			if karma < settings.KARMA_TO_JOIN:
