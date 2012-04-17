@@ -451,6 +451,7 @@ class Game(models.Model):
 	## version of the rules that are used in this game
 	## RULES_VERSION must be defined in settings module
 	version = models.PositiveIntegerField(default=get_default_version)
+	extended_deadline = models.BooleanField(default=False)
 
 	objects = GameManager()
 
