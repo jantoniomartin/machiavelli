@@ -1,0 +1,15 @@
+{% load i18n %}
+
+{% blocktrans with game.slug as slug %}You have neglected your government
+duties in game '{{ slug }}' and you have been penalized.{% endblocktrans %}
+
+{% blocktrans %}A new "revolution" has been created so that other player can
+replace (overthrow) you in the game if you don't make your actions soon.
+Please, keep in mind that if you are overthrown, this will be shown when the
+game is finished.{% endblocktrans %}
+
+{% blocktrans %}If you want to keep playing in this game, you have only to
+make your actions, and you will keep your country.{% endblocktrans %}
+
+{% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}
+
