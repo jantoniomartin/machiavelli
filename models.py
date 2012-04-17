@@ -2619,7 +2619,7 @@ class Revolution(models.Model):
 			extra_context = {'game': self.game,}
 			notification.send(user, "lost_player", extra_context, on_site=True)
 			## notify the new player
-			user = [self..opposition]
+			user = [self.opposition]
 			if self.game.fast:
 				notification.send_now(user, "got_player", extra_context)	
 			else:
