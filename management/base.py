@@ -19,6 +19,9 @@ if "notification" in settings.INSTALLED_APPS:
 		notification.create_notice_type("received_ducats",
 										_("Ducats received"),
 										_("you have received some ducats"))
+		notification.create_notice_type("new_revolution",
+										_("New revolution"),
+										_("you skipped your turn"))
 		notification.create_notice_type("overthrow_attempt",
 										_("Overthrow attempt"),
 										_("you are being overthrown"))
