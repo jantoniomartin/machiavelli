@@ -52,3 +52,10 @@ when all the players have finished OR the time limit is exceeded
 			if datetime.now() > expiration:
 				self.stdout.write("Deleting game %s\n" % f)
 				f.delete()
+		## try to resolve revolutions in games with extended deadline, when the lazy players have not
+		## acted and half the extended deadline has been reached.
+		revolutions = models.Revolution.objects.filter(active__isnull=False, opposition__isnull=False, overthrow=False)
+		for r in revolutions:
+			if r.game.extended_deadline:
+				if r.game.time_to_limit() < game.time_limit / 2:
+					r.resolve()
