@@ -60,7 +60,7 @@ class PlayerInline(admin.TabularInline):
 	readonly_fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
 
 class RevolutionAdmin(admin.ModelAdmin):
-	list_display = ('government', 'opposition')
+	list_display = ('game__slug', 'government', 'opposition', 'active', 'overthrow')
 
 class ScoreAdmin(admin.ModelAdmin):
 	list_display = ('user', 'game', 'country', 'points', 'cities', 'position')
@@ -137,7 +137,7 @@ class GameAdmin(admin.ModelAdmin):
 	player_list.short_description = 'Player list'
 
 class LiveGameAdmin(admin.ModelAdmin):
-	list_display = ('pk', 'slug', 'paused', 'year', 'season', 'phase', 'next_phase_change', 'started', 'version')
+	list_display = ('pk', 'slug', 'paused', 'extended_deadline', 'year', 'season', 'phase', 'next_phase_change', 'started', 'version')
 	actions = ['redraw_map',
 				'check_finished_phase',
 				'pause',
