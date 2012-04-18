@@ -200,13 +200,17 @@ class CountryManager(models.Manager):
 class Country(models.Model):
 	""" This class defines a Machiavelly country. """
 
-	name = AutoTranslateField(max_length=20, unique=True)
-	css_class = models.CharField(max_length=20, unique=True)
-	can_excommunicate = models.BooleanField(default=False)
-	static_name = models.CharField(max_length=20, default="")
-	special_units = models.ManyToManyField(SpecialUnit)
+	name = AutoTranslateField(_("name"), max_length=20, unique=True)
+	css_class = models.CharField(_("css class"), max_length=20, unique=True)
+	can_excommunicate = models.BooleanField(_("can excommunicate"), default=False)
+	static_name = models.CharField(_("static name"), max_length=20, default="")
+	special_units = models.ManyToManyField(SpecialUnit, verbose_name="special units")
 	
 	objects = CountryManager()
+
+	class Meta:
+		verbose_name = _("country")
+		verbose_name_plural = _("countries")
 
 	def __unicode__(self):
 		return self.name
@@ -214,11 +218,13 @@ class Country(models.Model):
 class Neutral(models.Model):
 	""" Defines a country that will not be used when a game has less players
 	than the default. """
-	scenario = models.ForeignKey(Scenario)
-	country = models.ForeignKey(Country)
-	priority = models.PositiveIntegerField(default=0)
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+	country = models.ForeignKey(Country, verbose_name=_("country"))
+	priority = models.PositiveIntegerField(_("priority"), default=0)
 
 	class Meta:
+		verbose_name = _("neutral country")
+		verbose_name_plural = _("neutral countries")
 		ordering = ['scenario', 'priority',]
 		unique_together = (('scenario', 'country'), ('scenario', 'priority'),)
 
@@ -230,20 +236,24 @@ class Area(models.Model):
 actually played in GameArea objects.
 	"""
 
-	name = AutoTranslateField(max_length=25, unique=True)
-	code = models.CharField(max_length=5 ,unique=True)
-	is_sea = models.BooleanField(default=False)
-	is_coast = models.BooleanField(default=False)
-	has_city = models.BooleanField(default=False)
-	is_fortified = models.BooleanField(default=False)
-	has_port = models.BooleanField(default=False)
-	borders = models.ManyToManyField("self", editable=False)
+	name = AutoTranslateField(max_length=25, unique=True,
+		verbose_name=_("name"))
+	code = models.CharField(_("code"), max_length=5 ,unique=True)
+	is_sea = models.BooleanField(_("is sea"), default=False)
+	is_coast = models.BooleanField(_("is coast"), default=False)
+	has_city = models.BooleanField(_("has city"), default=False)
+	is_fortified = models.BooleanField(_("is fortified"), default=False)
+	has_port = models.BooleanField(_("has port"), default=False)
+	borders = models.ManyToManyField("self", editable=False,
+		verbose_name=_("borders"))
 	## control_income is the number of ducats that the area gives to the player
 	## that controls it, including the city (seas give 0)
-	control_income = models.PositiveIntegerField(null=False, default=0)
+	control_income = models.PositiveIntegerField(_("control income"),
+		null=False, default=0)
 	## garrison_income is the number of ducats given by an unbesieged
 	## garrison in the area's city, if any (no fortified city, 0)
-	garrison_income = models.PositiveIntegerField(null=False, default=0)
+	garrison_income = models.PositiveIntegerField(_("garrison income"),
+		null=False, default=0)
 
 	def is_adjacent(self, area, fleet=False):
 		""" Two areas can be adjacent through land, but not through a coast. 
@@ -288,18 +298,22 @@ actually played in GameArea objects.
 		return "%(code)s - %(name)s" % {'name': self.name, 'code': self.code}
 	
 	class Meta:
+		verbose_name = _("area")
+		verbose_name_plural = _("areas")
 		ordering = ('code',)
 
 class DisabledArea(models.Model):
 	""" A DisabledArea is an Area that is not used in a given Scenario. """
-	scenario = models.ForeignKey(Scenario)
-	area = models.ForeignKey(Area)
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+	area = models.ForeignKey(Area, verbose_name=_("area"))
 
 	def __unicode__(self):
 		return "%(area)s disabled in %(scenario)s" % {'area': self.area,
 													'scenario': self.scenario}
 	
 	class Meta:
+		verbose_name = _("disabled area")
+		verbose_name_plural = _("disabled areas")
 		unique_together = (('scenario', 'area'),) 
 
 class Home(models.Model):
@@ -311,59 +325,75 @@ class Home(models.Model):
 	attribute controls that.
 	"""
 
-	scenario = models.ForeignKey(Scenario)
-	country = models.ForeignKey(Country)
-	area = models.ForeignKey(Area)
-	is_home = models.BooleanField(default=True)
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+	country = models.ForeignKey(Country, verbose_name=_("country"))
+	area = models.ForeignKey(Area, verbose_name=_("area"))
+	is_home = models.BooleanField(_("is home"), default=True)
 
 	def __unicode__(self):
 		return "%s" % self.area.name
 
 	class Meta:
+		verbose_name = _("home area")
+		verbose_name_plural = _("home areas")
 		unique_together = (("scenario", "country", "area"),)
 
 class Setup(models.Model):
-	""" This class defines the initial setup of a unit in a given Scenario. """
+	"""
+	This class defines the initial setup of a unit in a given Scenario.
+	"""
 
-	scenario = models.ForeignKey(Scenario)
-	country = models.ForeignKey(Country, blank=True, null=True)
-	area = models.ForeignKey(Area)
-	unit_type = models.CharField(max_length=1, choices=UNIT_TYPES)
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+	country = models.ForeignKey(Country, blank=True, null=True,
+		verbose_name=_("country"))
+	area = models.ForeignKey(Area, verbose_name=_("area"))
+	unit_type = models.CharField(_("unit type"), max_length=1,
+		choices=UNIT_TYPES)
     
 	def __unicode__(self):
-		return _("%(unit)s in %(area)s") % { 'unit': self.get_unit_type_display(),
-											'area': self.area.name }
+		return _("%(unit)s in %(area)s") % {
+			'unit': self.get_unit_type_display(),
+			'area': self.area.name }
 
 	class Meta:
+		verbose_name = _("initial setup")
+		verbose_name_plural = _("initial setups")
 		unique_together = (("scenario", "area", "unit_type"),)
 
 class Treasury(models.Model):
-	""" This class represents the initial amount of ducats that a Country starts
-	each Scenario with """
+	"""
+	This class represents the initial amount of ducats that a Country starts
+	each Scenario with
+	"""
 	
-	scenario = models.ForeignKey(Scenario)
-	country = models.ForeignKey(Country)
-	ducats = models.PositiveIntegerField(default=0)
-	double = models.BooleanField(default=False)
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+	country = models.ForeignKey(Country, verbose_name=_("country"))
+	ducats = models.PositiveIntegerField(_("ducats"), default=0)
+	double = models.BooleanField(_("double income"), default=False)
 
 	def __unicode__(self):
-		return "%s starts %s with %s ducats" % (self.country, self.scenario, self.ducats)
+		return "%s starts %s with %s ducats" % (self.country, self.scenario,
+			self.ducats)
 
 	class Meta:
+		verbose_name = _("treasury")
+		verbose_name_plural = _("treasuries")
 		unique_together = (("scenario", "country"),)
 
-
 class CityIncome(models.Model):
-	""" This class represents a City that generates an income in a given
-	Scenario"""
+	"""
+	This class represents a City that generates an income in a given Scenario
+	"""
 	
-	city = models.ForeignKey(Area)
-	scenario = models.ForeignKey(Scenario)
+	city = models.ForeignKey(Area, verbose_name=_("city"))
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
 
 	def __unicode__(self):
 		return "%s" % self.city.name
 
 	class Meta:
+		verbose_name = _("city income")
+		verbose_name_plural = _("city incomes")
 		unique_together = (("city", "scenario"),)
 
 class GameManager(models.Manager):
@@ -387,55 +417,69 @@ def get_default_version():
 	return v
 
 class Game(models.Model):
-	""" This is the main class of the machiavelli application. It includes all the
+	"""
+	This is the main class of the machiavelli application. It includes all the
 	logic to control the flow of the game, and to resolve conflicts.
 
-	The attributes year, season and field are null when the game is first created
-	and will be populated when the game is started, from the scenario data.
+	The attributes year, season and field are null when the game is first
+	created and will be populated when the game is started, from the scenario
+	data.
 	"""
 
-	slug = models.SlugField(max_length=20, unique=True,
-				help_text=_("4-20 characters, only letters, numbers, hyphens and underscores"))
-	year = models.PositiveIntegerField(blank=True, null=True)
-	season = models.PositiveIntegerField(blank=True, null=True,
-					     choices=SEASONS)
-	phase = models.PositiveIntegerField(blank=True, null=True,
-					    choices=GAME_PHASES, default=0)
-	slots = models.SmallIntegerField(null=False, default=0)
-	scenario = models.ForeignKey(Scenario)
-	created_by = models.ForeignKey(User, editable=False)
+	slug = models.SlugField(_("slug"), max_length=20, unique=True,
+		help_text=_("4-20 characters, only letters, numbers, hyphens and underscores"))
+	year = models.PositiveIntegerField(_("year"), blank=True, null=True)
+	season = models.PositiveIntegerField(_("season"), blank=True, null=True,
+		choices=SEASONS)
+	phase = models.PositiveIntegerField(_("phase"), blank=True, null=True,
+		choices=GAME_PHASES, default=0)
+	slots = models.SmallIntegerField(_("slots"), null=False, default=0)
+	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+	created_by = models.ForeignKey(User, editable=False,
+		verbose_name=_("created by"))
 	## whether the player of each country is visible
-	visible = models.BooleanField(default=0,
-				help_text=_("if checked, it will be known who controls each country"))
-	map_outdated = models.BooleanField(default=0)
-	time_limit = models.PositiveIntegerField(choices=TIME_LIMITS,
-				help_text=_("time available to play a turn"))
+	visible = models.BooleanField(_("visible"), default=0,
+		help_text=_("if checked, it will be known who controls each country"))
+	map_outdated = models.BooleanField(_("map outdated"), default=0)
+	time_limit = models.PositiveIntegerField(_("time limit"),
+		choices=TIME_LIMITS,
+		help_text=_("time available to play a turn"))
 	## the time and date of the last phase change
-	last_phase_change = models.DateTimeField(blank=True, null=True)
-	created = models.DateTimeField(blank=True, null=True, auto_now_add=True)
-	started = models.DateTimeField(blank=True, null=True)
-	finished = models.DateTimeField(blank=True, null=True)
+	last_phase_change = models.DateTimeField(_("last phase change"),
+		blank=True, null=True)
+	created = models.DateTimeField(_("creation date"),blank=True, null=True,
+		auto_now_add=True)
+	started = models.DateTimeField(_("starting date"), blank=True, null=True)
+	finished = models.DateTimeField(_("ending date"), blank=True, null=True)
 	## if true, the game will start when it has all the players
-	autostart = models.BooleanField(default=True)
-	cities_to_win = models.PositiveIntegerField(default=15,
-				help_text=_("cities that must be controlled to win a game"))
+	autostart = models.BooleanField(_("autostart"), default=True)
+	cities_to_win = models.PositiveIntegerField(_("cities to win"), default=15,
+		help_text=_("cities that must be controlled to win a game"))
 	## if true, the player must keep all his home cities to win
-	require_home_cities = models.BooleanField(default=False)
+	require_home_cities = models.BooleanField(_("require home cities"),
+		default=False)
 	## minimum number of conquered cities, apart from home country, to win
-	extra_conquered_cities = models.PositiveIntegerField(default=0)
-	fast = models.BooleanField(default=0)
-	uses_karma = models.BooleanField(default=True)
-	paused = models.BooleanField(default=False)
-	private = models.BooleanField(default=0,
-				help_text=_("only invited users can join the game"))
-	comment = models.TextField(max_length=255, blank=True, null=True,
-				help_text=_("optional comment for joining users"))
+	extra_conquered_cities = models.PositiveIntegerField(default=0,
+		verbose_name=_("extra conquered cities"))
+	fast = models.BooleanField(_("fast"), default=0)
+	uses_karma = models.BooleanField(_("uses karma"), default=True)
+	paused = models.BooleanField(_("paused"), default=False)
+	private = models.BooleanField(_("private"), default=0,
+		help_text=_("only invited users can join the game"))
+	comment = models.TextField(_("comment"), max_length=255, blank=True,
+		null=True, help_text=_("optional comment for joining users"))
 	## version of the rules that are used in this game
 	## RULES_VERSION must be defined in settings module
-	version = models.PositiveIntegerField(default=get_default_version)
-	extended_deadline = models.BooleanField(default=False)
+	version = models.PositiveIntegerField(_("rules version"),
+		default=get_default_version)
+	extended_deadline = models.BooleanField(_("extended deadline"),
+		default=False)
 
 	objects = GameManager()
+
+	class Meta:
+		verbose_name = _("game")
+		verbose_name_plural = _("games")
 
 	def save(self, *args, **kwargs):
 		if not self.pk:
