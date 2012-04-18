@@ -135,6 +135,9 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 </table>
 
 {% if overthrows %}
+<h2>{% trans "Overthrows" %} "{{ game.slug }}"</h2>
+<p>{% blocktrans %}This is the history of overthrows in this game.{% endblocktrans %}</p>
+
 <table>
 <thead>
 <tr><th>{% trans "Overthrown player" %}</th>
