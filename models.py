@@ -136,13 +136,17 @@ class Invasion(object):
 class Scenario(models.Model):
 	""" This class defines a Machiavelli scenario basic data. """
 
-	name = models.CharField(max_length=16, unique=True)
-	title = AutoTranslateField(max_length=128)
-	start_year = models.PositiveIntegerField()
+	name = models.CharField(_("name"), max_length=16, unique=True)
+	title = AutoTranslateField(max_length=128, verbose_name=_("title"))
+	start_year = models.PositiveIntegerField(_("start year"))
 	## this field is added to improve the performance of some queries
-	number_of_players = models.PositiveIntegerField(default=0)
-	cities_to_win = models.PositiveIntegerField(default=15)
-	enabled = models.BooleanField(default=False) # this allows me to create the new setups in the admin
+	number_of_players = models.PositiveIntegerField(_("number of players"), default=0)
+	cities_to_win = models.PositiveIntegerField(_("cities to win"), default=15)
+	enabled = models.BooleanField(_("enabled"), default=False) # this allows me to create the new setups in the admin
+
+	class Meta:
+		verbose_name = _("scenario")
+		verbose_name_plural = _("scenarios")
 
 	def get_slots(self):
 		#slots = len(self.setup_set.values('country').distinct()) - 1
@@ -166,22 +170,27 @@ class Scenario(models.Model):
 		return Country.objects.filter(home__scenario=self).distinct()
 
 class SpecialUnit(models.Model):
-	""" A SpecialUnit describes the attributes of a unit that costs more ducats than usual
-	and can be more powerful or more loyal """
-	static_title = models.CharField(max_length=50)
-	title = AutoTranslateField(max_length=50)
-	cost = models.PositiveIntegerField()
-	power = models.PositiveIntegerField()
-	loyalty = models.PositiveIntegerField()
+	""" A SpecialUnit describes the attributes of a unit that costs more ducats
+	than usual and can be more powerful or more loyal """
+	static_title = models.CharField(_("static title"), max_length=50)
+	title = AutoTranslateField(_("title"), max_length=50)
+	cost = models.PositiveIntegerField(_("cost"))
+	power = models.PositiveIntegerField(_("power"))
+	loyalty = models.PositiveIntegerField(_("loyalty"))
+
+	class Meta:
+		verbose_name = _("special unit")
+		verbose_name_plural = _("special units")
 
 	def __unicode__(self):
 		return _("%(title)s (%(cost)sd)") % {'title': self.title,
 											'cost': self.cost}
 
 	def describe(self):
-		return _("Costs %(cost)s; Strength %(power)s; Loyalty %(loyalty)s") % {'cost': self.cost,
-																		'power': self.power,
-																		'loyalty': self.loyalty}
+		return _("Costs %(cost)s; Strength %(power)s; Loyalty %(loyalty)s") % {
+			'cost': self.cost,
+			'power': self.power,
+			'loyalty': self.loyalty}
 
 class CountryManager(models.Manager):
 	def scenario_stats(self, scenario):
