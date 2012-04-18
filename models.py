@@ -42,13 +42,8 @@ if "notification" in settings.INSTALLED_APPS:
 else:
 	notification = None
 
-#if "jogging" in settings.INSTALLED_APPS:
-#	from jogging import logging
-#else:
-#	logging = None
 import logging
 logger = logging.getLogger(__name__)
-
 
 if "condottieri_messages" in settings.INSTALLED_APPS:
 	import condottieri_messages as condottieri_messages 
@@ -58,7 +53,6 @@ else:
 ## machiavelli
 from machiavelli.fields import AutoTranslateField
 from machiavelli.graphics import make_map
-#from machiavelli.logging import save_snapshot
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.finances as finances
@@ -68,19 +62,7 @@ import machiavelli.exceptions as exceptions
 from condottieri_profiles.models import CondottieriProfile
 
 ## condottieri_events
-if "condottieri_events" in settings.INSTALLED_APPS:
-	import machiavelli.signals as signals
-else:
-	signals = None
-
-try:
-	settings.TWITTER_USER
-except:
-	twitter_api = None
-else:
-	import twitter
-	twitter_api = twitter.Api(username=settings.TWITTER_USER,
-							  password=settings.TWITTER_PASSWORD)
+import machiavelli.signals as signals
 
 UNIT_TYPES = (('A', _('Army')),
               ('F', _('Fleet')),
@@ -182,15 +164,6 @@ class Scenario(models.Model):
 
 	def get_countries(self):
 		return Country.objects.filter(home__scenario=self).distinct()
-
-if twitter_api and settings.TWEET_NEW_SCENARIO:
-	def tweet_new_scenario(sender, instance, created, **kw):
-		if twitter_api and isinstance(instance, Scenario):
-			if created == True:
-				message = "A new scenario has been created: %s" % instance.title
-				twitter_api.PostUpdate(message)
-
-	models.signals.post_save.connect(tweet_new_scenario, sender=Scenario)
 
 class SpecialUnit(models.Model):
 	""" A SpecialUnit describes the attributes of a unit that costs more ducats than usual
@@ -1877,30 +1850,6 @@ class Game(models.Model):
 				notification.send_now(users, label, extra_context, on_site)
 			else:
 				notification.send(users, label, extra_context, on_site)
-
-	def tweet_message(self, message):
-		if twitter_api:
-			#thread.start_new_thread(twitter_api.PostUpdate, (message,))
-			twitter_api.PostUpdate(message)
-
-	def tweet_results(self):
-		if twitter_api:
-			#winners = self.player_set.order_by('-score')
-			winners = self.score_set.order_by('-points')
-			message = "'%s' - Winner: %s; 2nd: %s; 3rd: %s" % (self.slug,
-							winners[0].user,
-							winners[1].user,
-							winners[2].user)
-			self.tweet_message(message)
-
-if twitter_api and settings.TWEET_NEW_GAME:
-	def tweet_new_game(sender, instance, created, **kw):
-		if twitter_api and isinstance(instance, Game):
-			if created == True:
-				message = "New game: http://www.condottierigame.com%s" % instance.get_absolute_url()
-				twitter_api.PostUpdate(message)
-
-	models.signals.post_save.connect(tweet_new_game, sender=Game)
 
 class GameCommentManager(models.Manager):
 	def public(self):
