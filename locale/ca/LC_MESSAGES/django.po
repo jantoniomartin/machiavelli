@@ -7,10 +7,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-24 13:03+0100\n"
-"PO-Revision-Date: 2010-03-07 10:35+0100\n"
+"POT-Creation-Date: 2012-03-19 13:30+0100\n"
+"PO-Revision-Date: 2010-03-19 13:30+0100\n"
 "Last-Translator: Rafael Romero Mora <longrider186@yahoo.com>\n"
-"Language-Team: ES <LL@li.org>\n"
+"Language-Team: CA <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -298,7 +298,7 @@ msgstr "Convoi"
 
 #: models.py:111
 msgid "Support"
-msgstr "Suport"
+msgstr "Donar suport a"
 
 #: models.py:125
 msgid "3 days"
@@ -349,7 +349,7 @@ msgstr "temps disponible per a jugar un torn"
 
 #: models.py:432
 msgid "cities that must be controlled to win a game"
-msgstr "ciutats que han de ser controlades per a ganyar una partida"
+msgstr "ciutats que han de ser controlades per a guanyar una partida"
 
 #: models.py:441
 msgid "only invited users can join the game"
@@ -859,7 +859,7 @@ msgstr "Eslavònia"
 
 #: translate.py:81
 msgid "Spoleto"
-msgstr "SpoletO"
+msgstr "Spoleto"
 
 #: translate.py:82
 msgid "Swiss"
@@ -871,7 +871,7 @@ msgstr "Treviso"
 
 #: translate.py:84
 msgid "Trent"
-msgstr "TrentO"
+msgstr "Trento"
 
 #: translate.py:85
 msgid "Thyrrenian Sea"
@@ -1827,7 +1827,7 @@ msgstr "Mitjana de karma"
 #: templates/machiavelli/game_list_pending.html:52
 #: templates/machiavelli/summary.html:70
 msgid "Cities to win"
-msgstr "Ciutats per a ganyar"
+msgstr "Ciutats per a guanyar"
 
 #: templates/machiavelli/game_inactive.html:63
 #: templates/machiavelli/game_list_pending.html:54
@@ -2304,7 +2304,7 @@ msgid ""
 msgstr ""
 "\n"
 "En el formulari següent has de composar una odre per a cadascuna de les teves"
-"unitats. No pots donar més d'una ordre a la mateixa unitat. Si vols que "
+" unitats. No pots donar més d'una ordre a la mateixa unitat. Si vols que "
 "una unitat no faci res, escull l'opció \"Aguantar\" per a ella.\n"
 
 #: templates/machiavelli/orders_actions.html:17
