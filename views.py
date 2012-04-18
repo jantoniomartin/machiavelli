@@ -416,6 +416,10 @@ def show_inactive_game(request, game):
 		log = game.baseevent_set.all()
 		if len(log) > 0:
 			context.update({'show_log': True})
+		## show the overthrows history
+		overthrows = Revolution.objects.filter(overthrow=True)
+		if overthrows.count() > 0:
+			context.update({'overthrows': overthrows})
 	## comments section
 	comments = game.gamecomment_set.public()
 	context.update({'comments': comments})

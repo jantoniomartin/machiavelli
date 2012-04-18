@@ -133,6 +133,23 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 	{% endfor %}
 
 </table>
+
+{% if overthrows %}
+<table>
+<thead>
+<tr><th>{% trans "Overthrown player" %}</th>
+<th>{% trans "By" %}</th>
+{% for o in overthrows %}
+	<tr>
+	<td><a href="{% url profile_detail username=o.government.username %}">{{ o.government.username }}</a></td>
+	<td><a href="{% url profile_detail username=o.opposition.username %}">{{ o.opposition.username }}</a></td>
+	</tr>
+{% endfor %}
+</thead>
+</table>
+{% endif %}
+
+
 {% if show_log %}
 <p><a href="{% url game-log game.slug %}">{% trans "Campaign log" %}</a></p>
 {% endif %}
