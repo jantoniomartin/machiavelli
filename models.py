@@ -3649,7 +3649,8 @@ def notify_new_invitation(sender, instance, created, **kw):
 	if notification and isinstance(instance, Invitation) and created:
 		user = [instance.user,]
 		extra_context = {'game': instance.game,
-						'invitation': instance,}
+						'invitation': instance,
+						'STATIC_URL': settings.STATIC_URL, }
 		notification.send(user, "new_invitation", extra_context , on_site=True)
 
 models.signals.post_save.connect(notify_new_invitation, sender=Invitation)
