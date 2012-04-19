@@ -1833,42 +1833,35 @@ class Game(models.Model):
 						continue
 				return True
 		return False
-		
-	def assign_scores(self):
-		qual = []
-		for p in self.player_set.filter(user__isnull=False):
-			qual.append((p, p.number_of_cities))
-		## sort the players by their number of cities, less cities go first
-		qual.sort(cmp=lambda x,y: cmp(x[1], y[1]), reverse=False)
-		zeros = len(qual) - len(SCORES)
-		assignation = SCORES + [0] * zeros
-		for s in assignation:
-			try:
-				q = qual.pop()
-			except:
-				exit
-			else:
-				# add the number of cities to the score
-				score = Score(user=q[0].user, game=q[0].game,
-							country=q[0].country,
-							points = s + q[1],
-							cities = q[1])
-				score.save()
-				## add the points to the profile total_score
-				score.user.get_profile().total_score += score.points
-				score.user.get_profile().save()
-				## highest score = last score
-				while qual != [] and qual[-1][1] == q[1]:
-					tied = qual.pop()
-					score = Score(user=tied[0].user, game=tied[0].game,
-								country=tied[0].country,
-								points = s + tied[1],
-								cities = tied[1])
-					score.save()
-					## add the points to the profile total_score
-					score.user.get_profile().total_score += score.points
-					score.user.get_profile().save()
 
+	def assign_scores(self):
+		scores = []
+		for p in self.player_set.filter(user__isnull=False):
+			s = Score(user=p.user, game=p.game, country=p.country,
+				cities=p.number_of_cities)
+			scores.append(s)
+		## sort the scores, more cities go first
+		scores.sort(cmp=lambda x,y: cmp(x.cities, y.cities), reverse=True)
+		zeros = len(scores) - len(SCORES)
+		bonus = SCORES + [0] * zeros
+		i = 0
+		for s in scores:
+			i += 1
+			if i == 1:
+				s.position = i
+				s.points = s.cities + bonus[0]
+			else:
+				if s.cities == scores[i-2].cities:
+					s.position = scores[i-2].position
+					s.points = scores[i-2].points
+				else:
+					s.position = i
+					s.points = s.cities + bonus[i-1]
+			s.save()
+			## add the points to the profile total_score
+			s.user.get_profile().total_score += s.points
+			s.user.get_profile().save()
+		
 	def game_over(self):
 		self.phase = PHINACTIVE
 		self.finished = datetime.now()
