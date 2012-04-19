@@ -1805,7 +1805,7 @@ class Game(models.Model):
 		""" Returns True if at least one player has reached the victory conditions. """
 
 		for p in self.player_set.filter(user__isnull=False):
-			if p.number_of_cities() >= self.cities_to_win:
+			if p.number_of_cities >= self.cities_to_win:
 				if self.require_home_cities:
 					try:
 						## find a home city controlled by other player
@@ -1837,7 +1837,7 @@ class Game(models.Model):
 	def assign_scores(self):
 		qual = []
 		for p in self.player_set.filter(user__isnull=False):
-			qual.append((p, p.number_of_cities()))
+			qual.append((p, p.number_of_cities))
 		## sort the players by their number of cities, less cities go first
 		qual.sort(cmp=lambda x,y: cmp(x[1], y[1]), reverse=False)
 		zeros = len(qual) - len(SCORES)
@@ -2137,11 +2137,13 @@ class Player(models.Model):
 					new_unit = Unit(type=s.unit_type, area=a, player=self, paid=False)
 					new_unit.save()
 	
-	def number_of_cities(self):
+	def _get_number_of_cities(self):
 		""" Returns the number of cities controlled by the player. """
 
 		cities = GameArea.objects.filter(player=self, board_area__has_city=True)
 		return len(cities)
+
+	number_of_cities = property(_get_number_of_cities)
 
 	def number_of_units(self):
 		## this funcion is deprecated
@@ -2157,7 +2159,7 @@ class Player(models.Model):
 
 		if not self.user:
 			return 0
-		cities = self.number_of_cities()
+		cities = self.number_of_cities
 		if self.game.configuration.famine:
 			famines = self.gamearea_set.filter(famine=True, board_area__has_city=True).exclude(unit__type__exact='G').count()
 			cities -= famines

@@ -480,7 +480,7 @@ def play_reinforcements(request, game, player):
 		context['to_keep'] = player.unit_set.filter(placed=True, paid=True)
 	else:
 		units_to_place = player.units_to_place()
-		context['cities_qty'] = player.number_of_cities()
+		context['cities_qty'] = player.number_of_cities
 		context['cur_units'] = len(player.unit_set.all())
 		if units_to_place > 0:
 			## place units
