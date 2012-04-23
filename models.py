@@ -2155,7 +2155,7 @@ class Player(models.Model):
 		if self.game.configuration.famine:
 			famines = self.gamearea_set.filter(famine=True, board_area__has_city=True).exclude(unit__type__exact='G').count()
 			cities -= famines
-		units = len(self.unit_set.all())
+		units = len(self.unit_set.filter(placed=True))
 		place = cities - units
 		slots = len(self.get_areas_for_new_units())
 		if place > slots:

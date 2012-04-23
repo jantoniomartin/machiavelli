@@ -474,12 +474,14 @@ def play_game(request, slug='', **kwargs):
 
 def play_reinforcements(request, game, player):
 	context = base_context(request, game, player)
+	units_to_place = player.units_to_place()
 	if player.done:
 		context['to_place'] = player.unit_set.filter(placed=False)
 		context['to_disband'] = player.unit_set.filter(placed=True, paid=False)
 		context['to_keep'] = player.unit_set.filter(placed=True, paid=True)
+		if units_to_place == 0:
+			context.update({'undoable': False})
 	else:
-		units_to_place = player.units_to_place()
 		context['cities_qty'] = player.number_of_cities
 		context['cur_units'] = len(player.unit_set.all())
 		if units_to_place > 0:
