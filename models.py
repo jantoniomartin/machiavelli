@@ -1870,8 +1870,6 @@ class Game(models.Model):
 		if signals:
 			signals.game_finished.send(sender=self)
 		self.notify_players("game_over", {"game": self})
-		self.tweet_message("The game %(game)s is over" % {'game': self.slug})
-		self.tweet_results()
 		self.clean_useless_data()
 
 	def clean_useless_data(self):
@@ -1882,6 +1880,7 @@ class Game(models.Model):
 		self.gamearea_set.all().delete()
 		self.invitation_set.all().delete()
 		self.whisper_set.all().delete()
+		self.revolution_set.all().delete()
 	
 	##------------------------
 	## notification methods
