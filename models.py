@@ -2602,6 +2602,16 @@ class Revolution(models.Model):
 	def __unicode__(self):
 		return "%s (%s)" % (self.government, self.game)
 
+	def _get_government_player(self):
+		return Player.objects.get(game=self.game, user=self.government)
+
+	government_player = property(_get_government_player)
+
+	def _get_opposition_player(self):
+		return Player.objects.get(game=self.game, user=self.opposition)
+
+	opposition_player = property(_get_opposition_player)
+
 	def _get_country(self):
 		player = Player.objects.get(game=self.game, user=self.government)
 		return player.country
