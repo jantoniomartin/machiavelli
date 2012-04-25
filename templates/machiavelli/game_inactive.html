@@ -23,8 +23,8 @@
 	{% endif %}
 {% endif %}
 
-<div class="game_info {% if game.fast %}fast{% endif %}">
-<h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span>
+<div itemscope itemtype="http://schema.org/Thing" class="game_info {% if game.fast %}fast{% endif %}">
+<h2><span itemprop="name"><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span>
 {% if not started %}
 	<span>
 		({% trans "Slots" %}: {{ game.slots }})
@@ -37,9 +37,9 @@
 
 <div class="map">
 {% if game.started %}
-<img src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
+<img itemprop="image" src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
 {% else %}
-<img src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
+<img itemprop="image" src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
 {% endif %}
 </div>
 
@@ -86,7 +86,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 
 {% if game.comment %}
 <dt>{% trans "Comment" %}</dt>
-<dd>{{ game.comment }}</dd>
+<dd itemprop="description">{{ game.comment }}</dd>
 {% endif %}
 </dl>
 <ul class="section_menu">
