@@ -189,3 +189,20 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 {% endif %}
 
 {% endblock %}
+
+{% block right_column_extra %}
+<div style="text-align: center">
+<div class="g-plus" data-action="share" data-annotation="bubble" data-height="24"></div>
+</div>
+
+<script type="text/javascript">
+window.___gcfg = {lang: "{{LANGUAGE_CODE}}", parsetags: 'onload'};
+
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+{% endblock %}
