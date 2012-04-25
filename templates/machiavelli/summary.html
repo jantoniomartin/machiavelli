@@ -188,4 +188,26 @@
 </ul>
 </div>
 {% endif %}
+
+<div style="text-align: center">
+{% if twitter_banner %}
+<a href="{{ twitter_url }}"><img src="{{ STATIC_URL }}img/{{ twitter_banner }}" alt="{% trans "Follow Condottieri on Twitter" %}"/></a>
+<br />
+{% endif %}
+{% if gplus_banner %}
+<a href="{{ gplus_url }}"><img src="{{ STATIC_URL }}img/{{ gplus_banner }}" alt="{% trans "Follow Condottieri on Google+" %}"/></a>
+<br />
+{% endif %}
+</div>
+
+{% if user.is_authenticated %}
+
+{% if hosting_banner %}
+<div id="hosting" style="background-color: #3a3a3a; text-align: center; border: 0;">
+<a href="{{ hosting_url }}"><img border="0" alt="My hosting" src="{{ STATIC_URL }}/img/{{ hosting_banner }}" /></a>
+</div>
+{% endif %}
+
+{% endif %}
+</div>
 {% endblock %}
