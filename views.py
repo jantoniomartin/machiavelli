@@ -1158,6 +1158,7 @@ def show_scenario(request, scenario_id):
 
 #@login_required
 def hall_of_fame(request):
+	context = sidebar_context(request)
 	order = request.GET.get('o', 'w')
 	profiles_list = CondottieriProfile.objects.hall_of_fame(order=order) #all().order_by('-weighted_score')
 	paginator = Paginator(profiles_list, 10)
@@ -1169,8 +1170,7 @@ def hall_of_fame(request):
 		profiles = paginator.page(page)
 	except (EmptyPage, InvalidPage):
 		profiles = paginator.page(paginator.num_pages)
-	context = {'profiles': profiles,
-				'order': order,}
+	context.update({'profiles': profiles, 'order': order,})
 	return render_to_response('machiavelli/hall_of_fame.html',
 							context,
 							context_instance=RequestContext(request))
