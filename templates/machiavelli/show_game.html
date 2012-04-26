@@ -61,6 +61,17 @@
 {% if ducats %}
 <li>{% trans "Ducats" %}: {{ ducats }}</li>
 {% endif %}
+
+{% if player %}
+<li>
+	{% if player.unread_count > 0 %}
+	<img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %}" />
+	{% else %}
+	<img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" />
+	{% endif %}
+	<img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" />
+</li>
+{% endif %}
 </ul>
 </div>
 
