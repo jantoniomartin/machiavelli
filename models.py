@@ -1874,7 +1874,7 @@ class Game(models.Model):
 			s.user.get_profile().total_score += s.points
 			s.user.get_profile().save()
 		## assign negative points to overthrown players
-		overthrows = self.revolution_set.filter(overtrow=True)
+		overthrows = self.revolution_set.filter(overthrow=True)
 		if settings.OVERTHROW_PENALTY and self.version >= 1:
 			pos = len(scores)
 			for o in overthrows:
