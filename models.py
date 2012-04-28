@@ -1880,7 +1880,7 @@ class Game(models.Model):
 		self.gamearea_set.all().delete()
 		self.invitation_set.all().delete()
 		self.whisper_set.all().delete()
-		#self.revolution_set.all().delete()
+		self.revolution_set.filter(overthrow=False).delete()
 	
 	##------------------------
 	## notification methods
