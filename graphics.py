@@ -155,7 +155,7 @@ def make_scenario_map(s):
 	for i in s.cityincome_set.all():
 		base_map.paste(marker, (i.city.gtoken.x + 48, i.city.gtoken.y), marker)
 	##
-	for c in s.get_countries():
+	for c in s.countries:
 		## paste control markers and flags
 		controls = s.home_set.filter(country=c, is_home=True)
 		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, c.static_name))

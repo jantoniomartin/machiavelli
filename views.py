@@ -881,7 +881,7 @@ def create_game(request):
 		config_form = forms.ConfigurationForm(request.POST)
 		if game_form.is_valid():
 			new_game = game_form.save(commit=False)
-			new_game.slots = new_game.scenario.get_slots() - 1
+			new_game.slots = new_game.scenario.number_of_players - 1
 			new_game.save()
 			new_player = Player()
 			new_player.user = request.user
