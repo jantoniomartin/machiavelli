@@ -9,6 +9,7 @@
 
 {% block left_column %}
 {% cache 3600 scenarios LANGUAGE_CODE %}
+<div class="section">
 <h1>{% trans "Scenarios" %}</h1>
 <table>
 <thead><tr>
@@ -28,6 +29,7 @@
 </tr>
 {% endfor %}
 </table>
+</div>
 
 {% endcache %}
 {% endblock %}

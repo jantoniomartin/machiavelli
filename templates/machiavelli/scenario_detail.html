@@ -9,12 +9,12 @@
 
 {% block body %}
 {% cache 1800 "scenario" scenario.id LANGUAGE_CODE %}
-<h1>{% trans "Scenario" %}: {{ scenario.title }}</h1>
-<h2>{% trans "Basic data" %}</h2>
-<dl>
-	<dt>{% trans "Start year" %}</dt>
-	<dd>{{ scenario.start_year }}</dd>
-</dl>
+<div class="section">
+<h2>{{ scenario.title }} ({{ scenario.start_year }})</h2>
+<p>{{ scenario.description|linebreaks }}</p>
+
+</div>
+
 <h2>{% trans "Setup" %}</h2>
 <table>
 <thead>
