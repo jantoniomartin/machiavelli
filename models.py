@@ -1861,6 +1861,16 @@ class Game(models.Model):
 			## add the points to the profile total_score
 			s.user.get_profile().total_score += s.points
 			s.user.get_profile().save()
+		## assign negative points to overthrown players
+		overthrows = self.revolution_set.filter(overtrow=True)
+		if settings.OVERTHROW_PENALTY:
+			pos = len(scores)
+			for o in overthrows:
+				s = Score(user=o.government, game=self, country=o.country,
+					points=settings.OVERTHROW_PENALTY, cities=0, position=pos)
+				s.save()
+				s.user.get_profile().total_score += s.points
+				s.user.get_profile().save()
 		
 	def game_over(self):
 		self.phase = PHINACTIVE
@@ -2058,7 +2068,7 @@ class Score(models.Model):
 	user = models.ForeignKey(User)
 	game = models.ForeignKey(Game)
 	country = models.ForeignKey(Country)
-	points = models.PositiveIntegerField(default=0)
+	points = models.IntegerField(default=0)
 	cities = models.PositiveIntegerField(default=0)
 	position = models.PositiveIntegerField(default=0)
 	""" Default value is added for compatibility with south, to be deleted after migration """
