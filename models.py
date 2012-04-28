@@ -37,6 +37,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.defaultfilters import capfirst, truncatewords, timesince, force_escape
 
+from transmeta import TransMeta
+
 if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
 else:
@@ -136,8 +138,12 @@ class Invasion(object):
 class Scenario(models.Model):
 	""" This class defines a Machiavelli scenario basic data. """
 
+	__metaclass__ = TransMeta
+	
 	name = models.CharField(_("name"), max_length=16, unique=True)
 	title = AutoTranslateField(max_length=128, verbose_name=_("title"))
+	long_title = models.CharField(max_length=128, verbose_name=_("title"))
+	description = models.TextField(verbose_name=_("description"))
 	start_year = models.PositiveIntegerField(_("start year"))
 	## this field is added to improve the performance of some queries
 	number_of_players = models.PositiveIntegerField(_("number of players"), default=0)
@@ -147,6 +153,7 @@ class Scenario(models.Model):
 	class Meta:
 		verbose_name = _("scenario")
 		verbose_name_plural = _("scenarios")
+		translate = ('long_title', 'description',)
 
 	def get_slots(self):
 		#slots = len(self.setup_set.values('country').distinct()) - 1
