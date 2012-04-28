@@ -7,6 +7,9 @@ duties in game '{{ slug }}' and someone wants to take your place.{% endblocktran
 make your actions, and you will keep your country. If you don't make your
 actions in the current phase, another player will take your country.{% endblocktrans %}
 
+{% blocktrans %}If you lose your country, this will be shown in your profile,
+and your score will be some points lower.{% endblocktrans %}
+
 {% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}
 
 {% blocktrans %}If you do not want to play this game, it's better that you
