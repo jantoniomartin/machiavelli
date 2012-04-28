@@ -417,7 +417,7 @@ def show_inactive_game(request, game):
 		if len(log) > 0:
 			context.update({'show_log': True})
 		## show the overthrows history
-		overthrows = Revolution.objects.filter(overthrow=True)
+		overthrows = Revolution.objects.filter(game=game, overthrow=True)
 		if overthrows.count() > 0:
 			context.update({'overthrows': overthrows})
 	## comments section
