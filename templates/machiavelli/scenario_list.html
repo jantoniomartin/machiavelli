@@ -20,7 +20,7 @@
 </tr></thead>
 {% for s in scenarios %}
 <tr>
-<td><a href="{% url show-scenario s.pk %}">{% trans s.title %}</a></td>
+<td><a href="{% url show-scenario s.pk %}">{{ s.title }}</a></td>
 <td class="data_c">{{ s.start_year }}</td>
 <td class="data_c">{{ s.number_of_players }}</td>
 <td><a href="{% url ranking "scenario" s.name %}">{% trans "See scores" %}</a></td>

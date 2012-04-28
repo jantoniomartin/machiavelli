@@ -33,7 +33,7 @@ class NeutralInline(admin.TabularInline):
 	extra = 1
 
 class ScenarioAdmin(admin.ModelAdmin):
-	list_display = ('title', 'start_year')
+	list_display = ('name', 'start_year')
 	inlines = [HomeInline, SetupInline, TreasuryInline, CityIncomeInline,
 				DisabledAreaInline, NeutralInline, ]
 	actions = ['make_map',]

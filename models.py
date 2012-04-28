@@ -141,7 +141,7 @@ class Scenario(models.Model):
 	__metaclass__ = TransMeta
 	
 	name = models.CharField(_("name"), max_length=16, unique=True)
-	title = AutoTranslateField(max_length=128, verbose_name=_("title"))
+	#title = AutoTranslateField(max_length=128, verbose_name=_("title"))
 	long_title = models.CharField(max_length=128, verbose_name=_("title"))
 	description = models.TextField(verbose_name=_("description"))
 	start_year = models.PositiveIntegerField(_("start year"))
@@ -155,6 +155,11 @@ class Scenario(models.Model):
 		verbose_name_plural = _("scenarios")
 		translate = ('long_title', 'description',)
 
+	def _get_title(self):
+		return self.long_title
+	
+	title = property(_get_title)
+	
 	def get_slots(self):
 		#slots = len(self.setup_set.values('country').distinct()) - 1
 		return self.number_of_players
