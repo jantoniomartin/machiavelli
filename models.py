@@ -2288,8 +2288,14 @@ class Player(models.Model):
 			for area in self.gamearea_set.all():
 				area.player = None
 				area.save()
-			for rev in self.revolution_set.all():
-				rev.delete()
+			## if the player has active revolutions, clear them
+			try:
+				rev = Revolution.objects.get(game=self.game, government=self.user, active__isnull=False)
+			except:
+				pass
+			else:
+				rev.active = False
+				rev.save()
 			if self.game.configuration.excommunication:
 				if self.may_excommunicate:
 					self.game.player_set.all().update(is_excommunicated=False, pope_excommunicated=False)
