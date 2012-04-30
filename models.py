@@ -2115,6 +2115,19 @@ class Player(models.Model):
 	""" pope_excommunicated is True if the player has been explicitly excommunicated """
 	pope_excommunicated = models.BooleanField(default=False)
 
+	## the 'deadline' is not persistent, and is used to order a user's players by the time
+	## that they have to play
+	def __init__(self, *args, **kwargs):
+		self.__deadline = None
+		super(Player, self,).__init__(*args, **kwargs)
+
+	def _get_deadline(self):
+		return self.__deadline
+	
+	def _set_deadline(self, d):
+		self.__deadline = d
+
+	deadline = property(_get_deadline, _set_deadline)
 
 	def __unicode__(self):
 		if self.user:

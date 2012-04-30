@@ -111,7 +111,13 @@ def summary(request):
 		my_rev_ids = Revolution.objects.filter(opposition=request.user).values('game__id')
 		revolutions = Revolution.objects.exclude(game__id__in=my_games_ids).exclude(game__id__in=my_rev_ids).filter(active__isnull=False, opposition__isnull=True)
 		context.update( {'revolutions': revolutions})
-		context.update( {'actions': Player.objects.filter(user=request.user, game__started__isnull=False, done=False).select_related('game')} )
+		my_players = Player.objects.filter(user=request.user, game__started__isnull=False, done=False)
+		player_list = []
+		for p in my_players:
+			p.deadline = p.next_phase_change()
+			player_list.append(p)
+		player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
+		context.update({ 'actions': player_list })
 		## show unseen notices
 		if notification:
 			new_notices = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)[:20]
@@ -137,7 +143,12 @@ def my_active_games(request):
 		my_players = Player.objects.filter(user=request.user, game__slots=0).select_related("country", "game__scenario", "game__configuration")
 	else:
 		my_players = Player.objects.none()
-	paginator = Paginator(my_players, 10)
+	player_list = []
+	for p in my_players:
+		p.deadline = p.next_phase_change()
+		player_list.append(p)
+	player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
+	paginator = Paginator(player_list, 10)
 	try:
 		page = int(request.GET.get('page', '1'))
 	except ValueError:

@@ -57,7 +57,7 @@
 	{% endifequal %}
 	</dd>
 	<dt>{% trans "Time to get karma" %}</dt><dd>{{ player.game.get_bonus_deadline|timeuntil }}</dd>
-	<dt>{% trans "Safe time to play" %}</dt><dd>{{ player.next_phase_change|timeuntil }}</dd>
+	<dt>{% trans "Safe time to play" %}</dt><dd>{{ player.deadline|timeuntil }}</dd>
 	<dt>{% trans "Unsafe time to play" %}</dt><dd>{{ player.game.next_phase_change|timeuntil }}</dd>
 {% endif %}
 <dt>{% trans "Players" %}</dt>
