@@ -81,13 +81,13 @@
 <div id="powers">
 {% if player.country %}
 <div style="text-align: center">
-<img src="{{ STATIC_URL }}machiavelli/img/banner-{{ player.country.css_class }}.png" />
+<img src="{{ STATIC_URL }}machiavelli/img/banner-{{ player.country.static_name }}.png" />
 </div>
 {% endif %}
 {% if game.slots == 0 %} {# show all the powers info #}
 {% for p in player_list %}
 	{% if p.user %}
-	<div class="player {{ p.country.css_class }}">
+	<div class="player {{ p.country.static_name }}">
 	<div><strong>{{ p.country }}</strong>
 	{% if p.conqueror %}
 		({{ p.conqueror.country }})
