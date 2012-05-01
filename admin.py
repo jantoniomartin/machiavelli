@@ -44,7 +44,7 @@ class ScenarioAdmin(admin.ModelAdmin):
 	make_map.short_description = "Make initial map"
 
 class CountryAdmin(admin.ModelAdmin):
-	list_display = ('name', 'css_class')
+	list_display = ('name', 'static_name')
 
 class PlayerAdmin(admin.ModelAdmin):
 	list_display = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')

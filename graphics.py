@@ -66,19 +66,19 @@ def make_map(game):
 	for player in game.player_set.filter(user__isnull=False):
 		## paste control markers
 		controls = player.gamearea_set.all()
-		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.country.css_class))
+		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.country.static_name))
 		for area in controls:
 			base_map.paste(marker, (area.board_area.controltoken.x, area.board_area.controltoken.y), marker)
 		## paste flags
 		home = player.home_country()
-		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.country.css_class))
+		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.country.static_name))
 		for game_area in home:
 			area = game_area.board_area
 			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 15), flag)
 		## paste As and Fs (not garrisons because of sieges)
 		units = player.unit_set.all()
-		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.country.css_class))
-		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.country.css_class))
+		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.country.static_name))
+		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.country.static_name))
 		for unit in units:
 			if unit.besieging:
 				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
@@ -101,7 +101,7 @@ def make_map(game):
 	## paste garrisons
 	for player in game.player_set.all():
 		if player.user:
-			garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, player.country.css_class))
+			garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, player.country.static_name))
 		else:
 			## autonomous
 			garrison = Image.open("%s/G-autonomous.png" % TOKENS_DIR)

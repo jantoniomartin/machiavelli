@@ -1188,7 +1188,7 @@ def ranking(request, key='', val=''):
 		scores = scores.filter(game__scenario=scenario)
 		title = _("Ranking for the scenario") + ' ' + val
 	elif key == 'country': # by country
-		country = get_object_or_404(Country, css_class=val)
+		country = get_object_or_404(Country, static_name=val)
 		scores = scores.filter(country=country)
 		title = _("Ranking for the country") + ' ' + country.name
 	else:
