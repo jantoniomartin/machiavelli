@@ -2089,6 +2089,11 @@ class Score(models.Model):
 	def __unicode__(self):
 		return "%s (%s)" % (self.user, self.game)
 
+	class Meta:
+		verbose_name = _("score")
+		verbose_name_plural = _("scores")
+		ordering = ["-game", "position"]
+
 class Player(models.Model):
 	""" This class defines the relationship between a User and a Game. """
 
