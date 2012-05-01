@@ -31,7 +31,7 @@ phases of the game. This time limit is reset when all the players have completed
 <tr>
 <td><a href="{% url show-scenario s.pk %}">{{ s.title }}</a></td>
 <td class="data_c">{{ s.start_year }}</td>
-<td class="data_c">{{ s.get_slots }}</td>
+<td class="data_c">{{ s.number_of_players }}</td>
 </tr>
 {% endfor %}
 </table>
