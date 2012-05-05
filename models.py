@@ -3110,13 +3110,14 @@ class Order(models.Model):
 		return f
 
 	def find_convoy_line(self):
-		""" Returns True if there is a continuous line of convoy orders from 
+		"""
+		Returns True if there is a continuous line of convoy orders from 
 		the origin to the destination of the order.
 		"""
 
-		origins = [self.unit.area,]
+		closed = []
+		pending = [self.unit.area, ]
 		destination = self.destination
-		## get all areas convoying this order AND the destination
 		convoy_areas = GameArea.objects.filter(
 						## in this game
 						(Q(game=self.unit.player.game) &
@@ -3131,21 +3132,23 @@ class Order(models.Model):
 						## OR being the destination
 						Q(id=self.destination.id))
 		if len(convoy_areas) <= 1:
-			return False
-		while 1:
-			new_origins = []
-			for o in origins:
-				borders = GameArea.objects.filter(game=self.unit.player.game,
-												board_area__borders=o.board_area)
+			return False ## there are no units with valid convoy orders
+		while len(pending) > 0:
+			for area in pending:
+				if area in closed:
+					continue
+				borders = list(convoy_areas.filter(game=self.unit.player.game,
+					board_area__borders=area.board_area))
+				if destination in borders:
+					return True ## there is a valid convoy line
+				closed.append(area)
+				pending.remove(area)
 				for b in borders:
-					if b == destination:
-						return True
-					if b in convoy_areas:
-						new_origins.append(b)
-			if len(new_origins) == 0:
-				return False
-			origins = new_origins	
-	
+					if not b in closed and not b in pending:
+						pending.append(b)
+				break
+		return False ## there is not a valid convoy path
+
 	def get_enemies(self):
 		""" Returns a Queryset with all the units trying to oppose an advance or
 		conversion order.
