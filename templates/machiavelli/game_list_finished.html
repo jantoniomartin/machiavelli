@@ -47,11 +47,9 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 	</ul>
 </dd>
 <dt>{% trans "Winner" %}</dt>
-<dd>
-{% if game.highest_score %}
-	<a href="{% url profile_detail username=game.highest_score.user.username %}">{{ game.highest_score.user }}</a> ({{ game.highest_score.country }})
-{% endif %}
-</dd>
+{% for w in game.winners_qs %}
+<dd><a href="{% url profile_detail username=w.user.username %}">{{ w.user }}</a></dd>
+{% endfor %}
 </dl>
 <ul class="section_menu">
 	<li>{{ game.comments_count }} {% trans "comments" %}</li>

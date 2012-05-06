@@ -566,6 +566,17 @@ class Game(models.Model):
 			cache.set(key, result_list)
 		return result_list
 
+	def _get_winners_qs(self):
+		""" Returns a queryset of the highest score(s) in the game """
+		if self.slots > 0 or self.phase != PHINACTIVE:
+			return Score.objects.none()
+		scores = self.score_set.all()
+		max_dict = scores.aggregate(Max('points'))
+		max_points = max_dict['points__max']
+		return scores.filter(points=max_points)
+
+	winners_qs = property(_get_winners_qs)
+	
 	def highest_score(self):
 		""" Returns the Score with the highest points value. """
 
