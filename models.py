@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 
 ## django
 from django.db import models
-from django.db.models import permalink, Q, F, Count, Sum, Avg
+from django.db.models import permalink, Q, F, Count, Sum, Avg, Max
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.cache import cache
 from django.contrib.auth.models import User
