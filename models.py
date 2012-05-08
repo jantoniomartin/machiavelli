@@ -1038,6 +1038,8 @@ class Game(models.Model):
 				else:
 					## if playing with finances, reinforcement phase must be always played
 					next_phase = PHREINFORCE
+					## autonomous units are automatically paid
+					Unit.objects.filter(player__game=self, player__user__isnull=True).update(paid=True) 
 			else:
 				next_phase = PHORDERS
 		self.phase = next_phase
@@ -1056,8 +1058,8 @@ class Game(models.Model):
 		to_place = Unit.objects.filter(player__game=self, placed=False)
 		for u in to_place:
 			u.place()
-		## mark as unpaid all non-autonomous units
-		Unit.objects.filter(player__game=self).exclude(player__user__isnull=True).update(paid=False)
+		## mark as unpaid all units
+		Unit.objects.filter(player__game=self).update(paid=False)
 
 	## deprecated because of check_finished_phase
 	#def check_next_phase(self):
