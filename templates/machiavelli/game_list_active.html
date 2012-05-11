@@ -29,7 +29,7 @@
 <dl>
 <dt>{% trans "Average score" %}</dt><dd>{{ game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ game.get_average_karma|karma_stars }}</dd>
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
 <dt>{% trans "Turn" %}</dt><dd>{{ game.get_season_display }}, {{ game.year }} - {{ game.get_phase_display }}</dd>

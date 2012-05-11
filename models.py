@@ -37,8 +37,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.defaultfilters import capfirst, truncatewords, timesince, force_escape
 
-from transmeta import TransMeta
-
 if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
 else:
@@ -59,6 +57,9 @@ import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.finances as finances
 import machiavelli.exceptions as exceptions
+
+## condottieri_scenarios
+from condottieri_scenarios.models import Scenario, Country, Area
 
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
@@ -134,279 +135,6 @@ class Invasion(object):
 		self.unit = unit
 		self.area = area
 		self.conversion = conv
-
-class Scenario(models.Model):
-	""" This class defines a Machiavelli scenario basic data. """
-
-	__metaclass__ = TransMeta
-	
-	name = models.CharField(_("name"), max_length=16, unique=True)
-	#title = AutoTranslateField(max_length=128, verbose_name=_("title"))
-	long_title = models.CharField(max_length=128, verbose_name=_("title"))
-	description = models.TextField(verbose_name=_("description"))
-	start_year = models.PositiveIntegerField(_("start year"))
-	## this field is added to improve the performance of some queries
-	number_of_players = models.PositiveIntegerField(_("number of players"), default=0)
-	cities_to_win = models.PositiveIntegerField(_("cities to win"), default=15)
-	enabled = models.BooleanField(_("enabled"), default=False) # this allows me to create the new setups in the admin
-
-	class Meta:
-		verbose_name = _("scenario")
-		verbose_name_plural = _("scenarios")
-		translate = ('long_title', 'description',)
-
-	def _get_title(self):
-		return self.long_title
-	
-	title = property(_get_title)
-	
-	def get_slots(self):
-		#slots = len(self.setup_set.values('country').distinct()) - 1
-		return self.number_of_players
-	
-	def get_max_players(self):
-		return self.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct().count()
-
-	def get_min_players(self):
-		max_players = self.get_max_players()
-		neutrals = self.neutral_set.count()
-		return max_players - neutrals
-
-	def __unicode__(self):
-		return self.title
-
-	def get_absolute_url(self):
-		return "scenario/%s" % self.id
-
-	def get_countries(self):
-		return Country.objects.filter(home__scenario=self).distinct()
-
-class SpecialUnit(models.Model):
-	""" A SpecialUnit describes the attributes of a unit that costs more ducats
-	than usual and can be more powerful or more loyal """
-	static_title = models.CharField(_("static title"), max_length=50)
-	title = AutoTranslateField(_("title"), max_length=50)
-	cost = models.PositiveIntegerField(_("cost"))
-	power = models.PositiveIntegerField(_("power"))
-	loyalty = models.PositiveIntegerField(_("loyalty"))
-
-	class Meta:
-		verbose_name = _("special unit")
-		verbose_name_plural = _("special units")
-
-	def __unicode__(self):
-		return _("%(title)s (%(cost)sd)") % {'title': self.title,
-											'cost': self.cost}
-
-	def describe(self):
-		return _("Costs %(cost)s; Strength %(power)s; Loyalty %(loyalty)s") % {
-			'cost': self.cost,
-			'power': self.power,
-			'loyalty': self.loyalty}
-
-class CountryManager(models.Manager):
-	def scenario_stats(self, scenario):
-		return self.filter(score__game__scenario=scenario).distinct().annotate(avg_points=Avg('score__points'),
-													avg_position=Avg('score__position')).order_by('avg_position')
-
-class Country(models.Model):
-	""" This class defines a Machiavelly country. """
-
-	name = AutoTranslateField(_("name"), max_length=20, unique=True)
-	css_class = models.CharField(_("css class"), max_length=20, unique=True)
-	can_excommunicate = models.BooleanField(_("can excommunicate"), default=False)
-	static_name = models.CharField(_("static name"), max_length=20, default="")
-	special_units = models.ManyToManyField(SpecialUnit, verbose_name="special units")
-	
-	objects = CountryManager()
-
-	class Meta:
-		verbose_name = _("country")
-		verbose_name_plural = _("countries")
-
-	def __unicode__(self):
-		return self.name
-
-class Neutral(models.Model):
-	""" Defines a country that will not be used when a game has less players
-	than the default. """
-	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
-	country = models.ForeignKey(Country, verbose_name=_("country"))
-	priority = models.PositiveIntegerField(_("priority"), default=0)
-
-	class Meta:
-		verbose_name = _("neutral country")
-		verbose_name_plural = _("neutral countries")
-		ordering = ['scenario', 'priority',]
-		unique_together = (('scenario', 'country'), ('scenario', 'priority'),)
-
-	def __unicode__(self):
-		return "(%s) %s" % (self.priority, self.country)
-
-class Area(models.Model):
-	""" his class describes **only** the area features in the board. The game is
-actually played in GameArea objects.
-	"""
-
-	name = AutoTranslateField(max_length=25, unique=True,
-		verbose_name=_("name"))
-	code = models.CharField(_("code"), max_length=5 ,unique=True)
-	is_sea = models.BooleanField(_("is sea"), default=False)
-	is_coast = models.BooleanField(_("is coast"), default=False)
-	has_city = models.BooleanField(_("has city"), default=False)
-	is_fortified = models.BooleanField(_("is fortified"), default=False)
-	has_port = models.BooleanField(_("has port"), default=False)
-	borders = models.ManyToManyField("self", editable=False,
-		verbose_name=_("borders"))
-	## control_income is the number of ducats that the area gives to the player
-	## that controls it, including the city (seas give 0)
-	control_income = models.PositiveIntegerField(_("control income"),
-		null=False, default=0)
-	## garrison_income is the number of ducats given by an unbesieged
-	## garrison in the area's city, if any (no fortified city, 0)
-	garrison_income = models.PositiveIntegerField(_("garrison income"),
-		null=False, default=0)
-
-	def is_adjacent(self, area, fleet=False):
-		""" Two areas can be adjacent through land, but not through a coast. 
-		
-		The list ``only_armies`` shows the areas that are adjacent but their
-		coasts are not, so a Fleet can move between them.
-		"""
-
-		only_armies = [
-			('AVI', 'PRO'),
-			('PISA', 'SIE'),
-			('CAP', 'AQU'),
-			('NAP', 'AQU'),
-			('SAL', 'AQU'),
-			('SAL', 'BARI'),
-			('HER', 'ALB'),
-			('BOL', 'MOD'),
-			('BOL', 'LUC'),
-			('CAR', 'CRO'),
-		]
-		if fleet:
-			if (self.code, area.code) in only_armies or (area.code, self.code) in only_armies:
-				return False
-		return area in self.borders.all()
-
-	def accepts_type(self, type):
-		""" Returns True if an given type of Unit can be in the Area. """
-
-		assert type in ('A', 'F', 'G'), 'Wrong unit type'
-		if type=='A':
-			if self.is_sea or self.code=='VEN':
-				return False
-		elif type=='F':
-			if not self.has_port:
-				return False
-		else:
-			if not self.is_fortified:
-				return False
-		return True
-
-	def __unicode__(self):
-		return "%(code)s - %(name)s" % {'name': self.name, 'code': self.code}
-	
-	class Meta:
-		verbose_name = _("area")
-		verbose_name_plural = _("areas")
-		ordering = ('code',)
-
-class DisabledArea(models.Model):
-	""" A DisabledArea is an Area that is not used in a given Scenario. """
-	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
-	area = models.ForeignKey(Area, verbose_name=_("area"))
-
-	def __unicode__(self):
-		return "%(area)s disabled in %(scenario)s" % {'area': self.area,
-													'scenario': self.scenario}
-	
-	class Meta:
-		verbose_name = _("disabled area")
-		verbose_name_plural = _("disabled areas")
-		unique_together = (('scenario', 'area'),) 
-
-class Home(models.Model):
-	""" This class defines which Country controls each Area in a given Scenario,
-	at the beginning of a game.
-	
-	Note that, in some special cases, a province controlled by a country does
-	not belong to the **home country** of this country. The ``is_home``
-	attribute controls that.
-	"""
-
-	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
-	country = models.ForeignKey(Country, verbose_name=_("country"))
-	area = models.ForeignKey(Area, verbose_name=_("area"))
-	is_home = models.BooleanField(_("is home"), default=True)
-
-	def __unicode__(self):
-		return "%s" % self.area.name
-
-	class Meta:
-		verbose_name = _("home area")
-		verbose_name_plural = _("home areas")
-		unique_together = (("scenario", "country", "area"),)
-
-class Setup(models.Model):
-	"""
-	This class defines the initial setup of a unit in a given Scenario.
-	"""
-
-	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
-	country = models.ForeignKey(Country, blank=True, null=True,
-		verbose_name=_("country"))
-	area = models.ForeignKey(Area, verbose_name=_("area"))
-	unit_type = models.CharField(_("unit type"), max_length=1,
-		choices=UNIT_TYPES)
-    
-	def __unicode__(self):
-		return _("%(unit)s in %(area)s") % {
-			'unit': self.get_unit_type_display(),
-			'area': self.area.name }
-
-	class Meta:
-		verbose_name = _("initial setup")
-		verbose_name_plural = _("initial setups")
-		unique_together = (("scenario", "area", "unit_type"),)
-
-class Treasury(models.Model):
-	"""
-	This class represents the initial amount of ducats that a Country starts
-	each Scenario with
-	"""
-	
-	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
-	country = models.ForeignKey(Country, verbose_name=_("country"))
-	ducats = models.PositiveIntegerField(_("ducats"), default=0)
-	double = models.BooleanField(_("double income"), default=False)
-
-	def __unicode__(self):
-		return "%s starts %s with %s ducats" % (self.country, self.scenario,
-			self.ducats)
-
-	class Meta:
-		verbose_name = _("treasury")
-		verbose_name_plural = _("treasuries")
-		unique_together = (("scenario", "country"),)
-
-class CityIncome(models.Model):
-	"""
-	This class represents a City that generates an income in a given Scenario
-	"""
-	
-	city = models.ForeignKey(Area, verbose_name=_("city"))
-	scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
-
-	def __unicode__(self):
-		return "%s" % self.city.name
-
-	class Meta:
-		verbose_name = _("city income")
-		verbose_name_plural = _("city incomes")
-		unique_together = (("city", "scenario"),)
 
 class GameManager(models.Manager):
 	def joinable_by_user(self, user):
@@ -591,7 +319,7 @@ class Game(models.Model):
 		key = "game-%s_all-units" % self.pk
 		all_units = cache.get(key)
 		if all_units is None:
-			all_units = Unit.objects.select_related().filter(player__game=self).order_by('area__board_area__name')
+			all_units = Unit.objects.select_related().filter(player__game=self).order_by('area__board_area__code')
 			cache.set(key, all_units)
 		return all_units
 
@@ -690,7 +418,7 @@ class Game(models.Model):
 			if excom:
 				p.may_excommunicate = p.country.can_excommunicate
 			if finances:
-				t = Treasury.objects.get(scenario=self.scenario, country=p.country)
+				t = self.scenario.treasury_set.get(country=p.country)
 				p.double_income = t.double
 			p.save()
 
@@ -717,8 +445,7 @@ class Game(models.Model):
 				ga.save()
 
 	def get_autonomous_setups(self):
-		return Setup.objects.filter(scenario=self.scenario,
-				country__isnull=True).select_related()
+		return self.scenario.autonomous
 	
 	def place_initial_garrisons(self):
 		""" Creates the Autonomous Player, and places the autonomous garrisons at the
@@ -749,7 +476,7 @@ class Game(models.Model):
 
 	def assign_initial_income(self):
 		for p in self.player_set.filter(user__isnull=False):
-			t = Treasury.objects.get(scenario=self.scenario, country=p.country)
+			t = self.scenario.treasury_set.get(country=p.country)
 			p.ducats = t.ducats
 			p.save()
 
@@ -1125,7 +852,7 @@ class Game(models.Model):
 			msg = "Varible income: Got a %s in game %s" % (die, self)
 			logger.info(msg)
 		## get a list of the ids of the major cities that generate income
-		majors = CityIncome.objects.filter(scenario=self.scenario)
+		majors = self.scenario.major_cities
 		majors_ids = majors.values_list('city', flat=True)
 		##
 		players = self.player_set.filter(user__isnull=False, eliminated=False)
@@ -1963,7 +1690,8 @@ class GameArea(models.Model):
 	storm = models.BooleanField(default=False)
 
 	def abbr(self):
-		return "%s (%s)" % (self.board_area.code, self.board_area.name)
+		return self.board_area.code
+		#return "%s (%s)" % (self.board_area.code, self.board_area.name)
 
 	def __unicode__(self):
 		#return self.board_area.name
@@ -2129,8 +1857,7 @@ class Player(models.Model):
 			return ''
 	
 	def get_setups(self):
-		return Setup.objects.filter(scenario=self.game.scenario,
-				country=self.country).select_related()
+		return self.game.scenario.setup_set.filter(country=self.country).select_related()
 	
 	def home_control_markers(self):
 		""" Assigns each GameArea the player as owner. """
@@ -3323,38 +3050,6 @@ class RetreatOrder(models.Model):
 
 	def __unicode__(self):
 		return "%s" % self.unit
-
-class ControlToken(models.Model):
-	""" Defines the coordinates of the control token for a board area. """
-
-	area = models.OneToOneField(Area)
-	x = models.PositiveIntegerField()
-	y = models.PositiveIntegerField()
-
-	def __unicode__(self):
-		return "%s, %s" % (self.x, self.y)
-
-
-class GToken(models.Model):
-	""" Defines the coordinates of the Garrison token in a board area. """
-
-	area = models.OneToOneField(Area)
-	x = models.PositiveIntegerField()
-	y = models.PositiveIntegerField()
-
-	def __unicode__(self):
-		return "%s, %s" % (self.x, self.y)
-
-
-class AFToken(models.Model):
-	""" Defines the coordinates of the Army and Fleet tokens in a board area."""
-
-	area = models.OneToOneField(Area)
-	x = models.PositiveIntegerField()
-	y = models.PositiveIntegerField()
-
-	def __unicode__(self):
-		return "%s, %s" % (self.x, self.y)
 
 class TurnLog(models.Model):
 	""" A TurnLog is text describing the processing of the method

@@ -36,7 +36,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 </div>
 {% endif %}
 <dl>
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail game.scenario.slug %}">{{ game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Players" %}</dt>
 <dd>

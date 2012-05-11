@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load machiavelli_tags %}
 		<td><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></td>
-		<td><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></td>
+		<td><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></td>
 		<td>{{ game.created_by }}</td>
 		<td>{{ game.get_time_limit_display }}</td>
 		<td class="data_c">
