@@ -112,7 +112,7 @@ def summary(request):
 		my_rev_ids = machiavelli.Revolution.objects.filter(opposition=request.user).values('game__id')
 		revolutions = machiavelli.Revolution.objects.exclude(game__id__in=my_games_ids).exclude(game__id__in=my_rev_ids).filter(active__isnull=False, opposition__isnull=True)
 		context.update( {'revolutions': revolutions})
-		my_players = Player.objects.filter(user=request.user, game__started__isnull=False, done=False)
+		my_players = machiavelli.Player.objects.filter(user=request.user, game__started__isnull=False, done=False)
 		player_list = []
 		for p in my_players:
 			p.deadline = p.next_phase_change()
@@ -143,7 +143,7 @@ def my_active_games(request):
 	if request.user.is_authenticated():
 		my_players = machiavelli.Player.objects.filter(user=request.user, game__slots=0).select_related("contender", "game__scenario", "game__configuration")
 	else:
-		my_players = Player.objects.none()
+		my_players = machiavelli.Player.objects.none()
 	player_list = []
 	for p in my_players:
 		p.deadline = p.next_phase_change()
