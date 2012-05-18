@@ -2672,7 +2672,10 @@ class Revolution(models.Model):
 	opposition_player = property(_get_opposition_player)
 
 	def _get_country(self):
-		player = Player.objects.get(game=self.game, user=self.government)
+		try:
+			player = Player.objects.get(game=self.game, user=self.government)
+		except ObjectDoesNotExist:
+			player = Player.objects.get(game=self.game, user=self.opposition)
 		return player.country
 
 	country = property(_get_country)
