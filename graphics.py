@@ -66,19 +66,19 @@ def make_map(game):
 	for player in game.player_set.filter(user__isnull=False):
 		## paste control markers
 		controls = player.gamearea_set.all()
-		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.country.static_name))
+		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.static_name))
 		for area in controls:
 			base_map.paste(marker, (area.board_area.controltoken.x, area.board_area.controltoken.y), marker)
 		## paste flags
 		home = player.home_country()
-		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.country.static_name))
+		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.static_name))
 		for game_area in home:
 			area = game_area.board_area
 			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 15), flag)
 		## paste As and Fs (not garrisons because of sieges)
 		units = player.unit_set.all()
-		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.country.static_name))
-		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.country.static_name))
+		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.static_name))
+		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.static_name))
 		for unit in units:
 			if unit.besieging:
 				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
@@ -101,7 +101,7 @@ def make_map(game):
 	## paste garrisons
 	for player in game.player_set.all():
 		if player.user:
-			garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, player.country.static_name))
+			garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, player.static_name))
 		else:
 			## autonomous
 			garrison = Image.open("%s/G-autonomous.png" % TOKENS_DIR)
@@ -142,74 +142,11 @@ def make_map(game):
 	make_game_thumb(game, 187, 267)
 	return True
 
-def make_scenario_map(s):
-	""" Makes the initial map for an scenario.
-	"""
-	base_map = Image.open(os.path.join(TOKENS_DIR, BASEMAP))
-	## if there are disabled areas, mark them
-	marker = Image.open("%s/disabled.png" % TOKENS_DIR)
-	for d in  s.disabledarea_set.all():
-		base_map.paste(marker, (d.area.aftoken.x, d.area.aftoken.y), marker)
-	## mark special city incomes
-	marker = Image.open("%s/chest.png" % TOKENS_DIR)
-	for i in s.cityincome_set.all():
-		base_map.paste(marker, (i.city.gtoken.x + 48, i.city.gtoken.y), marker)
-	##
-	for c in s.countries:
-		## paste control markers and flags
-		controls = s.home_set.filter(country=c, is_home=True)
-		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, c.static_name))
-		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, c.static_name))
-		for h in controls:
-			base_map.paste(marker, (h.area.controltoken.x, h.area.controltoken.y), marker)
-			base_map.paste(flag, (h.area.controltoken.x, h.area.controltoken.y - 15), flag)
-		## paste units
-		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, c.static_name))
-		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, c.static_name))
-		garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, c.static_name))
-		for setup in c.setup_set.filter(scenario=s):
-			if setup.unit_type == 'G':
-				coords = (setup.area.gtoken.x, setup.area.gtoken.y)
-				base_map.paste(garrison, coords, garrison)
-			elif setup.unit_type == 'A':
-				coords = (setup.area.aftoken.x, setup.area.aftoken.y)
-				base_map.paste(army, coords, army)
-			elif setup.unit_type == 'F':
-				coords = (setup.area.aftoken.x, setup.area.aftoken.y)
-				base_map.paste(fleet, coords, fleet)
-			else:
-				pass
-	## paste autonomous garrisons
-	garrison = Image.open("%s/G-autonomous.png" % TOKENS_DIR)
-	for g in s.setup_set.filter(country__isnull=True, unit_type='G'):
-		coords = (g.area.gtoken.x, g.area.gtoken.y)
-		base_map.paste(garrison, coords, garrison)
-	## save the map
-	result = base_map #.resize((1250, 1780), Image.ANTIALIAS)
-	filename = os.path.join(SCENARIOSDIR, "scenario-%s.jpg" % s.pk)
-	ensure_dir(filename)
-	result.save(filename)
-	make_scenario_thumb(s, 187, 267, "thumbnails")
-	make_scenario_thumb(s, 625, 890, "625x890")
-	return True
-
 def make_game_thumb(game, w, h):
 	""" Make a thumbnail of the game map image """
 	size = w, h
 	fd = os.path.join(MAPSDIR, game.map_dir, game.map_filename)
 	outfile = os.path.join(MAPSDIR, game.map_dir, "thumb", game.map_filename)
-	im = Image.open(fd)
-	im.thumbnail(size, Image.ANTIALIAS)
-	ensure_dir(outfile)
-	im.save(outfile, "JPEG")
-
-def make_scenario_thumb(scenario, w, h, dirname):
-	""" Make thumbnails of the scenario map image """
-	size = w, h
-	fd = os.path.join(SCENARIOSDIR, "scenario-%s.jpg" % scenario.pk)
-	ensure_dir(fd)
-	filename = os.path.split(fd)[1]
-	outfile= os.path.join(SCENARIOSDIR, dirname, filename)
 	im = Image.open(fd)
 	im.thumbnail(size, Image.ANTIALIAS)
 	ensure_dir(outfile)

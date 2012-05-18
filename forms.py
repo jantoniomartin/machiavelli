@@ -260,7 +260,8 @@ def make_reinforce_form(player, finances=False, special_units=False):
 		if special_units and not player.has_special_unit():
 			## special units are available for the player
 			unit_class = forms.ModelChoiceField(required=False,
-											queryset=player.country.special_units.all(),
+											#queryset=player.country.special_units.all(),
+											queryset=player.contender.country.special_units.all(),
 											empty_label=_("Regular (3d)"))
 
 		def clean(self):
@@ -392,13 +393,15 @@ def make_expense_form(player):
 					
 			## if disband or buy autonomous garrison, check if the unit is an autonomous garrison
 			elif type in (5, 6):
-				if unit.type != 'G' or unit.player.country != None:
+				#if unit.type != 'G' or unit.player.country != None:
+				if unit.type != 'G' or unit.player.contender.country != None:
 					raise forms.ValidationError(_("You must choose an autonomous garrison"))
 			## checks for convert, disband or buy enemy units
 			elif type in (7, 8, 9):
 				if unit.player == player:
 					raise forms.ValidationError(_("You cannot choose one of your own units"))
-				if unit.player.country == None:
+				#if unit.player.country == None:
+				if unit.player.contender.country == None:
 					raise forms.ValidationError(_("You must choose an enemy unit"))
 				if type == 7 and unit.type != 'G':
 					raise forms.ValidationError(_("You must choose a non-autonomous garrison"))
@@ -447,7 +450,8 @@ class RepayForm(forms.Form):
 def make_assassination_form(player):
 	ducats_list = make_ducats_list(player.ducats, 12)
 	assassin_ids = player.assassin_set.values_list('target', flat=True)
-	targets_qs = Country.objects.filter(player__game=player.game, id__in=assassin_ids).exclude(player__eliminated=True, player__user__isnull=True)
+	#targets_qs = Country.objects.filter(player__game=player.game, id__in=assassin_ids).exclude(player__eliminated=True, player__user__isnull=True)
+	targets_qs = Country.objects.filter(contender__player__game=player.game, id__in=assassin_ids).exclude(contender__player__eliminated=True, contender__player__user__isnull=True)
 
 	class AssassinationForm(forms.Form):
 		ducats = forms.ChoiceField(required=True, choices=ducats_list, label=_("Ducats to pay"))

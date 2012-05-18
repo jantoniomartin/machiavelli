@@ -41,8 +41,8 @@
 </li>
 {% if player %}
 <li>
-	{% if player.country %}
-		{{ player.country }}
+	{% if player.contender.country %}
+		{{ player.contender.country }}
 	{% endif %}
 </li>
 {% else %}
@@ -79,18 +79,18 @@
 
 <div class="col1">
 <div id="powers">
-{% if player.country %}
+{% if player.contender.country %}
 <div style="text-align: center">
-<img src="{{ STATIC_URL }}machiavelli/img/banner-{{ player.country.static_name }}.png" />
+<img src="{{ STATIC_URL }}machiavelli/img/banner-{{ player.static_name }}.png" />
 </div>
 {% endif %}
 {% if game.slots == 0 %} {# show all the powers info #}
 {% for p in player_list %}
 	{% if p.user %}
-	<div class="player {{ p.country.static_name }}">
-	<div><strong>{{ p.country }}</strong>
+	<div class="player {{ p.static_name }}">
+	<div><strong>{{ p.contender.country }}</strong>
 	{% if p.conqueror %}
-		({{ p.conqueror.country }})
+		({{ p.conqueror.contender.country }})
 	{% endif %}
 	{% if p.is_excommunicated %}
 	<img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" />

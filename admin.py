@@ -1,10 +1,9 @@
 from django.contrib import admin
 
 import machiavelli.models as machiavelli
-from machiavelli.graphics import make_scenario_map
 
 class PlayerAdmin(admin.ModelAdmin):
-	list_display = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	list_display = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
 	list_filter = ('game', 'done')
 	ordering = ['game']
 
@@ -13,8 +12,8 @@ class PlayerInline(admin.TabularInline):
 	extra = 0
 	ordering = ['user__username']
 	can_delete = False
-	fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
-	readonly_fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	fields = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	readonly_fields = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
 
 class RevolutionAdmin(admin.ModelAdmin):
 	list_display = ('game', 'government', 'opposition', 'active', 'overthrow')
@@ -46,18 +45,10 @@ class GameAreaAdmin(admin.ModelAdmin):
 	ordering = ['board_area']
 	list_filter = ('player', )
 
-class SetupAdmin(admin.ModelAdmin):
-	list_display = ('scenario', 'country', 'area', 'unit_type')
-
 class OrderAdmin(admin.ModelAdmin):
 	list_display = ('player', '__unicode__', 'explain', 'confirmed')
 	list_editable = ('confirmed', )
 	list_filter = ('confirmed',)
-
-	#def player_info(self, obj):
-	#	return "%(country)s (%(game)s)" % { 'country': obj.unit.player.country,
-	#										'game': obj.unit.player.game }
-	#player_info.short_description = 'Player'
 
 class ConfigurationInline(admin.TabularInline):
 	model = machiavelli.Configuration

@@ -135,7 +135,7 @@ def my_active_games(request):
 	""" Gets a paginated list of all the ongoing games in which the user is a player. """
 	context = sidebar_context(request)
 	if request.user.is_authenticated():
-		my_players = machiavelli.Player.objects.filter(user=request.user, game__slots=0).select_related("country", "game__scenario", "game__configuration")
+		my_players = machiavelli.Player.objects.filter(user=request.user, game__slots=0).select_related("contender", "game__scenario", "game__configuration")
 	else:
 		my_players = machiavelli.Player.objects.none()
 	paginator = Paginator(my_players, 10)
@@ -1222,7 +1222,7 @@ def give_money(request, slug, player_id):
 			if notification:
 				extra_context = {'game': lender.game,
 								'ducats': ducats,
-								'country': lender.country,
+								'country': lender.contender.country,
 								'STATIC_URL': settings.STATIC_URL}
 				if lender.game.fast:
 					notification.send_now([borrower.user,], "received_ducats", extra_context)
@@ -1310,7 +1310,7 @@ def assassination(request, slug):
 		if form.is_valid():
 			ducats = int(form.cleaned_data['ducats'])
 			country = form.cleaned_data['target']
-			target = machiavelli.Player.objects.get(game=game, country=country)
+			target = machiavelli.Player.objects.get(game=game, contender__country=country)
 			if ducats > player.ducats:
 				messages.error(request, _("You don't have enough ducats for the assassination."))
 				return redirect(game)

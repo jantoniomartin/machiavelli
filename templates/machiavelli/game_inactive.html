@@ -39,7 +39,7 @@
 {% if game.started %}
 <img itemprop="image" src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
 {% else %}
-<img itemprop="image" src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
+<img itemprop="image" src="{{ MEDIA_URL }}scenarios/thumbnails/{{ game.scenario.map_name }}" />
 {% endif %}
 </div>
 
@@ -126,7 +126,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 	{% for p in players %}
 	<tr>
 	<td>{{ p.user }}</td>
-	<td>{{ p.country }}</td>
+	<td>{{ p.contender.country }}</td>
 	<td class="data_c">{{ p.points }}</td>
 	<td class="data_c">{{ p.cities }}</td>
 	</tr>

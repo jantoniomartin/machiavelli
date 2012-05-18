@@ -29,7 +29,7 @@
 	<p>{% blocktrans %}You must complete your actions in the following games:{% endblocktrans %}</p>
 	{% for player in actions %}
 	<div class="game_short">
-	<h2 style="background: url('{{ STATIC_URL }}machiavelli/img/icon-{{ player.country.static_name }}.png') no-repeat top right"><span>
+	<h2 style="background: url('{{ STATIC_URL }}machiavelli/img/icon-{{ player.static_name }}.png') no-repeat top right"><span>
 	<a href="{{ player.game.get_absolute_url }}">{{ player.game.slug }}</a>
 	</span></h2>
 	{% if player.game.started %}
@@ -61,7 +61,7 @@
 	</span>
 	</h2>
 <div class="map">
-<img src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ promoted_game.scenario.pk }}.jpg" />
+<img src="{{ MEDIA_URL }}scenarios/thumbnails/{{ promoted_game.scenario.map_name }}" />
 </div>
 <dl>
 <dt>{% trans "Average score" %}</dt><dd>{{ promoted_game.get_average_score|score_stars }}</dd>

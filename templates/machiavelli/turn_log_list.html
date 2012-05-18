@@ -12,7 +12,7 @@
 <li>{% trans "Season" %}: {{ game.get_season_display }}</li>
 <li>{% trans "Phase" %}: {{ game.get_phase_display }}</li>
 <li>{% trans "Time left" %}: {{ game.next_phase_change|timeuntil }}</li>
-<li>{% trans "Power" %}: {{ player.country }}</li>
+<li>{% trans "Power" %}: {{ player.contender.country }}</li>
 </ul>
 </div>
 

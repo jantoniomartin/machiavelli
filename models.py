@@ -51,7 +51,6 @@ else:
 	condottieri_messages = None
 
 ## machiavelli
-from machiavelli.fields import AutoTranslateField
 from machiavelli.graphics import make_map
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
@@ -59,7 +58,7 @@ import machiavelli.finances as finances
 import machiavelli.exceptions as exceptions
 
 ## condottieri_scenarios
-from condottieri_scenarios.models import Scenario, Country, Area
+from condottieri_scenarios.models import Scenario, Contender, Country, Area
 
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
@@ -272,23 +271,25 @@ class Game(models.Model):
 		cache.delete(key)
 	
 	def player_list_ordered_by_cities(self):
+		##TODO: condottieri_scenarios should not appear in the SQL query. Fix it.
 		key = "game-%s_player-list" % self.pk
 		result_list = cache.get(key)
-		if result_list is None:
+		if 1: #result_list is None:
 			from django.db import connection
 			cursor = connection.cursor()
 			cursor.execute("SELECT machiavelli_player.*, COUNT(machiavelli_gamearea.id) \
 			AS cities \
 			FROM machiavelli_player \
 			LEFT JOIN (machiavelli_gamearea \
-			INNER JOIN machiavelli_area \
-			ON machiavelli_gamearea.board_area_id=machiavelli_area.id) \
+			INNER JOIN condottieri_scenarios_area \
+			ON machiavelli_gamearea.board_area_id=condottieri_scenarios_area.id) \
 			ON machiavelli_gamearea.player_id=machiavelli_player.id \
-			WHERE (machiavelli_player.game_id=%s AND machiavelli_player.country_id \
-			AND (machiavelli_area.has_city=1 OR machiavelli_gamearea.id IS NULL)) \
+			WHERE (machiavelli_player.game_id=%s \
+			AND (condottieri_scenarios_area.has_city=1 OR machiavelli_gamearea.id IS NULL)) \
 			GROUP BY machiavelli_player.id \
 			ORDER BY cities DESC, machiavelli_player.id;" % self.id)
 			result_list = []
+			print result_list
 			for row in cursor.fetchall():
 				result_list.append(Player.objects.get(id=row[0]))
 			cache.set(key, result_list)
@@ -389,22 +390,29 @@ class Game(models.Model):
 	
 	def shuffle_countries(self):
 		""" Assign a Country of the Scenario to each Player, randomly. """
-		countries = self.scenario.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct()
-		countries = list(countries)
+		#countries = self.scenario.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct()
+		contenders = self.scenario.contender_set.exclude(country__isnull=True)
+		#countries = list(countries)
+		contenders = list(contenders)
 		players = self.player_set.filter(user__isnull=False)
-		neutral_count = len(countries) - players.count()
-		if neutral_count > 0:
+		## TODO: Enable this when condottieri_tournament is adapted to condottieri_scenarios
+		#neutral_count = len(countries) - players.count()
+		#if neutral_count > 0:
 			## there are more countries than players
-			neutral_ids = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
-			countries = [item for item in countries if item not in neutral_ids]
+		#	neutral_ids = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
+		#	countries = [item for item in countries if item not in neutral_ids]
+		#################################################################
 		## a list of tuples will be returned
 		assignment = []
 		## shuffle the list of countries
-		random.shuffle(countries)
+		#random.shuffle(countries)
+		random.shuffle(contenders)
 		for player in self.player_set.filter(user__isnull=False):
-			assignment.append((player, countries.pop()))
+			#assignment.append((player, countries.pop()))
+			assignment.append((player, contenders.pop()))
 		for t in assignment:
-			t[0].country = Country.objects.get(id=t[1])
+			#t[0].country = Country.objects.get(id=t[1])
+			t[0].contender = t[1]
 			t[0].save()
 
 	def copy_country_data(self):
@@ -414,12 +422,15 @@ class Game(models.Model):
 		finances = self.configuration.finances
 
 		for p in self.player_set.filter(user__isnull=False):
-			p.static_name = p.country.static_name
+			#p.static_name = p.country.static_name
+			p.static_name = p.contender.country.static_name
 			if excom:
-				p.may_excommunicate = p.country.can_excommunicate
+				#p.may_excommunicate = p.country.can_excommunicate
+				p.may_excommunicate = p.contender.country.can_excommunicate
 			if finances:
-				t = self.scenario.treasury_set.get(country=p.country)
-				p.double_income = t.double
+				#t = self.scenario.treasury_set.get(country=p.country)
+				#p.double_income = t.double
+				p.double_income = p.contender.treasury.double
 			p.save()
 
 	def get_disabled_areas(self):
@@ -430,15 +441,16 @@ class Game(models.Model):
 
 	def create_game_board(self):
 		""" Creates the GameAreas for the Game.	"""
+		##TODO: Uncomment when condottieri_tournament is adapted to condottieri_scenarios
 		disabled_ids = Area.objects.filter(disabledarea__scenario=self.scenario).values_list('id', flat=True)
-		countries = self.scenario.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct()
-		player_count = self.player_set.exclude(user__isnull=True).count()
-		neutral_count = countries.count() - player_count
+		#countries = self.scenario.setup_set.exclude(country__isnull=True).values_list('country', flat=True).distinct()
+		#player_count = self.player_set.exclude(user__isnull=True).count()
+		#neutral_count = countries.count() - player_count
 		neutral_ids = []
-		if neutral_count > 0:
-			neutrals = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
-			neutrals = list(neutrals)
-			neutral_ids = self.scenario.home_set.filter(country__id__in=neutrals, is_home=True).values_list('area__id', flat=True)
+		#if neutral_count > 0:
+		#	neutrals = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
+		#	neutrals = list(neutrals)
+		#	neutral_ids = self.scenario.home_set.filter(country__id__in=neutrals, is_home=True).values_list('area__id', flat=True)
 		for a in Area.objects.all():
 			if not (a.id in disabled_ids or a.id in neutral_ids):
 				ga = GameArea(game=self, board_area=a)
@@ -451,7 +463,6 @@ class Game(models.Model):
 		""" Creates the Autonomous Player, and places the autonomous garrisons at the
 		start of the game.
 		"""
-
 		## create the autonomous player
 		autonomous = Player(game=self, done=True)
 		autonomous.save()
@@ -476,8 +487,9 @@ class Game(models.Model):
 
 	def assign_initial_income(self):
 		for p in self.player_set.filter(user__isnull=False):
-			t = self.scenario.treasury_set.get(country=p.country)
-			p.ducats = t.ducats
+			#t = self.scenario.treasury_set.get(country=p.country)
+			#p.ducats = t.ducats
+			p.ducats = p.contender.treasury.ducats
 			p.save()
 
 	def create_assassins(self):
@@ -488,7 +500,8 @@ class Game(models.Model):
 					continue
 				assassin = Assassin()
 				assassin.owner = p
-				assassin.target = q.country
+				#assassin.target = q.country
+				assassin.target = q.contender.country
 				assassin.save()
 
 	##--------------------------
@@ -775,19 +788,6 @@ class Game(models.Model):
 		## mark as unpaid all non-autonomous units
 		Unit.objects.filter(player__game=self).exclude(player__user__isnull=True).update(paid=False)
 
-	## deprecated because of check_finished_phase
-	#def check_next_phase(self):
-	#	""" When a player ends its phase, send a signal to the game. This function
-	#	checks if all the players have finished.
-	#	"""
-	#
-	#	for p in self.player_set.all():
-	#		if not p.done:
-	#			return False
-	#	self.all_players_done()
-	#	for p in self.player_set.all():
-	#		p.new_phase()
-
 	##------------------------
 	## optional rules methods
 	##------------------------
@@ -797,17 +797,23 @@ class Game(models.Model):
 		## a player can only be conquered if he is eliminated
 		for p in self.player_set.filter(eliminated=True):
 			## try fo find a home province that is not controlled by any player
+			#neutral = GameArea.objects.filter(game=self,
+			#						board_area__home__country=p.country,
+			#						board_area__home__scenario=self.scenario,
+			#						board_area__home__is_home=True,
+			#						player__isnull=True).count()
 			neutral = GameArea.objects.filter(game=self,
-									board_area__home__country=p.country,
-									board_area__home__scenario=self.scenario,
-									board_area__home__is_home=True,
-									player__isnull=True).count()
+				board_area__home__contender=p.contender,
+				board_area__home__is_home=True,
+				player__isnull=True).count()
 			if neutral > 0:
 				continue
 			## get the players that control part of this player's home country
-			controllers = self.player_set.filter(gamearea__board_area__home__country=p.country,
-									gamearea__board_area__home__scenario=self.scenario,
-									gamearea__board_area__home__is_home=True).distinct()
+			#controllers = self.player_set.filter(gamearea__board_area__home__country=p.country,
+			#						gamearea__board_area__home__scenario=self.scenario,
+			#						gamearea__board_area__home__is_home=True).distinct()
+			controllers = self.player_set.filter(gamearea__board_area__home__contender=p.contender,
+				gamearea__board_area__home__is_home=True).distinct()
 			if len(controllers) == 1:
 				## all the areas in home country belong to the same player
 				if p != controllers[0] and p.conqueror != controllers[0]:
@@ -1400,9 +1406,9 @@ class Game(models.Model):
 						if signals:
 							signals.unit_surrendered.send(sender=defender)
 						else:
-							self.log_event(UnitEvent, type=defender.type,
-												area=defender.area.board_area,
-												message=2)
+							log_event(UnitEvent, type=defender.type,
+								area=defender.area.board_area,
+								message=2)
 						defender.delete()
 						b.besieging = False	
 					b.save()
@@ -1520,7 +1526,9 @@ class Game(models.Model):
 					if signals:
 						signals.area_controlled.send(sender=area)
 					else:
-						self.log_event(ControlEvent, country=area.player.country, area=area.board_area)
+						#self.log_event(ControlEvent, country=area.player.country, area=area.board_area)
+						self.log_event(ControlEvent, country=area.player.contender.country,
+							area=area.board_area)
 			else:
 					area.player = None
 					area.save()
@@ -1549,8 +1557,9 @@ class Game(models.Model):
 					try:
 						## find a home city controlled by other player
 						GameArea.objects.exclude(player=p).get(game=self,
-											board_area__home__scenario=self.scenario,
-											board_area__home__country=p.country,
+											#board_area__home__scenario=self.scenario,
+											#board_area__home__country=p.country,
+											board_area__home__contender=p.contender,
 											board_area__home__is_home=True,
 											board_area__has_city=True)
 					except ObjectDoesNotExist:
@@ -1565,8 +1574,9 @@ class Game(models.Model):
 				if self.extra_conquered_cities > 0:
 					## count the not home cities controled by the player
 					extra = GameArea.objects.filter(player=p, board_area__has_city=True).exclude(
-											board_area__home__scenario=self.scenario,
-											board_area__home__country=p.country,
+											#board_area__home__scenario=self.scenario,
+											#board_area__home__country=p.country,
+											board_area__home__contender=p.contender,
 											board_area__home__is_home=True).count()
 					if extra < self.extra_conquered_cities:
 						continue
@@ -1576,7 +1586,8 @@ class Game(models.Model):
 	def assign_scores(self):
 		scores = []
 		for p in self.player_set.filter(user__isnull=False):
-			s = Score(user=p.user, game=p.game, country=p.country,
+			#s = Score(user=p.user, game=p.game, country=p.country,
+			s = Score(user=p.user, game=p.game, country=p.contender.country,
 				cities=p.number_of_cities)
 			scores.append(s)
 		## sort the scores, more cities go first
@@ -1698,8 +1709,8 @@ class GameArea(models.Model):
 		#return "(%(code)s) %(name)s" % {'name': self.board_area.name, 'code': self.board_area.code}
 		return unicode(self.board_area)
 
-	def accepts_type(self, type):
-		return self.board_area.accepts_type(type)
+	def build_possible(self, type):
+		return self.board_area.build_possible(type)
 	
 	def possible_reinforcements(self):
 		""" Returns a list of possible unit types for an area. """
@@ -1709,11 +1720,11 @@ class GameArea(models.Model):
 		units = self.unit_set.all()
 		for unit in units:
 	        	existing_types.append(unit.type)
-		if self.accepts_type('G') and not "G" in existing_types:
+		if self.build_possible('G') and not "G" in existing_types:
 			result.append('G')
-		if self.accepts_type('F') and not ("A" in existing_types or "F" in existing_types):
+		if self.build_possible('F') and not ("A" in existing_types or "F" in existing_types):
 			result.append('F')
-		if self.accepts_type('A') and not ("A" in existing_types or "F" in existing_types):
+		if self.build_possible('A') and not ("A" in existing_types or "F" in existing_types):
 			result.append('A')
 		return result
 
@@ -1822,7 +1833,10 @@ class Player(models.Model):
 
 	user = models.ForeignKey(User, blank=True, null=True) # can be null because of autonomous units
 	game = models.ForeignKey(Game)
+	## country is deprecated and will be deleted. Only used here to ease the migration
+	## to condottieri_scenarios. contender is used in its place
 	country = models.ForeignKey(Country, blank=True, null=True)
+	contender = models.ForeignKey(Contender, blank=True, null=True)
 	done = models.BooleanField(default=False)
 	eliminated = models.BooleanField(default=False)
 	conqueror = models.ForeignKey('self', related_name='conquered', blank=True, null=True)
@@ -1857,13 +1871,16 @@ class Player(models.Model):
 			return ''
 	
 	def get_setups(self):
-		return self.game.scenario.setup_set.filter(country=self.country).select_related()
+		#return self.game.scenario.setup_set.filter(country=self.country).select_related()
+		return self.contender.setup_set.select_related()
 	
 	def home_control_markers(self):
 		""" Assigns each GameArea the player as owner. """
+		#GameArea.objects.filter(game=self.game,
+		#						board_area__home__scenario=self.game.scenario,
+		#						board_area__home__country=self.country).update(player=self)
 		GameArea.objects.filter(game=self.game,
-								board_area__home__scenario=self.game.scenario,
-								board_area__home__country=self.country).update(player=self)
+			board_area__home__contender=self.contender).update(player=self)
 	
 	def place_initial_units(self):
 		for s in self.get_setups():
@@ -1872,8 +1889,6 @@ class Player(models.Model):
 			except:
 				print "Error 2: Area not found!"
 			else:
-				#a.player = self
-				#a.save()
 				if s.unit_type:
 					new_unit = Unit(type=s.unit_type, area=a, player=self, paid=False)
 					new_unit.save()
@@ -1914,10 +1929,13 @@ class Player(models.Model):
 	def home_country(self):
 		""" Returns a queryset with Game Areas in home country. """
 
+		#return GameArea.objects.filter(game=self.game,
+		#							board_area__home__scenario=self.game.scenario,
+		#							board_area__home__country=self.country,
+		#							board_area__home__is_home=True)
 		return GameArea.objects.filter(game=self.game,
-									board_area__home__scenario=self.game.scenario,
-									board_area__home__country=self.country,
-									board_area__home__is_home=True)
+			board_area__home__contender=self.contender,
+			board_area__home__is_home=True)
 
 	def controlled_home_country(self):
 		""" Returns a queryset with GameAreas in home country controlled by player.
@@ -1934,16 +1952,21 @@ class Player(models.Model):
 		""" Returns a queryset with the GameAreas that accept new units. """
 
 		if self.game.configuration.conquering:
-			conq_countries = []
+			#conq_countries = []
+			conq_contenders = []
 			for c in self.conquered.all():
-				conq_countries.append(c.country)
+				#conq_countries.append(c.country)
+				conq_contenders.append(c.contender)
 			areas = GameArea.objects.filter(Q(player=self) &
 										Q(board_area__has_city=True) &
-										Q(board_area__home__scenario=self.game.scenario) &
+										#Q(board_area__home__scenario=self.game.scenario) &
+										Q(board_area__home__contender__scenario=self.game.scenario) &
 										Q(board_area__home__is_home=True) &
 										Q(famine=False) &
-										(Q(board_area__home__country=self.country) |
-										Q(board_area__home__country__in=conq_countries)))
+										#(Q(board_area__home__country=self.country) |
+										(Q(board_area__home__contender=self.contender) |
+										#Q(board_area__home__country__in=conq_countries)))
+										Q(board_area__home__contender__in=conq_contenders)))
 		else:
 			areas = self.controlled_home_cities().exclude(famine=True)
 		excludes = []
@@ -2005,7 +2028,7 @@ class Player(models.Model):
 			self.is_excommunicated = False
 			self.pope_excommunicated = False
 			self.save()
-			signals.country_eliminated.send(sender=self, country=self.country)
+			signals.country_eliminated.send(sender=self, country=self.contender.country)
 			if logging:
 				msg = "Game %s: player %s has been eliminated." % (self.game.pk,
 															self.pk)
@@ -2023,16 +2046,11 @@ class Player(models.Model):
 
 	def set_conqueror(self, player):
 		if player != self:
-			signals.country_conquered.send(sender=self, country=self.country)
+			signals.country_conquered.send(sender=self, country=self.contender.country)
 			if logging:
 				msg = "Player %s conquered by player %s" % (self.pk, player.pk)
 				logger.info(msg)
 			self.conqueror = player
-			#if self.game.configuration.finances:
-			#	if self.ducats > 0:
-			#		player.ducats = F('ducats') + self.ducats
-			#		player.save()
-			#		self.ducats = 0
 			self.save()
 
 	def can_excommunicate(self):
@@ -2103,7 +2121,6 @@ class Player(models.Model):
 		if not forced:
 			if self.game.uses_karma and self.game.check_bonus_time():
 				## get a karma bonus
-				#self.user.stats.adjust_karma(1)
 				self.user.get_profile().adjust_karma(1)
 			## close possible revolutions
 			self.close_revolution()
@@ -2363,7 +2380,8 @@ class Revolution(models.Model):
 
 	def _get_country(self):
 		player = Player.objects.get(game=self.game, user=self.government)
-		return player.country
+		#return player.country
+		return player.contender.country
 
 	country = property(_get_country)
 
@@ -2545,7 +2563,8 @@ class Unit(models.Model):
 		if signals:
 			signals.unit_placed.send(sender=self)
 		else:
-			self.player.game.log_event(NewUnitEvent, country=self.player.country,
+			#self.player.game.log_event(NewUnitEvent, country=self.player.country,
+			self.player.game.log_event(NewUnitEvent, country=self.player.contender.country,
 								type=self.type, area=self.area.board_area)
 		self.save()
 
@@ -2553,7 +2572,8 @@ class Unit(models.Model):
 		if signals:
 			signals.unit_disbanded.send(sender=self)
 		else:
-			self.player.game.log_event(DisbandEvent, country=self.player.country,
+			#self.player.game.log_event(DisbandEvent, country=self.player.country,
+			self.player.game.log_event(DisbandEvent, country=self.player.contender.country,
 								type=self.type, area=self.area.board_area)
 		super(Unit, self).delete()
 	
@@ -3183,7 +3203,8 @@ class Expense(models.Model):
 	
 	def __unicode__(self):
 		data = {
-			'country': self.player.country,
+			#'country': self.player.country,
+			'country': self.player.contender.country,
 			'area': self.area,
 			'unit': self.unit,
 		}
@@ -3314,7 +3335,8 @@ class Assassination(models.Model):
 
 	def explain(self):
 		return _("%(ducats)sd to kill the leader of %(country)s.") % {'ducats': self.ducats,
-																	'country': self.target.country}
+																	#'country': self.target.country}
+																	'country': self.target.contender.country}
 
 class Whisper(models.Model):
 	""" A whisper is an _anonymous_ message that is shown in the game screen. """
