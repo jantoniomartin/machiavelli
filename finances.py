@@ -37,7 +37,9 @@ INCOME_TABLE = {
 	'savoy':    [0, 1, 2, 3, 4, 5, 6],
 	'spain':    [0, 1, 2, 3, 3, 4, 4],
 	'turks':    [0, 1, 2, 3, 4, 5, 6],
+	'TUN':      [0, 1, 2, 3, 4, 5, 6],
 	'venice':   [0, 2, 3, 3, 4, 4, 5],
+	'VEN':      [0, 2, 3, 3, 4, 4, 5],
 }
 
 def get_ducats(row, column, double=False):
