@@ -25,7 +25,7 @@
 	{% for game in game_list.object_list %}
 	<tr>
 	<td><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></td>
-	<td><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></td>
+	<td><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></td>
 	<td>{{ game.get_time_limit_display }}</td>
 	<td>{% rule_icons game.configuration %}</td>
 	<td>

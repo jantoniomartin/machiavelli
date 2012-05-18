@@ -39,7 +39,7 @@
 {% if game.started %}
 <img itemprop="image" src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
 {% else %}
-<img itemprop="image" src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ game.scenario.pk }}.jpg" />
+<img itemprop="image" src="{{ MEDIA_URL }}scenarios/thumbnails/{{ game.scenario.map_name }}" />
 {% endif %}
 </div>
 
@@ -57,7 +57,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 <dt>{% trans "Average karma" %}</dt><dd>{{ game.get_average_karma|karma_stars }}</dd>
 {% endif %}
 
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario game.scenario.pk %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
@@ -126,7 +126,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 	{% for p in players %}
 	<tr>
 	<td>{{ p.user }}</td>
-	<td>{{ p.country }}</td>
+	<td>{{ p.contender.country }}</td>
 	<td class="data_c">{{ p.points }}</td>
 	<td class="data_c">{{ p.cities }}</td>
 	</tr>

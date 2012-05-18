@@ -39,10 +39,10 @@
 			</div>
 
 			<div id="countries_info" class="dialog" title="Countries">
-				<table class="{{ player.country.css_class }}">
+				<table class="{{ player.static_name }}">
 				{% for p in player_list %}
-				<tr class="{{ p.country.css_class }}">
-				<td>{{ p.country.name }}</td>
+				<tr class="{{ p.static_name }}">
+				<td>{{ p.contender.country.name }}</td>
 					{% if show_users %}
 				<td><a href="{% url profile_detail username=p.user.username %}">{% avatar p.user 20 %}</a>{{ p.user.username }}</p>
 					{% endif %}
@@ -65,7 +65,7 @@
 				<li>{{ game.get_phase_display|default_if_none:"" }}</li>
 			</ul>
 			<ul id="player_info">
-				<li class="{{ player.country.css_class }}">{{ player.country }}</li>
+				<li class="{{ player.static_name }}">{{ player.contender.country }}</li>
 				{% if player and game.slots == 0 %}
 				{% if time_exceeded %}
 				<li style="color: LightCoral">

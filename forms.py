@@ -7,7 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from machiavelli.models import *
+import machiavelli.models as machiavelli
+from condottieri_scenarios.models import Scenario, Country
 
 CITIES_TO_WIN = (
 	(15, _('Normal game (15 cities)')),
@@ -20,7 +21,7 @@ class GameForm(forms.ModelForm):
 									empty_label=None,
 									cache_choices=True,
 									label=_("Scenario"))
-	time_limit = forms.ChoiceField(choices=TIME_LIMITS, label=_("Time limit"))
+	time_limit = forms.ChoiceField(choices=machiavelli.TIME_LIMITS, label=_("Time limit"))
 	cities_to_win = forms.ChoiceField(choices=CITIES_TO_WIN, label=_("How to win"))
 	visible = forms.BooleanField(required=False, label=_("Visible players?"))
 	
@@ -37,7 +38,7 @@ class GameForm(forms.ModelForm):
 		if karma < settings.KARMA_TO_JOIN:
 			msg = _("You don't have enough karma to create a game.")
 			raise forms.ValidationError(msg)
-		if int(cleaned_data['time_limit']) in FAST_LIMITS:
+		if int(cleaned_data['time_limit']) in machiavelli.FAST_LIMITS:
 			if karma < settings.KARMA_TO_FAST:
 				msg = _("You don't have enough karma for a fast game.")
 				raise forms.ValidationError(msg)
@@ -48,7 +49,7 @@ class GameForm(forms.ModelForm):
 		return cleaned_data
 
 	class Meta:
-		model = Game
+		model = machiavelli.Game
 		fields = ('slug',
 				'scenario',
 				'time_limit',
@@ -67,7 +68,7 @@ class ConfigurationForm(forms.ModelForm):
 		return cleaned_data
 
 	class Meta:
-		model = Configuration
+		model = machiavelli.Configuration
 		exclude = ('gossip',
 				'bribes',
 				'strategic')
@@ -81,7 +82,7 @@ class InvitationForm(forms.Form):
 
 class WhisperForm(forms.ModelForm):
 	class Meta:
-		model = Whisper
+		model = machiavelli.Whisper
 		fields = ('text',)
 		widgets = {
 			'text': forms.Textarea(attrs={'rows': 3, 'cols': 20})
@@ -94,7 +95,7 @@ class WhisperForm(forms.ModelForm):
 
 class JournalForm(forms.ModelForm):
 	class Meta:
-		model = Journal
+		model = machiavelli.Journal
 		fields = ('content',)
 
 	def __init__(self, user, game, **kwargs):
@@ -104,7 +105,7 @@ class JournalForm(forms.ModelForm):
 
 class GameCommentForm(forms.ModelForm):
 	class Meta:
-		model = GameComment
+		model = machiavelli.GameComment
 		fields = ('comment',)
 	
 	def save(self, user, game, *args, **kwargs):
@@ -114,17 +115,17 @@ class GameCommentForm(forms.ModelForm):
 		comment.save()
 
 class UnitForm(forms.ModelForm):
-	type = forms.ChoiceField(required=True, choices=UNIT_TYPES)
+	type = forms.ChoiceField(required=True, choices=machiavelli.UNIT_TYPES)
     
 	class Meta:
-		model = Unit
+		model = machiavelli.Unit
 		fields = ('type', 'area')
     
 def make_order_form(player):
 	if player.game.configuration.finances:
 		## units bought by this player
-		bought_ids = Expense.objects.filter(player=player, type__in=(6,9)).values_list('unit', flat=True)
-		units_qs = Unit.objects.filter(Q(player=player) | Q(id__in=bought_ids))
+		bought_ids = machiavelli.Expense.objects.filter(player=player, type__in=(6,9)).values_list('unit', flat=True)
+		units_qs = machiavelli.Unit.objects.filter(Q(player=player) | Q(id__in=bought_ids))
 	else:
 		units_qs = player.unit_set.select_related().all()
 	all_units = player.game.get_all_units()
@@ -132,20 +133,20 @@ def make_order_form(player):
 	
 	class OrderForm(forms.ModelForm):
 		unit = forms.ModelChoiceField(queryset=units_qs, label=_("Unit"))
-		code = forms.ChoiceField(choices=ORDER_CODES, label=_("Order"))
+		code = forms.ChoiceField(choices=machiavelli.ORDER_CODES, label=_("Order"))
 		destination = forms.ModelChoiceField(required=False, queryset=all_areas, label=_("Destination"))
-		type = forms.ChoiceField(choices=UNIT_TYPES, label=_("Convert into"))
+		type = forms.ChoiceField(choices=machiavelli.UNIT_TYPES, label=_("Convert into"))
 		subunit = forms.ModelChoiceField(required=False, queryset=all_units, label=_("Unit"))
-		subcode = forms.ChoiceField(required=False, choices=ORDER_SUBCODES, label=_("Order"))
+		subcode = forms.ChoiceField(required=False, choices=machiavelli.ORDER_SUBCODES, label=_("Order"))
 		subdestination = forms.ModelChoiceField(required=False, queryset=all_areas, label=_("Destination"))
-		subtype = forms.ChoiceField(required=False, choices=UNIT_TYPES, label=_("Convert into"))
+		subtype = forms.ChoiceField(required=False, choices=machiavelli.UNIT_TYPES, label=_("Convert into"))
 		
 		def __init__(self, player, **kwargs):
 			super(OrderForm, self).__init__(**kwargs)
 			self.instance.player = player
 		
 		class Meta:
-			model = Order
+			model = machiavelli.Order
 			fields = ('unit', 'code', 'destination', 'type',
 					'subunit', 'subcode', 'subdestination', 'subtype')
 		
@@ -166,7 +167,7 @@ def make_order_form(player):
 			
 			## check if unit has already an order from the same player
 			try:
-				Order.objects.get(unit=unit, player=player)
+				machiavelli.Order.objects.get(unit=unit, player=player)
 			except:
 				pass
 			else:
@@ -244,10 +245,10 @@ def make_retreat_form(u):
 
 def make_reinforce_form(player, finances=False, special_units=False):
 	if finances:
-		unit_types = (('', '---'),) + UNIT_TYPES
+		unit_types = (('', '---'),) + machiavelli.UNIT_TYPES
 		noarea_label = '---'
 	else:
-		unit_types = UNIT_TYPES
+		unit_types = machiavelli.UNIT_TYPES
 		noarea_label = None
 	area_qs = player.get_areas_for_new_units(finances)
 
@@ -259,7 +260,8 @@ def make_reinforce_form(player, finances=False, special_units=False):
 		if special_units and not player.has_special_unit():
 			## special units are available for the player
 			unit_class = forms.ModelChoiceField(required=False,
-											queryset=player.country.special_units.all(),
+											#queryset=player.country.special_units.all(),
+											queryset=player.contender.country.special_units.all(),
 											empty_label=_("Regular (3d)"))
 
 		def clean(self):
@@ -327,8 +329,8 @@ def make_ducats_list(ducats, f=3):
 
 def make_expense_form(player):
 	ducats_list = make_ducats_list(player.ducats)
-	unit_qs = Unit.objects.filter(player__game=player.game).order_by('area__board_area__code')
-	area_qs = GameArea.objects.filter(game=player.game).order_by('board_area__code')
+	unit_qs = machiavelli.Unit.objects.filter(player__game=player.game).order_by('area__board_area__code')
+	area_qs = machiavelli.GameArea.objects.filter(game=player.game).order_by('board_area__code')
 
 	class ExpenseForm(forms.ModelForm):
 		ducats = forms.ChoiceField(required=True, choices=ducats_list)
@@ -340,7 +342,7 @@ def make_expense_form(player):
 			self.instance.player = player
 	
 		class Meta:
-			model = Expense
+			model = machiavelli.Expense
 			fields = ('type', 'ducats', 'area', 'unit')
 	
 		def clean(self):
@@ -354,12 +356,12 @@ def make_expense_form(player):
 			#if type in (1,2,3):
 			#	raise forms.ValidationError(_("This expense is not yet implemented"))
 			if type in (0,1,2,3):
-				if not isinstance(area, GameArea):
+				if not isinstance(area, machiavelli.GameArea):
 					raise forms.ValidationError(_("You must choose an area"))
 				unit = None
 				del cleaned_data['unit']
 			elif type in (4,5,6,7,8,9):
-				if not isinstance(unit, Unit):
+				if not isinstance(unit, machiavelli.Unit):
 					raise forms.ValidationError(_("You must choose a unit"))
 				area = None
 				del cleaned_data['area']
@@ -376,7 +378,7 @@ def make_expense_form(player):
 			## if pacify rebellion, check if there is a rebellion
 			elif type == 1:
 				try:
-					Rebellion.objects.get(area=area)
+					machiavelli.Rebellion.objects.get(area=area)
 				except ObjectDoesNotExist:
 					raise forms.ValidationError(_("There is no rebellion in this area"))
 			## if province to rebel
@@ -391,13 +393,15 @@ def make_expense_form(player):
 					
 			## if disband or buy autonomous garrison, check if the unit is an autonomous garrison
 			elif type in (5, 6):
-				if unit.type != 'G' or unit.player.country != None:
+				#if unit.type != 'G' or unit.player.country != None:
+				if unit.type != 'G' or unit.player.contender.country != None:
 					raise forms.ValidationError(_("You must choose an autonomous garrison"))
 			## checks for convert, disband or buy enemy units
 			elif type in (7, 8, 9):
 				if unit.player == player:
 					raise forms.ValidationError(_("You cannot choose one of your own units"))
-				if unit.player.country == None:
+				#if unit.player.country == None:
+				if unit.player.contender.country == None:
 					raise forms.ValidationError(_("You must choose an enemy unit"))
 				if type == 7 and unit.type != 'G':
 					raise forms.ValidationError(_("You must choose a non-autonomous garrison"))
@@ -412,7 +416,7 @@ def make_expense_form(player):
 				if not ok:
 					check_ids = check_areas.values_list('id', flat=True)
 					try:
-						Unit.objects.get(player=player, area__id__in=check_ids)
+						machiavelli.Unit.objects.get(player=player, area__id__in=check_ids)
 					except MultipleObjectsReturned:
 						## there is more than one unit
 						ok = True
@@ -446,7 +450,8 @@ class RepayForm(forms.Form):
 def make_assassination_form(player):
 	ducats_list = make_ducats_list(player.ducats, 12)
 	assassin_ids = player.assassin_set.values_list('target', flat=True)
-	targets_qs = Country.objects.filter(player__game=player.game, id__in=assassin_ids).exclude(player__eliminated=True, player__user__isnull=True)
+	#targets_qs = Country.objects.filter(player__game=player.game, id__in=assassin_ids).exclude(player__eliminated=True, player__user__isnull=True)
+	targets_qs = Country.objects.filter(contender__player__game=player.game, id__in=assassin_ids).exclude(contender__player__eliminated=True, contender__player__user__isnull=True)
 
 	class AssassinationForm(forms.Form):
 		ducats = forms.ChoiceField(required=True, choices=ducats_list, label=_("Ducats to pay"))

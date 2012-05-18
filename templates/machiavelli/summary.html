@@ -29,7 +29,7 @@
 	<p>{% blocktrans %}You must complete your actions in the following games:{% endblocktrans %}</p>
 	{% for player in actions %}
 	<div class="game_short">
-	<h2 style="background: url('{{ STATIC_URL }}machiavelli/img/icon-{{ player.country.static_name }}.png') no-repeat top right"><span>
+	<h2 style="background: url('{{ STATIC_URL }}machiavelli/img/icon-{{ player.static_name }}.png') no-repeat top right"><span>
 	<a href="{{ player.game.get_absolute_url }}">{{ player.game.slug }}</a>
 	</span></h2>
 	{% if player.game.started %}
@@ -61,12 +61,12 @@
 	</span>
 	</h2>
 <div class="map">
-<img src="{{ MEDIA_URL }}scenarios/thumbnails/scenario-{{ promoted_game.scenario.pk }}.jpg" />
+<img src="{{ MEDIA_URL }}scenarios/thumbnails/{{ promoted_game.scenario.map_name }}" />
 </div>
 <dl>
 <dt>{% trans "Average score" %}</dt><dd>{{ promoted_game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ promoted_game.get_average_karma|karma_stars }}</dd>
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url show-scenario promoted_game.scenario.pk %}">{{ promoted_game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail promoted_game.scenario.name %}">{{ promoted_game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ promoted_game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ promoted_game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ promoted_game.created_by.username }}</dd>

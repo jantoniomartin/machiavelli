@@ -1,63 +1,19 @@
 from django.contrib import admin
 
-from machiavelli.models import *
-from machiavelli.graphics import make_scenario_map
-
-class SetupInline(admin.TabularInline):
-	model = Setup
-	extra = 5
-	ordering = ['country']
-
-class HomeInline(admin.TabularInline):
-	model = Home
-	extra = 5
-	ordering = ['country']
-
-class TreasuryInline(admin.TabularInline):
-	model = Treasury
-	extra = 1
-	ordering = ['country']
-
-class CityIncomeInline(admin.TabularInline):
-	model = CityIncome
-	extra = 1
-	ordering = ['city']
-
-class DisabledAreaInline(admin.TabularInline):
-	model = DisabledArea
-	extra = 1
-	ordering = ['area', ]
-
-class NeutralInline(admin.TabularInline):
-	model = Neutral
-	extra = 1
-
-class ScenarioAdmin(admin.ModelAdmin):
-	list_display = ('name', 'start_year')
-	inlines = [HomeInline, SetupInline, TreasuryInline, CityIncomeInline,
-				DisabledAreaInline, NeutralInline, ]
-	actions = ['make_map',]
-	
-	def make_map(self, request, queryset):
-		for obj in queryset:
-			make_scenario_map(obj)
-	make_map.short_description = "Make initial map"
-
-class CountryAdmin(admin.ModelAdmin):
-	list_display = ('name', 'css_class')
+import machiavelli.models as machiavelli
 
 class PlayerAdmin(admin.ModelAdmin):
-	list_display = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	list_display = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
 	list_filter = ('game', 'done')
 	ordering = ['game']
 
 class PlayerInline(admin.TabularInline):
-	model = Player
+	model = machiavelli.Player
 	extra = 0
 	ordering = ['user__username']
 	can_delete = False
-	fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
-	readonly_fields = ('user', 'game', 'country', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	fields = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
+	readonly_fields = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
 
 class RevolutionAdmin(admin.ModelAdmin):
 	list_display = ('game', 'government', 'opposition', 'active', 'overthrow')
@@ -68,7 +24,7 @@ class ScoreAdmin(admin.ModelAdmin):
 	ordering = ['game']
 
 class ScoreInline(admin.TabularInline):
-	model = Score
+	model = machiavelli.Score
 	extra = 0
 	ordering = ['user__username']
 	can_delete = False
@@ -89,39 +45,13 @@ class GameAreaAdmin(admin.ModelAdmin):
 	ordering = ['board_area']
 	list_filter = ('player', )
 
-class SetupAdmin(admin.ModelAdmin):
-	list_display = ('scenario', 'country', 'area', 'unit_type')
-
 class OrderAdmin(admin.ModelAdmin):
 	list_display = ('player', '__unicode__', 'explain', 'confirmed')
 	list_editable = ('confirmed', )
 	list_filter = ('confirmed',)
 
-	#def player_info(self, obj):
-	#	return "%(country)s (%(game)s)" % { 'country': obj.unit.player.country,
-	#										'game': obj.unit.player.game }
-	#player_info.short_description = 'Player'
-
-class ControlTokenInline(admin.TabularInline):
-	model = ControlToken
-	extra = 1
-
-class GTokenInline(admin.TabularInline):
-	model = GToken
-	extra = 1
-
-class AFTokenInline(admin.TabularInline):
-	model = AFToken
-	extra = 1
-
-class AreaAdmin(admin.ModelAdmin):
-	list_display = ('name', 'code', 'is_sea', 'is_coast', 'has_city', 'is_fortified', 'has_port', 'control_income', 'garrison_income')
-	inlines = [ ControlTokenInline,
-		GTokenInline,
-		AFTokenInline ]
-
 class ConfigurationInline(admin.TabularInline):
-	model = Configuration
+	model = machiavelli.Configuration
 	extra = 1
 
 class GameAdmin(admin.ModelAdmin):
@@ -196,26 +126,21 @@ class InvitationAdmin(admin.ModelAdmin):
 class GameCommentAdmin(admin.ModelAdmin):
 	list_display = ('__unicode__', 'user', 'game', 'is_public')
 
-admin.site.register(Scenario, ScenarioAdmin)
-admin.site.register(Country, CountryAdmin)
-admin.site.register(Game, GameAdmin)
-admin.site.register(LiveGame, LiveGameAdmin)
-admin.site.register(Unit, UnitAdmin)
-admin.site.register(SpecialUnit, SpecialUnitAdmin)
-admin.site.register(GameArea, GameAreaAdmin)
-admin.site.register(Area, AreaAdmin)
-admin.site.register(Setup, SetupAdmin)
-admin.site.register(Player, PlayerAdmin)
-admin.site.register(Revolution, RevolutionAdmin)
-admin.site.register(Score, ScoreAdmin)
-admin.site.register(Order, OrderAdmin)
-admin.site.register(RetreatOrder, RetreatOrderAdmin)
-admin.site.register(TurnLog, TurnLogAdmin)
-admin.site.register(Expense, ExpenseAdmin)
-admin.site.register(Rebellion, RebellionAdmin)
-admin.site.register(Loan, LoanAdmin)
-admin.site.register(Assassin, AssassinAdmin)
-admin.site.register(Assassination, AssassinationAdmin)
-admin.site.register(Whisper, WhisperAdmin)
-admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(GameComment, GameCommentAdmin)
+admin.site.register(machiavelli.Game, GameAdmin)
+admin.site.register(machiavelli.LiveGame, LiveGameAdmin)
+admin.site.register(machiavelli.Unit, UnitAdmin)
+admin.site.register(machiavelli.GameArea, GameAreaAdmin)
+admin.site.register(machiavelli.Player, PlayerAdmin)
+admin.site.register(machiavelli.Revolution, RevolutionAdmin)
+admin.site.register(machiavelli.Score, ScoreAdmin)
+admin.site.register(machiavelli.Order, OrderAdmin)
+admin.site.register(machiavelli.RetreatOrder, RetreatOrderAdmin)
+admin.site.register(machiavelli.TurnLog, TurnLogAdmin)
+admin.site.register(machiavelli.Expense, ExpenseAdmin)
+admin.site.register(machiavelli.Rebellion, RebellionAdmin)
+admin.site.register(machiavelli.Loan, LoanAdmin)
+admin.site.register(machiavelli.Assassin, AssassinAdmin)
+admin.site.register(machiavelli.Assassination, AssassinationAdmin)
+admin.site.register(machiavelli.Whisper, WhisperAdmin)
+admin.site.register(machiavelli.Invitation, InvitationAdmin)
+admin.site.register(machiavelli.GameComment, GameCommentAdmin)
