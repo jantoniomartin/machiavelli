@@ -368,7 +368,7 @@ def make_expense_form(player):
 			else:
 				raise forms.ValidationError(_("Unknown expense"))
 			## check that the minimum cost is paid
-			cost = get_expense_cost(type, unit)
+			cost = machiavelli.get_expense_cost(type, unit)
 			if int(ducats) < cost:
 				raise forms.ValidationError(_("You must pay at least %s ducats") % cost)
 			## if famine relief, check if there is a famine marker
