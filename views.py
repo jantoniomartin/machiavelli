@@ -131,6 +131,10 @@ def summary(request):
 		num_comments = promoted_game.gamecomment_set.count()
 		context.update( {'promoted_game': promoted_game,
 						'num_comments': num_comments} )
+	new_scenario_date = datetime.now() - 4 * week # one month ago
+	recent_scenarios = scenarios.Scenario.objects.filter(published__gt=new_scenario_date).order_by('-published')
+	if recent_scenarios.count() > 0:
+		context.update({'new_scenario': recent_scenarios[0] })
 
 	return render_to_response('machiavelli/summary.html',
 							context,

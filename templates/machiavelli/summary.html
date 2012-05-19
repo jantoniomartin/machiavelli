@@ -165,6 +165,14 @@
 
 {% block right_column_extra %}
 
+{% if new_scenario %}
+<div id="new_scenario">
+<h2>{% blocktrans with new_scenario.title as title %}New scenario: "{{title}}"{% endblocktrans %}</h2>
+<p>{{ new_scenario.description|truncatewords:20 }}</p>
+<a href="{% url scenario_detail new_scenario.name %}"><img src="{{ MEDIA_URL }}scenarios/thumbnails/{{ new_scenario.map_name }}" style="border: solid 1px #000"/></a>
+</div>
+{% endif %}
+
 {% if whispers %}
 <div id="latest_gossip">
 <h2>{% trans "Latest gossip" %}</h2>
