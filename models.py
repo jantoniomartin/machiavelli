@@ -2491,6 +2491,20 @@ class TeamMessage(models.Model):
 								'text': force_escape(self.text), }
 		return html
 
+def notify_team_message(sender, instance, created, **kw):
+	if notification and isinstance(instance, TeamMessage) and created:
+		users = User.objects.filter(player__team=instance.player.team)
+		game = instance.player.game
+		extra_context = {'game': game,
+						'message': instance,
+						'STATIC_URL': settings.STATIC_URL,}
+		if game.fast:
+			notification.send_now(users, "team_message_received", extra_context)
+		else:
+			notification.send(users, "team_message_received", extra_context)
+
+models.signals.post_save.connect(notify_team_message, sender=TeamMessage)
+
 class Revolution(models.Model):
 	""" A Revolution instance means that ``government`` is not playing, and
 	``opposition`` is trying to replace it.

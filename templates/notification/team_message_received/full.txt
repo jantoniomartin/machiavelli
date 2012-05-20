@@ -1,0 +1,9 @@
+{% load i18n %}
+
+{% blocktrans with game.slug as slug %}There is a new team message in the game '{{ slug }}'{% endblocktrans %}
+
+{% trans "Body" %}:
+{{ message.text }}
+
+{% trans "Read the messages" %}: {{ current_site }}{% url team_messages game.slug %}
+

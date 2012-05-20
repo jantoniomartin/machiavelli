@@ -37,6 +37,9 @@ if "notification" in settings.INSTALLED_APPS:
 		notification.create_notice_type("lost_invitation",
 										_("Invitation revoked"),
 										_("your invitation to a private game has been revoked"))
+		notification.create_notice_type("team_message_received",
+										_("Team message received"),
+										_("you receive a team message"))
 
 	signals.post_syncdb.connect(create_notice_types, sender=notification)
 else:
