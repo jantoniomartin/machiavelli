@@ -49,6 +49,9 @@
 <li>
 	{% if player.contender.country %}
 		{{ player.contender.country }}
+		{% if game.is_team_game %}
+		({% trans "Team" %} {{ player.team.pk }})
+		{% endif %}
 	{% endif %}
 </li>
 {% else %}
@@ -69,6 +72,9 @@
 {% endif %}
 
 {% if player %}
+{% if game.is_team_game %}
+<li><a href="{% url team_messages game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
+{% else %}
 <li>
 	{% if player.unread_count > 0 %}
 	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %}" /></a>
@@ -77,6 +83,7 @@
 	{% endif %}
 	<a href="{% url condottieri_messages_outbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
 </li>
+{% endif %}
 {% endif %}
 </ul>
 </div>
@@ -94,7 +101,7 @@
 {% for p in player_list %}
 	{% if p.user %}
 	<div class="player {{ p.static_name }}">
-	<div><strong>{{ p.contender.country }}</strong>
+	<div>{% if game.is_team_game %}[{{ p.team.pk }}]{% endif %}<strong>{{ p.contender.country }}</strong>
 	{% if p.conqueror %}
 		({{ p.conqueror.contender.country }})
 	{% endif %}
@@ -112,7 +119,9 @@
 	{% ifnotequal p player %}
 	{% ifnotequal p.eliminated 1 %}
 	<div>
+	{% if not game.is_team_game %}
 	<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
+	{% endif %}
 	{% if game.configuration.finances %}
 		<a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a>
 	{% endif %}
