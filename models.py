@@ -213,6 +213,8 @@ class Game(models.Model):
 		default=get_default_version)
 	extended_deadline = models.BooleanField(_("extended deadline"),
 		default=False)
+	""" if teams < 2, there will be no teams """
+	teams = models.PositiveIntegerField(_("teams"), default=0)
 
 	objects = GameManager()
 
@@ -224,6 +226,8 @@ class Game(models.Model):
 		if not self.pk:
 			if self.time_limit in FAST_LIMITS:
 				self.fast = True
+				self.uses_karma = False
+			if self.teams > 1:
 				self.uses_karma = False
 			## short games
 			## TODO: make this not hardcoded
@@ -383,6 +387,8 @@ class Game(models.Model):
 		self.create_game_board()
 		self.shuffle_countries()
 		self.copy_country_data()
+		if self.teams > 1:
+			self.make_teams()
 		self.home_control_markers()
 		self.place_initial_units()
 		if self.configuration.finances:
@@ -443,6 +449,31 @@ class Game(models.Model):
 				#p.double_income = t.double
 				p.double_income = p.contender.treasury.double
 			p.save()
+
+	def make_teams(self):
+		""" Make self.teams teams and assign each player to a team """
+		teams = []
+		for i in range(0, self.teams):
+			team = Team(game=self)
+			team.save()
+			teams.append(team)
+		players = self.player_set.filter(user__isnull=False)
+		players = list(players)
+		random.shuffle(players)
+		size = len(players) // len(teams)
+		i = 0
+		t = 0
+		while 1:
+			try:
+				p = players.pop()
+			except IndexError:
+				return
+			if i == size:
+				t += 1
+				i = 0
+			p.team = teams[t]
+			p.save()
+			i += 1
 
 	def get_disabled_areas(self):
 		""" Returns the disabled Areas in the game scenario """
@@ -1846,6 +1877,18 @@ class Score(models.Model):
 		verbose_name_plural = _("scores")
 		ordering = ["-game", "position"]
 
+class Team(models.Model):
+	""" This class defines a group of players that play together """
+	game = models.ForeignKey(Game, verbose_name=_("game"))
+
+	class Meta:
+		verbose_name = _("team")
+		verbose_name_plural = _("teams")
+		ordering = ["-game",]
+
+	def __unicode__(self):
+		return _("Team %s") % self.pk
+
 class Player(models.Model):
 	""" This class defines the relationship between a User and a Game. """
 
@@ -1874,6 +1917,8 @@ class Player(models.Model):
 	is_excommunicated = models.BooleanField(default=False)
 	""" pope_excommunicated is True if the player has been explicitly excommunicated """
 	pope_excommunicated = models.BooleanField(default=False)
+	""" the player may belong to a team, in a team game """
+	team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"))
 
 	## the 'deadline' is not persistent, and is used to order a user's players by the time
 	## that they have to play
