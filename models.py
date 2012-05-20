@@ -117,6 +117,9 @@ TIME_LIMITS = (
 ## points assigned to the first, second and third players
 SCORES=[20, 10, 5]
 
+TEAM_GOAL=30
+TEAM_SCORE=20
+
 KARMA_MINIMUM = settings.KARMA_MINIMUM
 KARMA_DEFAULT = settings.KARMA_DEFAULT
 KARMA_MAXIMUM = settings.KARMA_MAXIMUM
@@ -779,9 +782,13 @@ class Game(models.Model):
 				## if conquering is enabled, check conquerings
 				if self.configuration.conquering:
 					self.check_conquerings()
-				if self.check_winner() == True:
+				winner = self.check_winner()
+				if winner:
 					self.make_map()
-					self.assign_scores()
+					if isinstance(winner, Player):
+						self.assign_scores()
+					elif isinstance(winner, Team):
+						self.assign_team_scores()
 					self.game_over()
 					return
 				## if famine enabled, place famine markers
@@ -1594,7 +1601,11 @@ class Game(models.Model):
 
 	def check_winner(self):
 		""" Returns True if at least one player has reached the victory conditions. """
-
+		if self.teams > 1:
+			for t in self.team_set.all():
+				if t.number_of_cities >= TEAM_GOAL:
+					return t
+			return False
 		for p in self.player_set.filter(user__isnull=False):
 			if p.number_of_cities >= self.cities_to_win:
 				if self.require_home_cities:
@@ -1624,8 +1635,27 @@ class Game(models.Model):
 											board_area__home__is_home=True).count()
 					if extra < self.extra_conquered_cities:
 						continue
-				return True
+				return p
 		return False
+
+	def assign_team_scores(self):
+		teams = list(self.team_set.all())
+		teams.sort(cmp=lambda x,y: cmp(x.cities_count, y.cities_count), reverse=True)
+		pos = 1
+		cities = teams[0].cities_count
+		for t in teams:
+			count = t.cities_count
+			if count < cities:
+				pos += 1
+				cities = count
+			for p in t.player_set.all():
+				if pos == 1:
+					points = TEAM_SCORE
+				else:
+					points = 0
+				s = Score(user=p.user, game=self, country=p.contender.country,
+					cities=p.number_of_cities, points=points, position=pos)
+				s.save()
 
 	def assign_scores(self):
 		scores = []
@@ -1888,6 +1918,12 @@ class Team(models.Model):
 
 	def __unicode__(self):
 		return _("Team %s") % self.pk
+
+	def _get_cities_count(self):
+		cities = GameArea.objects.filter(player__team=self, board_area__has_city=True)
+		return cities.count()
+
+	cities_count = property(_get_cities_count)
 
 class Player(models.Model):
 	""" This class defines the relationship between a User and a Game. """
