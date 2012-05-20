@@ -889,13 +889,19 @@ def logs_by_game(request, slug=''):
 							context_instance=RequestContext(request))
 
 @login_required
-def create_game(request):
+def create_game(request, teams=False):
+	if teams:
+		form_cls = forms.TeamGameForm
+		print "teams"
+	else:
+		form_cls = forms.GameForm
 	context = sidebar_context(request)
 	context.update( {'user': request.user,})
 	if request.method == 'POST':
-		game_form = forms.GameForm(request.user, data=request.POST)
+		game_form = form_cls(request.user, data=request.POST)
 		config_form = forms.ConfigurationForm(request.POST)
 		if game_form.is_valid():
+			print "Valid"
 			new_game = game_form.save(commit=False)
 			new_game.slots = new_game.scenario.number_of_players - 1
 			new_game.save()
@@ -913,8 +919,10 @@ def create_game(request):
 				return redirect('invite-users', slug=new_game.slug)
 			else:
 				return redirect(new_game)
+		else:
+			print "Invalid"
 	else:
-		game_form = forms.GameForm(request.user)
+		game_form = form_cls(request.user)
 		config_form = forms.ConfigurationForm()
 	context['scenarios'] = scenarios.Scenario.objects.filter(enabled=True)
 	context['game_form'] = game_form

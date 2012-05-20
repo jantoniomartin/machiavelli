@@ -16,17 +16,16 @@ CITIES_TO_WIN = (
 	(12, _('Short game (12 cities - see help)')),
 )
 
-class GameForm(forms.ModelForm):
+class GameBaseForm(forms.ModelForm):
 	scenario = forms.ModelChoiceField(queryset=Scenario.objects.filter(enabled=True),
 									empty_label=None,
 									cache_choices=True,
 									label=_("Scenario"))
 	time_limit = forms.ChoiceField(choices=machiavelli.TIME_LIMITS, label=_("Time limit"))
-	cities_to_win = forms.ChoiceField(choices=CITIES_TO_WIN, label=_("How to win"))
 	visible = forms.BooleanField(required=False, label=_("Visible players?"))
 	
 	def __init__(self, user, **kwargs):
-		super(GameForm, self).__init__(**kwargs)
+		super(GameBaseForm, self).__init__(**kwargs)
 		self.instance.created_by = user
 
 	def clean(self):
@@ -48,6 +47,10 @@ class GameForm(forms.ModelForm):
 				raise forms.ValidationError(msg)
 		return cleaned_data
 
+
+class GameForm(GameBaseForm):
+	cities_to_win = forms.ChoiceField(choices=CITIES_TO_WIN, label=_("How to win"))
+
 	class Meta:
 		model = machiavelli.Game
 		fields = ('slug',
@@ -57,6 +60,33 @@ class GameForm(forms.ModelForm):
 				'visible',
 				'private',
 				'comment',)
+
+TEAM_SIZES=(
+	(2, 2),
+	(3, 3),
+	(4, 4))
+
+class TeamGameForm(GameBaseForm):
+	teams = forms.ChoiceField(choices=TEAM_SIZES, label=_("Number of teams"))
+
+	class Meta:
+		model = machiavelli.Game
+		fields = ('slug',
+				'scenario',
+				'teams',
+				'time_limit',
+				'visible',
+				'private',
+				'comment',)
+
+	def clean(self):
+		cleaned_data = super(TeamGameForm, self).clean()		
+		scenario = cleaned_data['scenario']
+		teams = cleaned_data['teams']
+		if scenario.number_of_players / int(teams) < 2:
+			msg = _("Either select fewer teams or a scenario for more players")
+			raise forms.ValidationError(msg)
+		return cleaned_data
 
 class ConfigurationForm(forms.ModelForm):
 	def clean(self):
