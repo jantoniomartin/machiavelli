@@ -2493,7 +2493,7 @@ class TeamMessage(models.Model):
 
 def notify_team_message(sender, instance, created, **kw):
 	if notification and isinstance(instance, TeamMessage) and created:
-		users = User.objects.filter(player__team=instance.player.team)
+		users = User.objects.filter(player__team=instance.player.team).exclude(player=instance.player)
 		game = instance.player.game
 		extra_context = {'game': game,
 						'message': instance,
