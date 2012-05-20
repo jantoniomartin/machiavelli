@@ -19,7 +19,13 @@
 {% block body %}
 <div id="game_info">
 <ul>
-<li id="cities_to_win">{{ game.cities_to_win }}</li>
+<li id="cities_to_win">
+{% if game.is_team_game %}
+30*
+{% else %}
+{{ game.cities_to_win }}
+{% endif %}
+</li>
 <li>{{ game.slug }}</li>
 <li>{{ game.year|default_if_none:"" }} |
 {{ game.get_season_display|default_if_none:"" }} |

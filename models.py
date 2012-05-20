@@ -272,6 +272,11 @@ class Game(models.Model):
 		return ('show-game', None, {'slug': self.slug})
 	get_absolute_url = models.permalink(get_absolute_url)
 
+	def _is_team_game(self):
+		return self.teams > 1
+
+	is_team_game = property(_is_team_game)
+
 	def reset_players_cache(self):
 		""" Deletes the player list from the cache """
 		key = "game-%s_player-list" % self.pk

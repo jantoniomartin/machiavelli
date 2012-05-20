@@ -890,13 +890,13 @@ def logs_by_game(request, slug=''):
 
 @login_required
 def create_game(request, teams=False):
-	if teams:
-		form_cls = forms.TeamGameForm
-		print "teams"
-	else:
-		form_cls = forms.GameForm
 	context = sidebar_context(request)
 	context.update( {'user': request.user,})
+	if teams:
+		form_cls = forms.TeamGameForm
+		context['teams'] = True
+	else:
+		form_cls = forms.GameForm
 	if request.method == 'POST':
 		game_form = form_cls(request.user, data=request.POST)
 		config_form = forms.ConfigurationForm(request.POST)
@@ -919,8 +919,6 @@ def create_game(request, teams=False):
 				return redirect('invite-users', slug=new_game.slug)
 			else:
 				return redirect(new_game)
-		else:
-			print "Invalid"
 	else:
 		game_form = form_cls(request.user)
 		config_form = forms.ConfigurationForm()

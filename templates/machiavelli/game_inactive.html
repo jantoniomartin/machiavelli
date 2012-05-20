@@ -32,6 +32,9 @@
 	{% if game.private %}
 	<span>{% trans "Private" %}</span>
 	{% endif %}
+	{% if game.is_team_game %}
+	<span>{% trans "Team game" %}</span>
+	{% endif %}
 {% endif %}
 	</h2>
 

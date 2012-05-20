@@ -41,6 +41,9 @@
 	{% if game.private %}
 	<span>{% trans "Private" %}</span>
 	{% endif %}
+	{% if game.is_team_game %}
+	<span>{% trans "Team game" %}</span>
+	{% endif %}
 	</h2>
 <div class="map">
 <img src="{{ MEDIA_URL }}scenarios/thumbnails/{{ game.scenario.map_name }}" />

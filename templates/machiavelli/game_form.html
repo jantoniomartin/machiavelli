@@ -1,9 +1,6 @@
 {% extends "machiavelli/base.html" %}
 
 {% load i18n %}
-{% load cache %}
-
-{% get_current_language as LANGUAGE_CODE %}
 
 {% load uni_form_tags %}
 
@@ -11,8 +8,11 @@
 
 {% block left_column %}
 
-{% cache 3600 new_game LANGUAGE_CODE %}
+{% if teams %}
+<h1>{% trans "New team game" %}</h1>
+{% else %}
 <h1>{% trans "New game" %}</h1>
+{% endif %}
 <p>{% blocktrans %}Here you can create a new game. You will be the first player of any game
 you create. You must choose a short name for the game, that will be used only to identify it.{% endblocktrans %}</p>
 <p>{% blocktrans %}Every game must begin with a <b>scenario</b>. The scenario determines the number
@@ -20,6 +20,14 @@ of players, the available countries and the initial setup.{% endblocktrans %}</p
 <p>{% blocktrans %}When playing a game, each player has a <b>time limit</b> to complete any of the
 phases of the game. This time limit is reset when all the players have completed their actions.
 {% endblocktrans %}</p>
+
+{% if teams %}
+<p>{% blocktrans %}You are creating a team game. A team game finishes when one of the teams controls 30 cities.{% endblocktrans %}</p>
+<p><a href="{% url new-game %}">{% trans "Create a normal game" %}</a></p>
+{% else %}
+<p><a href="{% url new_team_game %}">{% trans "Create a team game" %}</a></p>
+{% endif %}
+
 <h2>{% trans "Available scenarios" %}</h2>
 <table>
 <thead><tr>
@@ -35,8 +43,6 @@ phases of the game. This time limit is reset when all the players have completed
 </tr>
 {% endfor %}
 </table>
-
-{% endcache %}
 
 <h2>{% trans "Create a new game" %}</h2>
 
