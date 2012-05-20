@@ -1,0 +1,27 @@
+{% extends 'machiavelli/base.html' %}
+
+{% load uni_form_tags %}
+{% load avatar_tags %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Team messages" %}: {{ game.slug }}{% endblock %}
+
+{% block body %}
+<h1>{% trans "Team messages in the game" %} "{{ game.slug }}"</h1>
+<div id="shoutbox">
+<ul>
+{% for m in message_list %}
+{{ m.as_li|safe }}
+{% endfor %}
+</ul>
+</div>
+
+<form action="" method="POST" class="uniForm">
+{% csrf_token %}
+{{ form|as_uni_form }}
+<input type="submit" value="{% trans "Send" %}" />
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+
+{% endblock %}

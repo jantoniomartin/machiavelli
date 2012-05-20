@@ -144,6 +144,16 @@ class GameCommentForm(forms.ModelForm):
 		comment = super(GameCommentForm, self).save(*args, **kwargs)
 		comment.save()
 
+class TeamMessageForm(forms.ModelForm):
+	class Meta:
+		model = machiavelli.TeamMessage
+		fields = ('text',)
+	
+	def save(self, player, *args, **kwargs):
+		self.instance.player = player
+		message = super(TeamMessageForm, self).save(*args, **kwargs)
+		message.save()
+
 class UnitForm(forms.ModelForm):
 	type = forms.ChoiceField(required=True, choices=machiavelli.UNIT_TYPES)
     

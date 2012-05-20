@@ -450,7 +450,27 @@ def show_inactive_game(request, game):
 	return render_to_response('machiavelli/game_inactive.html',
 						context,
 						context_instance=RequestContext(request))
-	
+
+@login_required
+def team_messages(request, slug=''):
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	if not game.is_team_game:
+		raise Http404
+	player = get_object_or_404(machiavelli.Player, user=request.user, game=game)
+	message_list = machiavelli.TeamMessage.objects.filter(player__team=player.team)
+	context = {'game': game,
+		'message_list': message_list}
+	if request.method == 'POST':
+		message_form = forms.TeamMessageForm(request.POST)
+		if message_form.is_valid():
+			message_form.save(player=player)
+			return redirect('team_messages', slug=slug)
+	message_form = forms.TeamMessageForm()
+	context.update({'form': message_form })
+	return render_to_response('machiavelli/team_messages.html',
+						context,
+						context_instance=RequestContext(request))
+
 @never_cache
 #@login_required
 def play_game(request, slug='', **kwargs):

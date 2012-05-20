@@ -2471,6 +2471,26 @@ class Player(models.Model):
 				credit = 25
 		return credit
 
+class TeamMessage(models.Model):
+	""" A message that any member of a team can write and read """
+	player = models.ForeignKey(Player, verbose_name=_("player"))
+	created_at = models.DateTimeField(auto_now_add=True)
+	text = models.TextField(_("text"))
+
+	class Meta:
+		ordering = ["-created_at" ,]
+
+	def __unicode__(self):
+		return "%s" % self.pk
+
+	def as_li(self):
+		signature = _("Written by %(country)s %(date)s ago") % {'country': self.player.contender.country,
+			'date': timesince(self.created_at),}
+		html = u"<li>%(text)s<span class=\"date\">%(signature)s</span> </li>" % {
+								'signature': signature,
+								'text': force_escape(self.text), }
+		return html
+
 class Revolution(models.Model):
 	""" A Revolution instance means that ``government`` is not playing, and
 	``opposition`` is trying to replace it.

@@ -37,6 +37,7 @@ urlpatterns = patterns('machiavelli.views',
 	url(r'^game/(?P<slug>[-\w]+)/whisper$', 'new_whisper', name='new-whisper'),
 	url(r'^game/(?P<slug>[-\w]+)/whisper_list$', 'whisper_list', name='whisper-list'),
 	url(r'^game/(?P<slug>[-\w]+)/journal$', 'edit_journal', name='edit-journal'),
+	url(r'^game/(?P<slug>[-\w]+)/team_messages$', 'team_messages', name='team_messages'),
 	url(r'^game/(?P<slug>[-\w]+)', 'play_game', name='show-game'),
 	#url(r'^jsgame/(?P<slug>[-\w]+)', 'js_play_game', name='js-play-game'),
 )
