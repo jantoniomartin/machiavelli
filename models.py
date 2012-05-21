@@ -514,7 +514,8 @@ class Game(models.Model):
 		start of the game.
 		"""
 		## create the autonomous player
-		autonomous = Player(game=self, done=True)
+		contender = self.scenario.contender_set.get(country__isnull=True)
+		autonomous = Player(game=self, done=True, contender=contender)
 		autonomous.save()
 		for s in self.get_autonomous_setups():
 			try:
