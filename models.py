@@ -1751,6 +1751,11 @@ class GameComment(models.Model):
 
 	objects = GameCommentManager()
 
+	class Meta:
+		verbose_name = _("Game comment")
+		verbose_name_plural = _("Game comments")
+		ordering = ['submit_date',]
+
 	def save(self, *args, **kwargs):
 		if not self.game.finished is None:
 			self.after_game = True
