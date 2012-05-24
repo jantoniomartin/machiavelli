@@ -1609,7 +1609,7 @@ class Game(models.Model):
 		""" Returns True if at least one player has reached the victory conditions. """
 		if self.teams > 1:
 			for t in self.team_set.all():
-				if t.number_of_cities >= TEAM_GOAL:
+				if t.cities_count >= TEAM_GOAL:
 					return t
 			return False
 		for p in self.player_set.filter(user__isnull=False):
