@@ -627,14 +627,12 @@ class Game(models.Model):
 						if self.configuration.finances:
 							units = Unit.objects.filter(player=p).order_by('id')
 							ducats = p.ducats
-							payable = ducats / 3
-							cost = 0
-							if payable > 0:
-								for u in units[:payable]:
+							for u in units:
+								if ducats >= u.cost:
 									u.paid = True
 									u.save()
-									cost += 3
-							p.ducats = ducats - cost
+									ducats -= u.cost
+							p.ducats = ducats
 							p.save()
 						else:
 							units = Unit.objects.filter(player=p).order_by('-id')
