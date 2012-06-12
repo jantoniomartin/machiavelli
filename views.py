@@ -37,6 +37,7 @@ from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+from django.utils.decorators import method_decorator
 from django.utils import simplejson
 from django.contrib import messages
 
@@ -64,6 +65,14 @@ if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
 else:
 	notification = None
+
+class LoginRequiredMixin(object):
+	""" Mixin to check that the user has authenticated.
+	(Always the first mixin in class)
+	"""
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 def sidebar_context(request):
 	"""
