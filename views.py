@@ -41,10 +41,14 @@ from django.utils.decorators import method_decorator
 from django.utils import simplejson
 from django.contrib import messages
 
+## generic views
+from django.views.generic.list import ListView
+
 ## machiavelli
 import machiavelli.models as machiavelli
 import machiavelli.forms as forms
-from machiavelli.signals import player_joined 
+from machiavelli.signals import player_joined
+from machiavelli.context_processors import activity, latest_gossip
 
 ## condottieri_scenarios
 import condottieri_scenarios.models as scenarios
@@ -54,6 +58,7 @@ from condottieri_common.models import Server
 
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
+from condottieri_profiles.context_processors import sidebar_ranking
 
 ## condottieri_events
 import condottieri_events.paginator as events_paginator
@@ -74,37 +79,17 @@ class LoginRequiredMixin(object):
 	def dispatch(self, *args, **kwargs):
 		return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
-def sidebar_context(request):
-	"""
-	Common context for the sidebar, repeated in different views.
-	"""
-	if request.user.is_authenticated():
-		user_id = request.user.id
-	else:
-		user_id = None
-	cache_key = "sidebar_context-%s" % user_id
-	sidebar_context = cache.get(cache_key)
-	if not sidebar_context:
-		sidebar_context = {}
-		activity = machiavelli.Player.objects.exclude(user__isnull=True).values("user").distinct().count()
-		games = machiavelli.LiveGame.objects.count()
-		top_users = CondottieriProfile.objects.all().order_by('-weighted_score')[:5]
-		if not user_id is None:
-			profile = request.user.get_profile()
-			if not profile in top_users:
-				my_score = profile.weighted_score
-				my_position = CondottieriProfile.objects.filter(weighted_score__gt=my_score).count() + 1
-				sidebar_context.update({'my_position': my_position,})
-		latest_gossip = machiavelli.Whisper.objects.all()[:5]
-		server = Server.objects.get()
-		ranking_last_update = server.ranking_last_update
-		sidebar_context.update({ 'activity': activity,
-				'games': games,
-				'top_users': top_users,
-				'whispers': latest_gossip,
-				'ranking_last_update': ranking_last_update,})
-		cache.set(cache_key, sidebar_context)
-	return sidebar_context
+class GameListView(ListView):
+	model = machiavelli.Game
+	paginate_by = 10
+	context_object_name = 'game_list'
+	
+	def render_to_response(self, context, **kwargs):
+		return super(GameListView, self).render_to_response(
+			RequestContext(self.request,
+				context,
+				processors=[activity, sidebar_ranking,]),
+			**kwargs)
 
 def summary(request):
 	context = sidebar_context(request)
@@ -243,56 +228,34 @@ def finished_games(request, only_user=False):
 							context,
 							context_instance=RequestContext(request))
 
-@never_cache
-def joinable_games(request):
+class JoinableGamesList(GameListView):
 	""" Gets a paginated list of all the games that the user can join """
-	context = sidebar_context(request)
-	games = machiavelli.Game.objects.joinable_by_user(request.user).annotate(comments_count=Count('gamecomment'))
-	paginator = Paginator(games, 10)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		game_list = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		game_list = paginator.page(paginator.num_pages)
-	context.update( {
-		'game_list': game_list,
-		'joinable': True,
-		})
+	template_name_suffix = '_list_pending'
 
-	return render_to_response('machiavelli/game_list_pending.html',
-							context,
-							context_instance=RequestContext(request))
+	def get_queryset(self):
+		return machiavelli.Game.objects.joinable_by_user(self.request.user).annotate(comments_count=Count('gamecomment'))
 
-@login_required
-def pending_games(request):
-	""" Gets a paginated list of all the games of the player that have not yet
-	started """
-	context = sidebar_context(request)
-	cache_key = "pending_games-%s" % request.user.id
-	games = cache.get(cache_key)
-	if not games:
-		games = machiavelli.Game.objects.pending_for_user(request.user).annotate(comments_count=Count('gamecomment'))
-		cache.set(cache_key, games, 10*60)
-	paginator = Paginator(games, 10)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		game_list = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		game_list = paginator.page(paginator.num_pages)
-	context.update( {
-		'game_list': game_list,
-		'joinable': False,
-		})
+	def get_context_data(self, **kwargs):
+		context = super(JoinableGamesList, self).get_context_data(**kwargs)
+		context["joinable"] = True
+		return context
 
-	return render_to_response('machiavelli/game_list_pending.html',
-							context,
-							context_instance=RequestContext(request))	
+class PendingGamesList(LoginRequiredMixin, GameListView):
+	""" Gets a paginated list of all the games of the player that have not yet started """
+	template_name_suffix = '_list_pending'
+
+	def get_queryset(self):
+		cache_key = "pending_games-%s" % self.request.user.id
+		games = cache.get(cache_key)
+		if not games:
+			games = machiavelli.Game.objects.pending_for_user(self.request.user).annotate(comments_count=Count('gamecomment'))
+			cache.set(cache_key, games, 10*60)
+		return games
+
+	def get_context_data(self, **kwargs):
+		context = super(PendingGamesList, self).get_context_data(**kwargs)
+		context["joinable"] = False
+		return context
 
 def base_context(request, game, player):
 	context = {

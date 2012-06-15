@@ -2,14 +2,18 @@ from django.conf.urls.defaults import *
 from django.views.generic.simple import direct_to_template
 from django.views.decorators.cache import cache_page
 
+import machiavelli.views as views
+
 urlpatterns = patterns('machiavelli.views',
 	url(r'^$', 'summary', name='summary'),
 	url(r'^games/all_finished$', 'finished_games', name="games-all-finished"), 
 	url(r'^games/finished$', 'finished_games', {'only_user': True, }, name="games-my-finished"), 
 	url(r'^games/other_active$', 'other_active_games', name="games-other-active"), 
 	url(r'^games/my_active$', 'my_active_games', name="games-my-active"), 
-	url(r'^games/joinable$', 'joinable_games', name="games-joinable"), 
-	url(r'^games/pending$', 'pending_games', name="games-pending"), 
+	#url(r'^games/joinable$', 'joinable_games', name="games-joinable"), 
+	url(r'^games/joinable$', views.JoinableGamesList.as_view(), name="games-joinable"), 
+	#url(r'^games/pending$', 'pending_games', name="games-pending"), 
+	url(r'^games/pending$', views.PendingGamesList.as_view(), name='games-pending'),
 	#url(r'^scenarios$', 'scenario_list', name='scenario-list'),
 	#url(r'^scenario/(?P<scenario_id>\d+)', 'show_scenario', name='show-scenario'),
 	#url(r'^scenario/stats/(?P<scenario_id>\d+)', 'scenario_stats', name='scenario-stats'),

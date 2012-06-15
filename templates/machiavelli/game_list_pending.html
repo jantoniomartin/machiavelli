@@ -12,7 +12,7 @@
 {% if joinable %}
 <h1>{% trans "Games you can join" %}</h1>
 	<p>
-	{% if game_list.object_list %}
+	{% if game_list %}
 		{% blocktrans %}The following games have not yet started, and you can join any of them.{% endblocktrans %}
 	{% else %}
 		{% blocktrans %}At this moment, there is no available games that you can join. Maybe you want to create a new game.{% endblocktrans %}
@@ -22,7 +22,7 @@
 {% else %}
 <h1>{% trans "Your not started games" %}</h1>
 	<p>
-	{% if game_list.object_list %}
+	{% if game_list %}
 		{% blocktrans %}You are subscribed to the following games, but they still have not enough players to begin.{% endblocktrans %}
 	{% else %}
 		{% blocktrans %}All the games that you are subscribed to have already started.{% endblocktrans %}
@@ -30,9 +30,9 @@
 	</p>
 {% endif %}
 
-{% if game_list.object_list %}
+{% if game_list %}
 
-{% for game in game_list.object_list %}
+{% for game in game_list %}
 <div class="game_info {% if game.fast %}fast{% endif %}">
 <h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span>
 	<span>
@@ -97,16 +97,16 @@
 
 <div class="pagination">
 	<span class="step-links">
-		{% if game_list.has_previous %}
-			<a href="?page={{ game_list.previous_page_number }}">&lt;&lt;</a>
+		{% if page_obj.has_previous %}
+			<a href="?page={{ page_obj.previous_page_number }}">&lt;&lt;</a>
 		{% endif %}
 		
 		<span class="current">
-			{% trans "Page" %} {{ game_list.number }} {% trans "of" %} {{ game_list.paginator.num_pages }}.
+			{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}.
 		</span>
 
-		{% if game_list.has_next %}
-			<a href="?page={{ game_list.next_page_number }}">&gt;&gt;</a>
+		{% if page_obj.has_next %}
+			<a href="?page={{ page_obj.next_page_number }}">&gt;&gt;</a>
 		{% endif %}
 	</span>
 </div>
