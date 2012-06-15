@@ -10,7 +10,7 @@
 
 {% block left_column %}
 <h1>{% trans "Your ongoing games" %}</h1>
-{% if not player_list.object_list %}
+{% if not player_list %}
 	<p>{% blocktrans %}At this moment, you are not playing any games.{% endblocktrans %}</p>
 {% else %}
 	<p>{% blocktrans %}These are the games that you are currently playing.{% endblocktrans %}</p>
@@ -19,9 +19,9 @@
 <a href="{% url games-other-active %}">{% trans "See other active games" %}</a>
 </p>	
 
-{% if player_list.object_list %}
+{% if player_list %}
 
-{% for player in player_list.object_list %}
+{% for player in player_list %}
 <div class="game_info {% if player.game.fast %}fast{% endif %}">
 <h2 style="background: #191919 url('{{ STATIC_URL }}machiavelli/img/badge-{{ player.static_name }}.png') no-repeat top right"><span>
 	<a href="{{ player.game.get_absolute_url }}">{{ player.game.slug }}</a>
@@ -87,16 +87,16 @@
 
 <div class="pagination">
 	<span class="step-links">
-		{% if player_list.has_previous %}
-			<a href="?page={{ player_list.previous_page_number }}">&lt;&lt;</a>
+		{% if page_obj.has_previous %}
+			<a href="?page={{ page_obj.previous_page_number }}">&lt;&lt;</a>
 		{% endif %}
 		
 		<span class="current">
-			{% trans "Page" %} {{ player_list.number }} {% trans "of" %} {{ player_list.paginator.num_pages }}.
+			{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}.
 		</span>
 
-		{% if player_list.has_next %}
-			<a href="?page={{ player_list.next_page_number }}">&gt;&gt;</a>
+		{% if page_obj.has_next %}
+			<a href="?page={{ page_obj.next_page_number }}">&gt;&gt;</a>
 		{% endif %}
 	</span>
 </div>

@@ -135,67 +135,41 @@ def summary(request):
 							context,
 							context_instance=RequestContext(request))
 
-@never_cache
-def my_active_games(request):
-	""" Gets a paginated list of all the ongoing games in which the user is a player. """
-	context = sidebar_context(request)
-	if request.user.is_authenticated():
-		my_players = machiavelli.Player.objects.filter(user=request.user, game__slots=0).select_related("contender", "game__scenario", "game__configuration")
-	else:
-		my_players = machiavelli.Player.objects.none()
-	player_list = []
-	for p in my_players:
-		p.deadline = p.next_phase_change()
-		player_list.append(p)
-	player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
-	paginator = Paginator(player_list, 10)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		player_list = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		player_list = paginator.page(paginator.num_pages)
-	context.update( {
-		'player_list': player_list,
-		})
+class MyActiveGamesList(GameListView):
+	template_name = 'machiavelli/game_list_my_active.html'
+	model = machiavelli.Player
+	context_object_name = 'player_list'
 
-	return render_to_response('machiavelli/game_list_my_active.html',
-							context,
-							context_instance=RequestContext(request))
-
-def other_active_games(request):
-	""" Gets a paginated list of all the ongoing games in which the user is not a player """
-	context = sidebar_context(request)
-	if request.user.is_authenticated():
-		user_id = request.user.id
-	else:
-		user_id = None
-	cache_key = "other_active_games-%s" % user_id
-	games = cache.get(cache_key)
-	if not games:
-		if not user_id is None:
-			games = machiavelli.LiveGame.objects.exclude(player__user=request.user)
+	def get_queryset(self):
+		if self.request.user.is_authenticated():
+			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__slots=0).select_related("contender", "game__scenario", "game__configuration")
 		else:
-			games = machiavelli.LiveGame.objects.all()
-		cache.set(cache_key, games)
-	paginator = Paginator(games, 10)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		game_list = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		game_list = paginator.page(paginator.num_pages)
-	context.update( {
-		'game_list': game_list,
-		})
+			my_players = machiavelli.Player.objects.none()
+		player_list = []
+		for p in my_players:
+			p.deadline = p.next_phase_change()
+			player_list.append(p)
+		player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
+		return player_list
 
-	return render_to_response('machiavelli/game_list_active.html',
-							context,
-							context_instance=RequestContext(request))
+@never_cache
+class OtherActiveGamesList(GameListView):
+	template_name = 'machiavelli/game_list_active.html'
+
+	def get_queryset(self):
+		if self.request.user.is_authenticated():
+			user_id = self.request.user.id
+		else:
+			user_id = None
+		cache_key = "other_active_games-%s" % user_id
+		games = cache.get(cache_key)
+		if not games:
+			if not user_id is None:
+				games = machiavelli.LiveGame.objects.exclude(player__user=self.request.user)
+			else:
+				games = machiavelli.LiveGame.objects.all()
+			cache.set(cache_key, games)
+		return games
 
 class AllFinishedGamesList(GameListView):
 	template_name_suffix = "_list_finished"
@@ -223,37 +197,6 @@ class MyFinishedGamesList(GameListView):
 		context = super(MyFinishedGamesList, self).get_context_data(**kwargs)
 		context["only_user"] = True
 		return context
-
-def finished_games(request, only_user=False):
-	""" Gets a paginated list of the games that are finished """
-	context = sidebar_context(request)
-	if only_user:
-		cache_key = "finished_games-%s" % request.user.id
-	else:
-		cache_key = "finished_games"
-	games = cache.get(cache_key)
-	if not games:
-		games = machiavelli.Game.objects.finished().annotate(comments_count=Count('gamecomment'))
-		if only_user:
-			games = games.filter(score__user=request.user)
-		cache.set(cache_key, games)
-	paginator = Paginator(games, 10)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		game_list = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		game_list = paginator.page(paginator.num_pages)
-	context.update( {
-		'game_list': game_list,
-		'only_user': only_user,
-		})
-
-	return render_to_response('machiavelli/game_list_finished.html',
-							context,
-							context_instance=RequestContext(request))
 
 class JoinableGamesList(GameListView):
 	""" Gets a paginated list of all the games that the user can join """
