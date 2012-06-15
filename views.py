@@ -197,6 +197,33 @@ def other_active_games(request):
 							context,
 							context_instance=RequestContext(request))
 
+class AllFinishedGamesList(GameListView):
+	template_name_suffix = "_list_finished"
+
+	def get_queryset(self):
+		cache_key = "finished_games"
+		games = cache.get(cache_key)
+		if not games:
+			games = machiavelli.Game.objects.finished().annotate(comments_count=Count('gamecomment'))
+			cache.set(cache_key, games)
+		return games
+
+class MyFinishedGamesList(GameListView):
+	template_name_suffix = "_list_finished"
+
+	def get_queryset(self):
+		cache_key = "finished_games-%s" % self.request.user.id
+		games = cache.get(cache_key)
+		if not games:
+			games = machiavelli.Game.objects.finished().filter(score__user=self.request.user).annotate(comments_count=Count('gamecomment'))
+			cache.set(cache_key, games)
+		return games
+	
+	def get_context_data(self, **kwargs):
+		context = super(MyFinishedGamesList, self).get_context_data(**kwargs)
+		context["only_user"] = True
+		return context
+
 def finished_games(request, only_user=False):
 	""" Gets a paginated list of the games that are finished """
 	context = sidebar_context(request)
