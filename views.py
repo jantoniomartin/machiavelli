@@ -42,6 +42,7 @@ from django.utils import simplejson
 from django.contrib import messages
 
 ## generic views
+from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
 
 ## machiavelli
@@ -91,49 +92,53 @@ class GameListView(ListView):
 				processors=[activity, sidebar_ranking,]),
 			**kwargs)
 
-def summary(request):
-	context = sidebar_context(request)
-	comments = machiavelli.GameComment.objects.public().order_by('-id')[:3]
-	context.update({'comments': comments})
-	joinable = machiavelli.Game.objects.filter(slots__gt=0, private=False)
-	week = timedelta(0, 7*24*60*60)
-	threshold = datetime.now() - week
-	promoted = joinable.filter(created__gt=threshold)
-	promoted_game = None
-	if request.user.is_authenticated():
-		joinable = joinable.exclude(player__user=request.user)
-		promoted = promoted.exclude(player__user=request.user)
-		my_games_ids = machiavelli.Game.objects.filter(player__user=request.user).values('id')
-		my_rev_ids = machiavelli.Revolution.objects.filter(opposition=request.user).values('game__id')
-		revolutions = machiavelli.Revolution.objects.exclude(game__id__in=my_games_ids).exclude(game__id__in=my_rev_ids).filter(active__isnull=False, opposition__isnull=True)
-		context.update( {'revolutions': revolutions})
-		my_players = machiavelli.Player.objects.filter(user=request.user, game__started__isnull=False, done=False)
-		player_list = []
-		for p in my_players:
-			p.deadline = p.next_phase_change()
-			player_list.append(p)
-		player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
-		context.update({ 'actions': player_list })
-		## show unseen notices
-		if notification:
-			new_notices = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)[:20]
-			context.update({'new_notices': new_notices,})
-	joinable_count = joinable.count()
-	context.update({'joinable_count': joinable_count})
-	if promoted.count() > 0:
-		promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
-	if promoted_game is not None:
-		num_comments = promoted_game.gamecomment_set.count()
-		context.update( {'promoted_game': promoted_game,
-						'num_comments': num_comments} )
-	new_scenario_date = datetime.now() - 4 * week # one month ago
-	recent_scenarios = scenarios.Scenario.objects.filter(published__gt=new_scenario_date).order_by('-published')
-	if recent_scenarios.count() > 0:
-		context.update({'new_scenario': recent_scenarios[0] })
+class SummaryView(TemplateView):
+	template_name = 'machiavelli/summary.html'
 
-	return render_to_response('machiavelli/summary.html',
-							context,
-							context_instance=RequestContext(request))
+	def get_context_data(self, **kwargs):
+		context = super(SummaryView, self).get_context_data(**kwargs)
+		context['comments'] = machiavelli.GameComment.objects.public().order_by('-id')[:3]
+		joinable = machiavelli.Game.objects.filter(slots__gt=0, private=False)
+		week = timedelta(0, 7*24*60*60)
+		threshold = datetime.now() - week
+		promoted = joinable.filter(created__gt=threshold)
+		promoted_game = None
+		if self.request.user.is_authenticated():
+			joinable = joinable.exclude(player__user=self.request.user)
+			promoted = promoted.exclude(player__user=self.request.user)
+			my_games_ids = machiavelli.Game.objects.filter(player__user=self.request.user).values('id')
+			my_rev_ids = machiavelli.Revolution.objects.filter(opposition=self.request.user).values('game__id')
+			revolutions = machiavelli.Revolution.objects.exclude(game__id__in=my_games_ids).exclude(game__id__in=my_rev_ids).filter(active__isnull=False, opposition__isnull=True)
+			context.update( {'revolutions': revolutions})
+			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, done=False)
+			player_list = []
+			for p in my_players:
+				p.deadline = p.next_phase_change()
+				player_list.append(p)
+			player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
+			context.update({ 'actions': player_list })
+			## show unseen notices
+			if notification:
+				context['new_notices'] = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)[:20]
+		context['joinable_count'] = joinable.count()
+		if promoted.count() > 0:
+			promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
+		if promoted_game is not None:
+			num_comments = promoted_game.gamecomment_set.count()
+			context.update( {'promoted_game': promoted_game,
+						'num_comments': num_comments} )
+		new_scenario_date = datetime.now() - 4 * week # one month ago
+		recent_scenarios = scenarios.Scenario.objects.filter(published__gt=new_scenario_date).order_by('-published')
+		if recent_scenarios.count() > 0:
+			context.update({'new_scenario': recent_scenarios[0] })
+		return context
+		
+	def render_to_response(self, context, **kwargs):
+		return super(SummaryView, self).render_to_response(
+			RequestContext(self.request,
+				context,
+				processors=[activity, latest_gossip, sidebar_ranking,]),
+			**kwargs)
 
 class MyActiveGamesList(GameListView):
 	template_name = 'machiavelli/game_list_my_active.html'
@@ -152,7 +157,6 @@ class MyActiveGamesList(GameListView):
 		player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
 		return player_list
 
-@never_cache
 class OtherActiveGamesList(GameListView):
 	template_name = 'machiavelli/game_list_active.html'
 

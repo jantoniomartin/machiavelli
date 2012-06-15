@@ -5,7 +5,7 @@ from django.views.decorators.cache import cache_page
 import machiavelli.views as views
 
 urlpatterns = patterns('machiavelli.views',
-	url(r'^$', 'summary', name='summary'),
+	url(r'^$', views.SummaryView.as_view(), name='summary'),
 	url(r'^games/all_finished$', views.AllFinishedGamesList.as_view(), name="games-all-finished"), 
 	url(r'^games/finished$', views.MyFinishedGamesList.as_view(), name="games-my-finished"), 
 	url(r'^games/other_active$', views.OtherActiveGamesList.as_view(), name="games-other-active"), 
