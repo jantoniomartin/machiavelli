@@ -43,6 +43,7 @@ from django.contrib import messages
 
 ## generic views
 from django.views.generic.base import TemplateView
+from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
 ## machiavelli
@@ -119,7 +120,7 @@ class SummaryView(TemplateView):
 			context.update({ 'actions': player_list })
 			## show unseen notices
 			if notification:
-				context['new_notices'] = notification.Notice.objects.notices_for(request.user, unseen=True, on_site=True)[:20]
+				context['new_notices'] = notification.Notice.objects.notices_for(self.request.user, unseen=True, on_site=True)[:20]
 		context['joinable_count'] = joinable.count()
 		if promoted.count() > 0:
 			promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
@@ -229,6 +230,68 @@ class PendingGamesList(LoginRequiredMixin, GameListView):
 	def get_context_data(self, **kwargs):
 		context = super(PendingGamesList, self).get_context_data(**kwargs)
 		context["joinable"] = False
+		return context
+
+class GameBaseView(DetailView):
+	context_object_name = 'game'
+	model = machiavelli.Game
+
+	def get_player(self):
+		game = self.get_object()
+		try:
+			player = machiavelli.Player.objects.get(game=game, user=self.request.user)
+		except ObjectDoesNotExist:
+			player = machiavelli.Player.objects.none()
+
+	def get_context_data(self, **kwargs):
+		context = super(GameBaseView, self).get_context_data(**kwargs)
+		game = self.get_object()
+		player = self.get_player()
+		context.update({
+			'map': game.map_url,
+			'player': player,
+			'player_list': game.player_list_ordered_by_cities(),
+			'show_users': game.visible,
+		})
+		if game.slots > 0:
+			context['player_list'] = game.player_set.filter(user__isnull=False)
+		log = game.baseevent_set.all()
+		if player:
+			context['done'] = player.done
+			if game.configuration.finances:
+				context['ducats'] = player.ducats
+			context['can_excommunicate'] = player.can_excommunicate()
+			context['can_forgive'] = player.can_forgive()
+			try:
+				journal = machiavelli.Journal.objects.get(user=self.request.user, game=game)
+			except ObjectDoesNotExist:
+				journal = machiavelli.Journal()
+			context.update({'excerpt': journal.excerpt})
+			if game.slots == 0:
+				context['time_exceeded'] = player.time_exceeded()
+			if player.done and not player.in_last_seconds() and not player.eliminated:
+				context.update({'undoable': True,})
+		log = log.exclude(season__exact=game.season,
+							phase__exact=game.phase)
+		if len(log) > 0:
+			last_year = log[0].year
+			last_season = log[0].season
+			last_phase = log[0].phase
+			context['log'] = log.filter(year__exact=last_year,
+								season__exact=last_season,
+								phase__exact=last_phase)
+		else:
+			context['log'] = log # this will always be an empty queryset
+		rules = game.configuration.get_enabled_rules()
+		if len(rules) > 0:
+			context['rules'] = rules
+	
+		if game.configuration.gossip:
+			whispers = game.whisper_set.all()[:10]
+			context.update({'whispers': whispers, })
+			if player:
+				context.update({'whisper_form': forms.WhisperForm(self.request.user, game),})
+		
 		return context
 
 def base_context(request, game, player):
@@ -1345,17 +1408,19 @@ def new_whisper(request, slug):
 			form.save()
 	return redirect(game)
 
-@login_required
-def whisper_list(request, slug):
-	game = get_object_or_404(machiavelli.Game, slug=slug)
-	whisper_list = game.whisper_set.all()
-	context = {
-		'game': game,
-		'whisper_list': whisper_list,
-		}
-	return render_to_response('machiavelli/whisper_list.html',
-							context,
-							context_instance=RequestContext(request))
+class WhisperListView(LoginRequiredMixin, ListView):
+	model = machiavelli.Whisper
+	paginate_by = 10
+	context_object_name = 'whisper_list'
+
+	def get_queryset(self):
+		self.game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
+		return self.game.whisper_set.all()
+
+	def get_context_data(self, **kwargs):
+		context = super(WhisperListView, self).get_context_data(**kwargs)
+		context['game'] = self.game
+		return context
 
 @login_required
 def edit_journal(request, slug):
