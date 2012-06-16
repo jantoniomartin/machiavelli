@@ -1225,27 +1225,20 @@ def ranking(request, key='', val=''):
 							context,
 							context_instance=RequestContext(request))
 
-@login_required
-def turn_log_list(request, slug=''):
-	game = get_object_or_404(machiavelli.Game, slug=slug)
-	log_list = game.turnlog_set.all()
-	paginator = Paginator(log_list, 1)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		log = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		log = paginator.page(paginator.num_pages)
-	context = {
-		'game': game,
-		'log': log,
-		}
+class TurnLogListView(LoginRequiredMixin, ListView):
+	model = machiavelli.TurnLog
+	paginate_by = 1
+	context_object_name = 'turnlog_list'
+	template_name = 'machiavelli/turn_log_list.html'
 
-	return render_to_response('machiavelli/turn_log_list.html',
-							context,
-							context_instance=RequestContext(request))
+	def get_queryset(self):
+		self.game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
+		return self.game.turnlog_set.all()
+
+	def get_context_data(self, **kwargs):
+		context = super(TurnLogListView, self).get_context_data(**kwargs)
+		context['game'] = self.game
+		return context
 
 @login_required
 def give_money(request, slug, player_id):
