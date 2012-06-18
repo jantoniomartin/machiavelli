@@ -35,9 +35,11 @@ from django.db.models import Q, F, Sum, Count
 from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.decorators import method_decorator
+from django.utils.functional import lazy
 from django.utils import simplejson
 from django.contrib import messages
 
@@ -51,6 +53,7 @@ import machiavelli.models as machiavelli
 import machiavelli.forms as forms
 from machiavelli.signals import player_joined
 from machiavelli.context_processors import activity, latest_gossip
+from machiavelli.listappend import ListAppendView
 
 ## condottieri_scenarios
 import condottieri_scenarios.models as scenarios
@@ -72,6 +75,8 @@ if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
 else:
 	notification = None
+
+reverse_lazy = lambda name=None, *args : lazy(reverse, str)(name, args=args)
 
 class LoginRequiredMixin(object):
 	""" Mixin to check that the user has authenticated.
@@ -290,7 +295,7 @@ class GameBaseView(DetailView):
 			whispers = game.whisper_set.all()[:10]
 			context.update({'whispers': whispers, })
 			if player:
-				context.update({'whisper_form': forms.WhisperForm(self.request.user, game),})
+				context.update({'whisper_form': forms.WhisperForm(),})
 		
 		return context
 
@@ -341,7 +346,7 @@ def base_context(request, game, player):
 		whispers = game.whisper_set.all()[:10]
 		context.update({'whispers': whispers, })
 		if player:
-			context.update({'whisper_form': forms.WhisperForm(request.user, game),})
+			context.update({'whisper_form': forms.WhisperForm(),})
 		
 	return context
 
@@ -631,7 +636,6 @@ def play_finance_reinforcements(request, game, player):
 			can_buy = player.ducats / 3
 			can_place = player.get_areas_for_new_units(finances=True).count()
 			max_units = min(can_buy, can_place)
-			print "Max no of units is %s" % max_units
 			ReinforceForm = forms.make_reinforce_form(player, finances=True,
 												special_units=game.configuration.special_units)
 			ReinforceFormSet = formset_factory(ReinforceForm,
@@ -811,10 +815,8 @@ def play_retreats(request, game, player):
 					area= f.cleaned_data['area']
 					unit = machiavelli.Unit.objects.get(id=unitid)
 					if isinstance(area, machiavelli.GameArea):
-						print "%s will retreat to %s" % (unit, area)
 						retreat = machiavelli.RetreatOrder(unit=unit, area=area)
 					else:
-						print "%s will disband" % unit
 						retreat = machiavelli.RetreatOrder(unit=unit)
 					retreat.save()
 			player.end_phase()
@@ -931,7 +933,6 @@ def create_game(request, teams=False):
 		game_form = form_cls(request.user, data=request.POST)
 		config_form = forms.ConfigurationForm(request.POST)
 		if game_form.is_valid():
-			print "Valid"
 			new_game = game_form.save(commit=False)
 			new_game.slots = new_game.scenario.number_of_players - 1
 			new_game.save()
@@ -1396,15 +1397,23 @@ def new_whisper(request, slug):
 		messages.error(request, _("You cannot write messages in this game"))
 		return redirect(game)
 	if request.method == 'POST':
-		form = forms.WhisperForm(request.user, game, data=request.POST)
+		form = forms.WhisperForm(request.POST)
 		if form.is_valid():
-			form.save()
+			whisper = form.save(commit=False)
+			whisper.user=request.user
+			whisper.game=game
+			whisper.save()
 	return redirect(game)
 
-class WhisperListView(LoginRequiredMixin, ListView):
+class WhisperListView(LoginRequiredMixin, ListAppendView):
 	model = machiavelli.Whisper
-	paginate_by = 10
+	paginate_by = 20
 	context_object_name = 'whisper_list'
+	template_name_suffix = '_list'
+	form_class = forms.WhisperForm
+
+	def get_success_url(self):
+		return reverse('whisper-list', kwargs={'slug': self.kwargs['slug']})
 
 	def get_queryset(self):
 		self.game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
@@ -1413,7 +1422,19 @@ class WhisperListView(LoginRequiredMixin, ListView):
 	def get_context_data(self, **kwargs):
 		context = super(WhisperListView, self).get_context_data(**kwargs)
 		context['game'] = self.game
+		try:
+			player = machiavelli.Player.objects.get(user=self.request.user, game=self.game)
+		except ObjectDoesNotExist:
+			player = machiavelli.Player.objects.none()
+		context['player'] = player
 		return context
+
+	def form_valid(self, form):
+		self.object = form.save(commit=False)
+		self.object.user = self.request.user
+		self.object.game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
+		self.object.save()
+		return super(WhisperListView, self).form_valid(form)
 
 @login_required
 def edit_journal(request, slug):

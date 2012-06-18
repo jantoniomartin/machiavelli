@@ -1,6 +1,7 @@
 {% extends 'machiavelli/base.html' %}
 
 {% load i18n %}
+{% load uni_form_tags %}
 
 {% block head_title %}{% trans "Gossip" %}: {{ game.slug }}{% endblock %}
 
@@ -13,6 +14,14 @@
 {% endfor %}
 </ul>
 </div>
+
+{% if player %}
+<form action="" method="post" class="uniForm">
+{% csrf_token %}
+{{ form|as_uni_form }}
+<p><input type="submit" value="{% trans "Send" %}" /></p>
+</form>
+{% endif %}
 
 <div class="pagination">
 	<span class="step-links">

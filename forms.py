@@ -114,14 +114,15 @@ class WhisperForm(forms.ModelForm):
 	class Meta:
 		model = machiavelli.Whisper
 		fields = ('text',)
+		exclude = ('user', 'game',)
 		widgets = {
 			'text': forms.Textarea(attrs={'rows': 3, 'cols': 20})
 		}
 
-	def __init__(self, user, game, **kwargs):
-		super(WhisperForm, self).__init__(**kwargs)
-		self.instance.user = user
-		self.instance.game = game
+	#def __init__(self, user, game, **kwargs):
+	#	super(WhisperForm, self).__init__(**kwargs)
+	#	self.instance.user = user
+	#	self.instance.game = game
 
 class JournalForm(forms.ModelForm):
 	class Meta:
