@@ -1171,8 +1171,13 @@ class Game(models.Model):
 										type__exact='G',
 										area=g.area)
 			except:
-				info += u"Success!\n"
-				g.convert('G')
+				try:
+					Rebellion.objects.get(area=g.area, garrisoned=True)
+				except ObjectDoesNotExist:
+					info += u"Success!\n"
+					g.convert('G')
+				else:
+					info += u"There is a garrisoned rebellion.\n"
 				g.delete_order()
 			else:
 				info += u"Fail: there is a garrison in the city.\n"
