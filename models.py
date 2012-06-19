@@ -1697,6 +1697,9 @@ class Game(models.Model):
 				else:
 					s.position = i
 					s.points = s.cities + bonus[i-1]
+				## override points if no cities
+				if s.cities == 0:
+					s.points = 0
 			s.save()
 			## add the points to the profile total_score
 			profile = s.user.get_profile()
