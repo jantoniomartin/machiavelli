@@ -1678,23 +1678,43 @@ class Game(models.Model):
 		## sort the scores, more cities go first
 		scores.sort(cmp=lambda x,y: cmp(x.cities, y.cities), reverse=True)
 		zeros = len(scores) - len(SCORES)
-		bonus = SCORES + [0] * zeros
+		bonus = SCORES # + [0] * zeros
 		i = 0
+		seconds = []
+		thirds = []
 		for s in scores:
 			i += 1
 			if i == 1:
+				## the winner
 				s.position = i
-				s.points = s.cities + bonus[0]
+				winner = s
+				#s.points = s.cities + bonus[0]
+				#s.save()
 			else:
 				if s.cities == scores[i-2].cities:
+					## tied with the previous player
 					s.position = scores[i-2].position
-					s.points = scores[i-2].points
+					#s.points = scores[i-2].points
 				else:
+					## no tie -> next position
 					s.position = i
-					s.points = s.cities + bonus[i-1]
-				## override points if no cities
-				if s.cities == 0:
-					s.points = 0
+					#s.points = s.cities + bonus[i-1]
+				if s.position == 2:
+					seconds.append(s)
+				elif s.position == 3:
+					thirds.append(s)
+		## assign points
+		bonus[1] = bonus[1] / len(seconds)
+		bonus[2] = bonus[2] / len(thirds)
+		for s in scores:
+			s.points = s.cities
+			if s.cities > 0:
+				if s == winner:
+					s.points += bonus[0]
+				elif s in seconds:
+					s.points += bonus[1]
+				elif s in thirds:
+					s.points += bonus[2]
 			s.save()
 			## add the points to the profile total_score
 			profile = s.user.get_profile()
