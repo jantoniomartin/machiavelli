@@ -149,11 +149,12 @@ class TeamMessageForm(forms.ModelForm):
 	class Meta:
 		model = machiavelli.TeamMessage
 		fields = ('text',)
+		exclude = ('player',)
 	
-	def save(self, player, *args, **kwargs):
-		self.instance.player = player
-		message = super(TeamMessageForm, self).save(*args, **kwargs)
-		message.save()
+	#def save(self, player, *args, **kwargs):
+	#	self.instance.player = player
+	#	message = super(TeamMessageForm, self).save(*args, **kwargs)
+	#	message.save()
 
 class UnitForm(forms.ModelForm):
 	type = forms.ChoiceField(required=True, choices=machiavelli.UNIT_TYPES)

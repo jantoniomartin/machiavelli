@@ -466,25 +466,35 @@ def show_inactive_game(request, game):
 						context,
 						context_instance=RequestContext(request))
 
-@login_required
-def team_messages(request, slug=''):
-	game = get_object_or_404(machiavelli.Game, slug=slug)
-	if not game.is_team_game:
-		raise Http404
-	player = get_object_or_404(machiavelli.Player, user=request.user, game=game)
-	message_list = machiavelli.TeamMessage.objects.filter(player__team=player.team)
-	context = {'game': game,
-		'message_list': message_list}
-	if request.method == 'POST':
-		message_form = forms.TeamMessageForm(request.POST)
-		if message_form.is_valid():
-			message_form.save(player=player)
-			return redirect('team_messages', slug=slug)
-	message_form = forms.TeamMessageForm()
-	context.update({'form': message_form })
-	return render_to_response('machiavelli/team_messages.html',
-						context,
-						context_instance=RequestContext(request))
+class TeamMessageListView(LoginRequiredMixin, ListAppendView):
+	model = machiavelli.TeamMessage
+	paginate_by = 20
+	context_object_name = 'message_list'
+	template_name = 'machiavelli/team_messages.html'
+	form_class = forms.TeamMessageForm
+
+	def get_success_url(self):
+		return reverse('team_messages', kwargs={'slug': self.kwargs['slug']})
+
+	def get_queryset(self):
+		self.game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
+		if not self.game.is_team_game:
+			raise Http404
+		player = get_object_or_404(machiavelli.Player, user=self.request.user, game=self.game)
+		return machiavelli.TeamMessage.objects.filter(player__team=player.team)
+
+	def get_context_data(self, **kwargs):
+		context = super(TeamMessageListView, self).get_context_data(**kwargs)
+		context['game'] = self.game
+		return context
+
+	def form_valid(self, form):
+		game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
+		player = get_object_or_404(machiavelli.Player, user=self.request.user, game=game)
+		self.object = form.save(commit=False)
+		self.object.player = player
+		self.object.save()
+		return super(TeamMessageListView, self).form_valid(form)
 
 @never_cache
 #@login_required
