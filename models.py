@@ -115,7 +115,7 @@ TIME_LIMITS = (
 
 ## SCORES
 ## points assigned to the first, second and third players
-SCORES=[20, 10, 5]
+SCORES=[30, 10, 5]
 
 TEAM_GOAL=30
 TEAM_SCORE=20
