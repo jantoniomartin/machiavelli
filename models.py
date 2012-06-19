@@ -1615,6 +1615,7 @@ class Game(models.Model):
 				if t.cities_count >= TEAM_GOAL:
 					return t
 			return False
+		winner_found = False
 		for p in self.player_set.filter(user__isnull=False):
 			if p.number_of_cities >= self.cities_to_win:
 				if self.require_home_cities:
@@ -1644,7 +1645,13 @@ class Game(models.Model):
 											board_area__home__is_home=True).count()
 					if extra < self.extra_conquered_cities:
 						continue
-				return p
+				if not winner_found:
+					winner_found = p
+				else:
+					## there is a tie
+					return False
+		if winner_found:
+			return winner_found
 		return False
 
 	def assign_team_scores(self):
@@ -1910,8 +1917,9 @@ class Score(models.Model):
 	points = models.IntegerField(default=0)
 	cities = models.PositiveIntegerField(default=0)
 	position = models.PositiveIntegerField(default=0)
-	""" Default value is added for compatibility with south, to be deleted after migration """
 	created_at = models.DateTimeField(auto_now_add=True)
+	""" Ignore this score in averages (victories, points, etc) """
+	ignore_avg = models.BooleanField(default=False)
 
 	def __unicode__(self):
 		return "%s (%s)" % (self.user, self.game)
