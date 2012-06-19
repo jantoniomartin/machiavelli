@@ -118,7 +118,6 @@ TIME_LIMITS = (
 SCORES=[30, 10, 5]
 
 TEAM_GOAL=30
-TEAM_SCORE=20
 
 KARMA_MINIMUM = settings.KARMA_MINIMUM
 KARMA_DEFAULT = settings.KARMA_DEFAULT
@@ -1665,12 +1664,8 @@ class Game(models.Model):
 				pos += 1
 				cities = count
 			for p in t.player_set.all():
-				if pos == 1:
-					points = TEAM_SCORE
-				else:
-					points = 0
 				s = Score(user=p.user, game=self, country=p.contender.country,
-					cities=p.number_of_cities, points=points, position=pos)
+					cities=p.number_of_cities, points=0, position=pos, ignore_avg=True)
 				s.save()
 
 	def assign_scores(self):
