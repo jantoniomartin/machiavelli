@@ -1179,24 +1179,28 @@ def forgive_excommunication(request, slug, player_id):
 		messages.success(request, _("The country has been forgiven."))
 	return redirect(game)
 
-#@login_required
-def hall_of_fame(request):
-	context = sidebar_context(request)
-	order = request.GET.get('o', 'w')
-	profiles_list = CondottieriProfile.objects.hall_of_fame(order=order) #all().order_by('-weighted_score')
-	paginator = Paginator(profiles_list, 10)
-	try:
-		page = int(request.GET.get('page', '1'))
-	except ValueError:
-		page = 1
-	try:
-		profiles = paginator.page(page)
-	except (EmptyPage, InvalidPage):
-		profiles = paginator.page(paginator.num_pages)
-	context.update({'profiles': profiles, 'order': order,})
-	return render_to_response('machiavelli/hall_of_fame.html',
-							context,
-							context_instance=RequestContext(request))
+class HallOfFameView(ListView):
+	allow_empty = False
+	model = CondottieriProfile
+	paginate_by = 10
+	context_object_name = 'profiles_list'
+	template_name = 'machiavelli/hall_of_fame.html'
+
+	def get_queryset(self):
+		order = self.request.GET.get('o', 'w')
+		return CondottieriProfile.objects.hall_of_fame(order=order)
+	
+	def render_to_response(self, context, **kwargs):
+		return super(HallOfFameView, self).render_to_response(
+			RequestContext(self.request,
+				context,
+				processors=[activity, sidebar_ranking,]),
+			**kwargs)
+	
+	def get_context_data(self, **kwargs):
+		context = super(HallOfFameView, self).get_context_data(**kwargs)
+		context['order'] = self.request.GET.get('o', 'w')
+		return context
 
 def ranking(request, key='', val=''):
 	""" Gets the qualification, ordered by scores, for a given parameter. """
