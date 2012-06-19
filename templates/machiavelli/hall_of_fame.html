@@ -23,7 +23,7 @@ server{% endblocktrans %}</p>
 	<th><a href="?o=overthrows">{% trans "Overthrows" %}</a></th>
 	</tr>
 	</thead>
-	{% for p in profiles.object_list %}
+	{% for p in profiles_list %}
 	<tr>
 	<td>{% avatar p.user %}</td>
 	<td><a href="{% url profile_detail username=p.user.username %}">{{ p }}</a></td>
@@ -45,16 +45,16 @@ server{% endblocktrans %}</p>
 </table>
 <div class="pagination">
 	<span class="step-links">
-		{% if profiles.has_previous %}
-			<a href="?page={{ profiles.previous_page_number }}&o={{ order }}">&lt;&lt;</a>
+		{% if page_obj.has_previous %}
+			<a href="?page={{ page_obj.previous_page_number }}&o={{ order }}">&lt;&lt;</a>
 		{% endif %}
 		
 		<span class="current">
-			{% trans "Page" %} {{ profiles.number }} {% trans "of" %} {{ profiles.paginator.num_pages }}.
+			{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}.
 		</span>
 
-		{% if profiles.has_next %}
-			<a href="?page={{ profiles.next_page_number }}&o={{ order }}">&gt;&gt;</a>
+		{% if page_obj.has_next %}
+			<a href="?page={{ page_obj.next_page_number }}&o={{ order }}">&gt;&gt;</a>
 		{% endif %}
 	</span>
 </div>

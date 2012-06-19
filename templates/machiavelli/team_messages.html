@@ -22,6 +22,22 @@
 <input type="submit" value="{% trans "Send" %}" />
 </form>
 
+<div class="pagination">
+	<span class="step-links">
+		{% if page_obj.has_previous %}
+			<a href="?page={{ page_obj.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}.
+		</span>
+
+		{% if page_obj.has_next %}
+			<a href="?page={{ page_obj.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+
 <p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
 
 {% endblock %}

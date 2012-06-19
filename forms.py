@@ -114,14 +114,10 @@ class WhisperForm(forms.ModelForm):
 	class Meta:
 		model = machiavelli.Whisper
 		fields = ('text',)
+		exclude = ('user', 'game',)
 		widgets = {
 			'text': forms.Textarea(attrs={'rows': 3, 'cols': 20})
 		}
-
-	def __init__(self, user, game, **kwargs):
-		super(WhisperForm, self).__init__(**kwargs)
-		self.instance.user = user
-		self.instance.game = game
 
 class JournalForm(forms.ModelForm):
 	class Meta:
@@ -148,12 +144,8 @@ class TeamMessageForm(forms.ModelForm):
 	class Meta:
 		model = machiavelli.TeamMessage
 		fields = ('text',)
+		exclude = ('player',)
 	
-	def save(self, player, *args, **kwargs):
-		self.instance.player = player
-		message = super(TeamMessageForm, self).save(*args, **kwargs)
-		message.save()
-
 class UnitForm(forms.ModelForm):
 	type = forms.ChoiceField(required=True, choices=machiavelli.UNIT_TYPES)
     

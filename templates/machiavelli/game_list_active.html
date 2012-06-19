@@ -10,12 +10,12 @@
 
 {% block left_column %}
 <h1>{% trans "All the ongoing games" %}</h1>
-{% if not game_list.object_list %}
+{% if not game_list %}
 	<p>{% blocktrans %}At this moment there are no active games that you are not playing.{% endblocktrans %}</p>
 {% else %}
 	<p>{% blocktrans %}These are all the active games that you are not playing.{% endblocktrans %}</p>
 
-{% for game in game_list.object_list %}
+{% for game in game_list %}
 <div class="game_info {% if game.fast %}fast{% endif %}">
 <h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span></h2>
 <div class="map">
@@ -62,16 +62,16 @@
 
 <div class="pagination">
 	<span class="step-links">
-		{% if game_list.has_previous %}
-			<a href="?page={{ game_list.previous_page_number }}">&lt;&lt;</a>
+		{% if page_obj.has_previous %}
+			<a href="?page={{ page_obj.previous_page_number }}">&lt;&lt;</a>
 		{% endif %}
 		
 		<span class="current">
-			{% trans "Page" %} {{ game_list.number }} {% trans "of" %} {{ game_list.paginator.num_pages }}.
+			{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}.
 		</span>
 
-		{% if game_list.has_next %}
-			<a href="?page={{ game_list.next_page_number }}">&gt;&gt;</a>
+		{% if page_obj.has_next %}
+			<a href="?page={{ page_obj.next_page_number }}">&gt;&gt;</a>
 		{% endif %}
 	</span>
 </div>
