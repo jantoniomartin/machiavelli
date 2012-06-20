@@ -29,13 +29,7 @@
 {% block body %}
 <div id="game_info">
 <ul>
-{% if player.contender.country %}
-<li>
-<img src="{{ STATIC_URL }}machiavelli/img/badge-{{ player.static_name }}.png" />
-</li>
-{% endif %}
 
-</li>
 <li id="cities_to_win">
 {% if game.is_team_game %}
 30*
@@ -43,6 +37,13 @@
 {{ game.cities_to_win }}
 {% endif %}
 </li>
+
+{% if player.contender.country %}
+<li id="player_badge">
+<img src="{{ STATIC_URL }}machiavelli/img/badge-{{ player.static_name }}.png" />
+</li>
+{% endif %}
+
 <li>{{ game.slug }}</li>
 <li>{{ game.year|default_if_none:"" }} |
 {{ game.get_season_display|default_if_none:"" }} |
@@ -85,19 +86,21 @@
 {% endif %}
 
 {% if ducats %}
-<li>{% trans "Ducats" %}: {{ ducats }}</li>
+<li id="ducats" title="{% trans "Treasury" %}">{{ ducats }}</li>
 {% endif %}
 
 {% if player %}
 {% if game.is_team_game %}
 <li><a href="{% url team_messages game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
 {% else %}
-<li>
+<li class="mailbox_button">
 	{% if player.unread_count > 0 %}
-	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %}" /></a>
-	{% else %}
+	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>
+		{% else %}
 	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" /></a>
 	{% endif %}
+</li>
+<li class="mailbox_button">
 	<a href="{% url condottieri_messages_outbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
 </li>
 {% endif %}
