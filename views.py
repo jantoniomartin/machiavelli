@@ -414,7 +414,7 @@ def undo_actions(request, slug=''):
 	return redirect('show-game', slug=slug)
 
 def show_inactive_game(request, game):
-	context = sidebar_context(request)
+	context = {}
 	context.update({'game': game})
 	started = (game.started is not None)
 	finished = (game.finished is not None)
@@ -463,8 +463,9 @@ def show_inactive_game(request, game):
 	context.update({'comment_form': comment_form})
 
 	return render_to_response('machiavelli/game_inactive.html',
-						context,
-						context_instance=RequestContext(request))
+						context,	
+						context_instance=RequestContext(request,
+						processors=[activity, sidebar_ranking,]))
 
 class TeamMessageListView(LoginRequiredMixin, ListAppendView):
 	model = machiavelli.TeamMessage
@@ -932,7 +933,7 @@ def logs_by_game(request, slug=''):
 
 @login_required
 def create_game(request, teams=False):
-	context = sidebar_context(request)
+	context = {}
 	context.update( {'user': request.user,})
 	if teams:
 		form_cls = forms.TeamGameForm
@@ -968,7 +969,8 @@ def create_game(request, teams=False):
 	context['config_form'] = config_form
 	return render_to_response('machiavelli/game_form.html',
 							context,
-							context_instance=RequestContext(request))
+							context_instance=RequestContext(request,
+							processors=[activity, sidebar_ranking,]))
 
 @login_required
 def invite_users(request, slug=''):
@@ -979,7 +981,7 @@ def invite_users(request, slug=''):
 	## check that the current user is the creator of the game
 	if g.created_by != request.user:
 		raise Http404
-	context = sidebar_context(request)
+	context = {}
 	context.update({'game': g,})
 	context.update({'players': g.player_set.exclude(user__isnull=True)})
 	invitations = machiavelli.Invitation.objects.filter(game=g)
@@ -1029,7 +1031,8 @@ def invite_users(request, slug=''):
 	context.update({'form': form})
 	return render_to_response('machiavelli/invitation_form.html',
 							context,
-							context_instance=RequestContext(request))
+							context_instance=RequestContext(request,
+							processors=[activity, sidebar_ranking,]))
 
 @login_required
 def join_game(request, slug=''):
