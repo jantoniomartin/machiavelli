@@ -22,13 +22,19 @@
 
 #game_info ul li {
 	display: table-cell;
-	padding: 0.5em;
+	padding: 0;
 	text-align: center;
+	vertical-align: middle;
+}
+
+#game_info ul li img {
+	margin: 0;
 }
 
 #cities_to_win {
 	background-color: #9f2727;
 	font-size: 110%;
+	width: 48px;
 }
 
 #game_rules {
@@ -48,17 +54,19 @@
 }
 
 .col1 {
+	display: none;
 	width: 12%;
 	overflow: auto;
 }
 
 .col2 {
-	width: 56%;
+	width: 65%;
 	padding: 0;
 }
 
 .col3 {
-	width: 25%;
+	width: 31%;
+	overflow: auto;
 }
 
 .player {
@@ -73,58 +81,71 @@
 /*
  * Country styles
  */
-#powers .france {
+
+#countries {
+	font-size: small;
+}
+
+#countries table {
+	width: 100%;
+}
+
+#countries table th {
+	background: #4f4f4f;
+}
+
+#countries .france {
 	background: #a375d1;
 	color: black;
 }
 
-#powers .milan {
+#countries .milan {
 	background: #cc0000;
 	color: black;
 }
 
-#powers .florence {
+#countries .florence {
 	background: #66ccff;
 	color: black;
 }
 
-#powers .austria {
+#countries .austria {
 	background: #b8b8b8;
 	color: black;
 }
 
-#powers .papacy {
+#countries .papacy {
 	background: #00991a;
 	color: black;
 }
 
-#powers .venice {
+#countries .venice {
 	background: #996600;
 	color: black;
 }
 
-#powers .turks {
+#countries .turks {
 	background: #00cccc;
 	color: black;
 }
 
-#powers .naples {
+#countries .naples {
 	background: #3d3dff;
 	color: black;
 }
-#powers .hre {
+#countries .hre {
 	background: #ffdd11;
 	color: black;
 }
-#powers .savoy {
+#countries .savoy {
 	background: #bbffdd;
 	color: black;
 }
-#powers .spain {
+#countries .spain {
 	background: #fcfcfc;
 	color: black;
 }
-#powers .genoa {
+#countries .genoa {
 	background: #0080ff;
 	color: black;
 }
@@ -177,8 +198,6 @@
 #log {
 	margin-top: 2.5%;
 	padding-top: 0.5em;
-	overflow: auto;
-	height: 90%;
 }
 
 #letter_box ul, #log ul {
