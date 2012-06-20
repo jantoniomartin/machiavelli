@@ -298,7 +298,7 @@ class Game(models.Model):
 			WHERE (machiavelli_player.game_id=%s \
 			AND (condottieri_scenarios_area.has_city=1 OR machiavelli_gamearea.id IS NULL)) \
 			GROUP BY machiavelli_player.id \
-			ORDER BY cities DESC, machiavelli_player.id;" % self.id)
+			ORDER BY machiavelli_player.team_id, cities DESC, machiavelli_player.id;" % self.id)
 			result_list = []
 			print result_list
 			for row in cursor.fetchall():
