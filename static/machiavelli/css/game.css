@@ -22,13 +22,19 @@
 
 #game_info ul li {
 	display: table-cell;
-	padding: 0.5em;
+	padding: 0;
 	text-align: center;
+	vertical-align: middle;
+}
+
+#game_info ul li img {
+	margin: 0;
 }
 
 #cities_to_win {
 	background-color: #9f2727;
 	font-size: 110%;
+	width: 48px;
 }
 
 #game_rules {
@@ -60,6 +66,7 @@
 
 .col3 {
 	width: 31%;
+	overflow: auto;
 }
 
 .player {
@@ -191,8 +198,6 @@
 #log {
 	margin-top: 2.5%;
 	padding-top: 0.5em;
-	overflow: auto;
-	height: 90%;
 }
 
 #letter_box ul, #log ul {
