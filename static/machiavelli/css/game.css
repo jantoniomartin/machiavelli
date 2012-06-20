@@ -2,13 +2,30 @@
 	clear: both;
 }
 
+#tabhead {
+	padding: 0;
+	border-bottom-width: 0px;
+}
+
+#body {
+	padding: 0px;
+}
+
+#subnav {
+	display: none;
+}
+
+#footer {
+	padding-left: 0;
+	padding-right: 0;
+}
+
 .uniForm .focused{ background: #444; }
 
 #game_info {
-	width: 95%;
+	width: 100%;
 	padding: 0;
-	margin-top: 0;
-	margin-bottom: 1em;
+	margin: 0 0 1em 0;
 	clear: both;
 	display: table;
 	background: #4f4f4f;
@@ -31,6 +48,13 @@
 	margin: 0;
 }
 
+#player_badge {
+	margin: 0;
+	padding: 0;
+	width: 48px;
+	background: #2f2f2f;
+}
+
 #cities_to_win {
 	background-color: #9f2727;
 	font-size: 110%;
@@ -39,6 +63,21 @@
 
 #game_rules {
 	font-size: 70%;
+}
+
+#ducats {
+	width: 48px;
+	background: url('../img/ducat-bg.png') center no-repeat;
+	color: black;
+	font-size: large;
+}
+
+.mailbox_button {
+	width: 48px;
+}
+
+#unread_count {
+	line-height: 48px;
 }
 
 .col1,
@@ -62,6 +101,7 @@
 .col2 {
 	width: 65%;
 	padding: 0;
+	margin-left; 0.5em
 }
 
 .col3 {
@@ -333,6 +373,7 @@
 #actions {
 	width: 70%;
 	float: left;
+	margin-left: 0.5em;
 }
 
 #actions form fieldset {
@@ -346,6 +387,7 @@
 }
 
 .action_block {
+	margin-bottom: 0.5em;
 	padding: 0 0 0.5em 0;
 	background-color: #4f4f4f;
 	border-bottom: solid 2px #191919;
