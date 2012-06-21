@@ -18,7 +18,7 @@
 	{% if game.slots > 0 %}
 	<p>{% blocktrans %}This game has not started, because is has not yet enough players.{% endblocktrans %}</p>
 	{% endif %}
-	{% if game.slots == 0 %}
+	{% if game.slots == 0 and not finished %}
 	<p>{% trans "This game will start in a few minutes." %}</p>
 	{% endif %}
 {% endif %}

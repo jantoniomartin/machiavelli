@@ -421,7 +421,7 @@ def show_inactive_game(request, game):
 	context.update({'started': started, 'finished': finished})
 	##TODO: move this to Game class
 	## check if the user can join the game
-	if not started:
+	if not started and not finished:
 		if request.user.is_authenticated():
 			try:
 				machiavelli.Player.objects.get(game=game, user=request.user)
