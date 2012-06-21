@@ -101,7 +101,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 		{% endifequal %}
 	{% endif %}
 	
-{% if not started %}
+{% if not started and not finished %}
 	{% if joinable %}
 	<li><a href="{% url join-game game.slug %}">{% trans "Join game" %}</a></li>
 	{% else %}
