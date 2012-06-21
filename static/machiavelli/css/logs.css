@@ -1,0 +1,141 @@
+/* Season colors
+ * 1:Spring
+ * 2:Summer
+ * 3:Fall
+ */
+.season_1 {
+	background-color: #80CD8D;
+	color: #000;
+}
+.season_2 {
+	background-color: #FFCC00;
+	color: #000;
+}
+.season_3 {
+	background-color: #B47D5B;
+	color: #000;
+}
+
+.log_list {
+	margin-top: 2.5%;
+	padding-top: 0.5em;
+}
+
+#full_log {
+	margin: 0.5em 1em 1em 1em;
+}
+
+.log_pagination {
+	margin-left: 1em;
+}
+
+.log_list li {
+	list-style-type: none;
+	min-height: 38px;
+	margin-left: 0;
+	padding: 0.1em 30px 0 0;
+	border-top: solid 1px #111;
+	background-position: right center;
+	background-repeat: no-repeat;
+}
+
+.log_list li span {
+	background-position: left 4px;
+	background-repeat: no-repeat;
+	vertical-align: text-bottom;
+	display: block;
+	min-height: 38px;
+	padding-left: 30px;
+}
+
+.log_list li span.austria {
+	background-image: url('../img/icon-austria.png');
+}
+.log_list li span.florence {
+	background-image: url('../img/icon-florence.png');
+}
+.log_list li span.france {
+	background-image: url('../img/icon-france.png');
+}
+.log_list li span.hre {
+	background-image: url('../img/icon-hre.png');
+}
+.log_list li span.milan {
+	background-image: url('../img/icon-milan.png');
+}
+.log_list li span.naples {
+	background-image: url('../img/icon-naples.png');
+}
+.log_list li span.papacy {
+	background-image: url('../img/icon-papacy.png');
+}
+.log_list li span.savoy {
+	background-image: url('../img/icon-savoy.png');
+}
+.log_list li span.turks {
+	background-image: url('../img/icon-turks.png');
+}
+.log_list li span.venice {
+	background-image: url('../img/icon-venice.png');
+}
+.log_list li span.spain {
+	background-image: url('../img/icon-spain.png');
+}
+.log_list li span.genoa {
+	background-image: url('../img/icon-genoa.png');
+}
+
+.log_list li.besieging-event {
+	background-image: url('../img/besieging-event.png');
+}
+
+.log_list li.broken-support-event {
+	background-image: url('../img/broken-support-event.png');
+}
+
+.log_list li.control-event {
+	background-image: url('../img/control-event.png');
+}
+
+.log_list li.conversion-event {
+	background-image: url('../img/conversion-event.png');
+}
+
+.log_list li.disband-event {
+	background-image: url('../img/disband-event.png');
+}
+
+.log_list li.movement-event {
+	background-image: url('../img/movement-event.png');
+}
+
+.log_list li.new-unit-event {
+	background-image: url('../img/new-unit-event.png');
+}
+
+.log_list li.order-event {
+	background-image: url('../img/order-event.png');
+}
+
+.log_list li.retreat-event {
+	background-image: url('../img/retreat-event.png');
+}
+
+.log_list li.standoff-event {
+	background-image: url('../img/standoff-event.png');
+}
+
+.log_list li.surrender-event {
+	background-image: url('../img/surrender-event.png');
+}
+
+.log_list li.storm-event {
+	background-image: url('../img/storm-event.png');
+}
+
+.log_list h3 {
+	margin-top: 0;
+	text-align: right;
+	font-size: 1em;
+}
+

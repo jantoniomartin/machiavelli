@@ -1,22 +1,10 @@
-{% extends 'machiavelli/base.html' %}
+{% extends 'machiavelli/base_game.html' %}
 
 {% load i18n %}
 
-{% block head_title %}{% trans "Log" %}: {{ game.slug }}{% endblock %}
+{% block game_body %}
 
-{% block body %}
-<h1>{% trans "Log of the game" %} "{{ game.slug }}"</h1>
-<div id="game_info">
-<ul>
-<li>{% trans "Year" %}: {{ game.year }}</li>
-<li>{% trans "Season" %}: {{ game.get_season_display }}</li>
-<li>{% trans "Phase" %}: {{ game.get_phase_display }}</li>
-<li>{% trans "Time left" %}: {{ game.next_phase_change|timeuntil }}</li>
-<li>{% trans "Power" %}: {{ player.contender.country }}</li>
-</ul>
-</div>
-
-<div class="pagination">
+<div class="log_pagination">
 	<span class="step-links">
 		{% if log.has_previous %}
 			<a href="?{{ log.previous_date }}">&lt;&lt;</a>
@@ -31,7 +19,7 @@
 		{% endif %}
 	</span>
 </div>
-<div id="log">
+<div id="full_log" class="log_list">
 <ul>
 {% for event in log.object_list %}
 {{ event.color_output|safe }}

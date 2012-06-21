@@ -1,0 +1,111 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load machiavelli_tags %}
+
+{% block head_title %}
+{% if player %}
+	{% if player.done %}
+		[&bull;]
+	{% else %}
+		[ ]
+	{% endif %}
+{% endif %}
+ {{ game.slug }}
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/game.css" />
+<link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/logs.css" />
+{% endblock %}
+
+{% block logo_link_image %}
+<a href="{% url home %}"><img class="logo" src="{{ STATIC_URL }}machiavelli/img/game-logo.png" /></a>
+{% endblock %}
+{% block right_tabs %}{% endblock %}
+
+{% block body %}
+<div id="game_info">
+<ul>
+
+<li id="cities_to_win">
+{% if game.is_team_game %}
+30*
+{% else %}
+{{ game.cities_to_win }}
+{% endif %}
+</li>
+
+{% if player.contender.country %}
+<li id="player_badge">
+<img src="{{ STATIC_URL }}machiavelli/img/badge-{{ player.static_name }}.png" />
+</li>
+{% endif %}
+
+<li>{{ game.slug }}</li>
+<li>{{ game.year|default_if_none:"" }} |
+{{ game.get_season_display|default_if_none:"" }} |
+{{ game.get_phase_display }}</li>
+<li>
+{% if player and game.slots == 0 %}
+	{% if time_exceeded %}
+	<span style="color: LightCoral">
+	{{ game.next_phase_change|timeuntil }} 
+	</span>
+	{% else %}
+	<span style="color: Green">
+	{{ player.next_phase_change|timeuntil }}
+	</span>
+	{% endif %}
+{% else %}
+	{{ game.next_phase_change|timeuntil }}</li>
+{% endif %}
+</li>
+{% if player %}
+<li>
+	{% if player.contender.country %}
+		{{ player.contender.country }}
+		{% if game.is_team_game %}
+		({% trans "Team" %} {{ player.team.pk }})
+		{% endif %}
+	{% endif %}
+</li>
+{% else %}
+<li>
+		{% ifnotequal game.slots 0 %}
+			<a href="{% url machiavelli.views.join_game game.pk %}">{% trans "Join game" %}</a>
+		{% endifnotequal %}
+</li>
+{% endif %}
+{% if rules %}
+<li>
+{% rule_icons game.configuration %}
+</li>
+{% endif %}
+
+{% if ducats %}
+<li id="ducats" title="{% trans "Treasury" %}">{{ ducats }}</li>
+{% endif %}
+
+{% if player %}
+{% if game.is_team_game %}
+<li><a href="{% url team_messages game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
+{% else %}
+<li class="mailbox_button">
+	{% if player.unread_count > 0 %}
+	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>
+		{% else %}
+	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" /></a>
+	{% endif %}
+</li>
+<li class="mailbox_button">
+	<a href="{% url condottieri_messages_outbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
+</li>
+{% endif %}
+{% endif %}
+</ul>
+</div>
+
+{% block game_body %}{% endblock %}
+
+{% endblock %}
