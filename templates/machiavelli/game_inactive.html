@@ -139,6 +139,9 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 <table>
 	<thead>
 	<tr>
+	{% if game.is_team_game %}
+	<th>{% trans "Team" %}</th>
+	{% endif %}
 	<th>{% trans "Player" %}</th>
 	<th>{% trans "Country" %}</th>
 	<th>{% trans "Score" %}</th>
@@ -147,6 +150,9 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 	</thead>
 	{% for p in players %}
 	<tr>
+	{% if game.is_team_game %}
+	<td>{{ p.team }}</td>
+	{% endif %}
 	<td>{{ p.user }}</td>
 	<td>{{ p.country }}</td>
 	<td class="data_c">{{ p.points }}</td>
