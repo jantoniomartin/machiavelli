@@ -1665,7 +1665,8 @@ class Game(models.Model):
 				cities = count
 			for p in t.player_set.all():
 				s = Score(user=p.user, game=self, country=p.contender.country,
-					cities=p.number_of_cities, points=0, position=pos, ignore_avg=True)
+					cities=p.number_of_cities, points=0, position=pos,
+					ignore_avg=True, team=p.team)
 				s.save()
 
 	def assign_scores(self):
@@ -1944,6 +1945,8 @@ class Score(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	""" Ignore this score in averages (victories, points, etc) """
 	ignore_avg = models.BooleanField(default=False)
+	""" The score was got in a team game """
+	team = models.ForeignKey('Team', null=True, blank=True, verbose_name=_("team"))
 
 	def __unicode__(self):
 		return "%s (%s)" % (self.user, self.game)
