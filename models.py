@@ -1677,7 +1677,7 @@ class Game(models.Model):
 			scores.append(s)
 		## sort the scores, more cities go first
 		scores.sort(cmp=lambda x,y: cmp(x.cities, y.cities), reverse=True)
-		zeros = len(scores) - len(SCORES)
+		#zeros = len(scores) - len(SCORES)
 		bonus = SCORES # + [0] * zeros
 		i = 0
 		seconds = []
@@ -1704,8 +1704,10 @@ class Game(models.Model):
 				elif s.position == 3:
 					thirds.append(s)
 		## assign points
-		bonus[1] = bonus[1] / len(seconds)
-		bonus[2] = bonus[2] / len(thirds)
+		if len(seconds) > 0:
+			bonus[1] = bonus[1] / len(seconds)
+		if len(thirds) > 0:
+			bonus[2] = bonus[2] / len(thirds)
 		for s in scores:
 			s.points = s.cities
 			if s.cities > 0:
