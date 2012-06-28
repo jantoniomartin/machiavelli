@@ -1969,8 +1969,12 @@ class Team(models.Model):
 		return _("Team %s") % self.pk
 
 	def _get_cities_count(self):
-		cities = GameArea.objects.filter(player__team=self, board_area__has_city=True)
-		return cities.count()
+		if self.game.finished is None:
+			cities = GameArea.objects.filter(player__team=self, board_area__has_city=True)
+			return cities.count()
+		else:
+			scores = self.score_set.all().aggregate(Sum('cities'))
+			return scores['cities__sum']
 
 	cities_count = property(_get_cities_count)
 
