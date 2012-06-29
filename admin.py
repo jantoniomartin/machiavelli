@@ -16,7 +16,7 @@ class PlayerInline(admin.TabularInline):
 	readonly_fields = ('user', 'game', 'contender', 'done', 'eliminated', 'conqueror', 'is_excommunicated', 'assassinated', 'defaulted', 'ducats')
 
 class RevolutionAdmin(admin.ModelAdmin):
-	list_display = ('game', 'government', 'opposition', 'active', 'overthrow')
+	list_display = ('game', 'government', 'opposition', 'country', 'active', 'overthrow')
 
 class ScoreAdmin(admin.ModelAdmin):
 	list_display = ('user', 'game', 'country', 'points', 'cities', 'position')
