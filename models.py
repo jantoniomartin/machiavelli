@@ -2564,6 +2564,8 @@ class Revolution(models.Model):
 	opposition = models.ForeignKey(User, blank=True, null=True,
 		related_name="overthrows")
 	overthrow = models.BooleanField(default=False)
+	""" Copy of the country """
+	country = models.ForeignKey(Country)
 
 	class Meta:
 		verbose_name = _("Revolution")
@@ -2572,6 +2574,12 @@ class Revolution(models.Model):
 
 	def __unicode__(self):
 		return "%s (%s)" % (self.government, self.game)
+
+	def save(self, *args, **kwargs):
+		if self.id is None:
+			player = Player.objects.get(game=self.game, user=self.government)
+			self.country = player.contender.country
+		super(Revolution, self).save(*args, **kwargs)
 
 	def _get_government_player(self):
 		return Player.objects.get(game=self.game, user=self.government)
@@ -2583,14 +2591,14 @@ class Revolution(models.Model):
 
 	opposition_player = property(_get_opposition_player)
 
-	def _get_country(self):
+	def get_country(self):
 		try:
 			player = Player.objects.get(game=self.game, user=self.government)
 		except ObjectDoesNotExist:
 			player = Player.objects.get(game=self.game, user=self.opposition)
 		return player.contender.country
-
-	country = property(_get_country)
+	
+	#country = property(_get_country)
 
 	def resolve(self):
 		if notification:
