@@ -2899,6 +2899,7 @@ class Unit(models.Model):
 	def change_player(self, player):
 		assert isinstance(player, Player)
 		self.player = player
+		self.paid = False
 		self.save()
 		self.check_rebellion()
 		if signals:
