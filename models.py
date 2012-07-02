@@ -1722,7 +1722,7 @@ class Game(models.Model):
 			## add the points to the profile total_score
 			profile = s.user.get_profile()
 			profile.finished_games += 1
-			if i == 1:
+			if s.position == 1:
 				profile.victories += 1
 			profile.total_score += s.points
 			profile.save()
