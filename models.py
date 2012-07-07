@@ -1615,7 +1615,10 @@ class Game(models.Model):
 					return t
 			return False
 		winner_found = False
-		for p in self.player_set.filter(user__isnull=False):
+		## get the players list ordered by cities
+		players = self.player_set.filter(user__isnull=False)
+		players.sort(cmp=lambda x,y: cmp(x.number_of_cities, y.number_of_cities), reverse=True)
+		for p in players:
 			if p.number_of_cities >= self.cities_to_win:
 				if self.require_home_cities:
 					try:
@@ -1647,8 +1650,10 @@ class Game(models.Model):
 				if not winner_found:
 					winner_found = p
 				else:
-					## there is a tie
-					return False
+					## more than one player meets the victory conditions
+					if p.number_of_cities == winner_found.number_of_cities:
+						## there is a tie
+						return False
 		if winner_found:
 			return winner_found
 		return False
