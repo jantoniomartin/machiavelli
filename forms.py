@@ -482,8 +482,9 @@ class RepayForm(forms.Form):
 def make_assassination_form(player):
 	ducats_list = make_ducats_list(player.ducats, 12)
 	assassin_ids = player.assassin_set.values_list('target', flat=True)
-	#targets_qs = Country.objects.filter(player__game=player.game, id__in=assassin_ids).exclude(player__eliminated=True, player__user__isnull=True)
-	targets_qs = Country.objects.filter(contender__player__game=player.game, id__in=assassin_ids).exclude(contender__player__eliminated=True, contender__player__user__isnull=True)
+	#targets_qs = Country.objects.filter(contender__player__game=player.game, id__in=assassin_ids).exclude(contender__player__eliminated=True, contender__player__user__isnull=True)
+	targets_qs = Country.objects.filter(contender__player__game=player.game,
+		contender__player__eliminated=False, id__in=assassin_ids)
 
 	class AssassinationForm(forms.Form):
 		ducats = forms.ChoiceField(required=True, choices=ducats_list, label=_("Ducats to pay"))
