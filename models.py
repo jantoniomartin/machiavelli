@@ -999,6 +999,7 @@ class Game(models.Model):
 		msg = u"Processing assassinations in game %s:\n" % self
 		for a in attempts:
 			msg += u"\n%s spends %s ducats to kill %s\n" % (a.killer, a.ducats, a.target)
+			signals.assassination_attempted.send(sender=a.target)
 			if a.target in victims:
 				msg += u"%s already killed\n" % a.target
 				continue
