@@ -2162,27 +2162,32 @@ class Player(models.Model):
 	def check_eliminated(self):
 		""" Before updating controls, check if the player is eliminated.
 
+		VERSION 1:
 		A player will be eliminated, **unless**:
 		- He has at least one empty **and** controlled home city, **OR**
 		- One of his home cities is occupied **only** by him.
+		NEW IN VERSION 2:
+		A player will be eliminated, unless he control at least one of his
+		home provinces.
 		"""
 
 		if not self.user:
 			return False
-		## find a home city controlled by the player, and empty
-		cities = self.controlled_home_cities().filter(unit__isnull=True).count()
-		if cities > 0:
-			print "%s has empty controlled home cities" % self
-			return False
-		## find a home city occupied only by the player
-		enemies = self.game.player_set.exclude(id=self.id)
-		occupied = self.game.gamearea_set.filter(unit__player__in=enemies).distinct().values('id')
-		safe = self.home_country().filter(board_area__has_city=True, unit__player=self).exclude(id__in=occupied).count()
-		if safe > 0:
-			print "%s has safe cities" % self
-			return False
-		print "%s is eliminated" % self
-		return True
+		if self.game.version < 2:
+			## find a home city controlled by the player, and empty
+			cities = self.controlled_home_cities().filter(unit__isnull=True).count()
+			if cities > 0:
+				return False
+			## find a home city occupied only by the player
+			enemies = self.game.player_set.exclude(id=self.id)
+			occupied = self.game.gamearea_set.filter(unit__player__in=enemies).distinct().values('id')
+			safe = self.home_country().filter(board_area__has_city=True, unit__player=self).exclude(id__in=occupied).count()
+			if safe > 0:
+				return False
+			return True
+		else:
+			## new version of elimination rule
+			return self.controlled_home_country().count() <= 0
 
 	def eliminate(self):
 		""" Eliminates the player and removes units, controls, etc.
