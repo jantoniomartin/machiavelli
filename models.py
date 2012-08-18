@@ -1002,7 +1002,10 @@ class Game(models.Model):
 			if a.target in victims:
 				msg += u"%s already killed\n" % a.target
 				continue
-			dice_rolled = int(a.ducats / 12)
+			if self.version < 2:
+				dice_rolled = int(a.ducats / 12)
+			else:
+				dice_rolled = a.get_dice()
 			if dice_rolled < 1:
 				msg += u"%s are not enough" % a.ducats
 				continue
@@ -3583,6 +3586,13 @@ class Assassination(models.Model):
 		return _("%(ducats)sd to kill the leader of %(country)s.") % {'ducats': self.ducats,
 																	#'country': self.target.country}
 																	'country': self.target.contender.country}
+
+	def get_dice(self):
+		costs = [10, 18, 25, 31, 36, 40, 43, 46, 48, 50]
+		if not self.ducats in costs:
+			return 0
+		else:
+			return costs.index(self.ducats) + 1
 
 class Whisper(models.Model):
 	""" A whisper is an _anonymous_ message that is shown in the game screen. """

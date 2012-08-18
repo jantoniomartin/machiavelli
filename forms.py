@@ -479,8 +479,24 @@ class BorrowForm(forms.Form):
 class RepayForm(forms.Form):
 	pass
 
+ASSASSINATION_COSTS = (
+	(10, _("10d, 1 die")),
+	(18, _("18d, 2 dice")),
+	(25, _("25d, 3 dice")),
+	(31, _("31d, 4 dice")),
+	(36, _("36d, 5 dice")),
+	(40, _("40d, 6 dice")),
+	(43, _("43d, 7 dice")),
+	(46, _("46d, 8 dice")),
+	(48, _("48d, 9 dice")),
+	(50, _("50d, 10 dice")),
+)
+
 def make_assassination_form(player):
-	ducats_list = make_ducats_list(player.ducats, 12)
+	if player.game.version < 2:
+		ducats_list = make_ducats_list(player.ducats, 12)
+	else:
+		ducats_list = ASSASSINATION_COSTS
 	assassin_ids = player.assassin_set.values_list('target', flat=True)
 	#targets_qs = Country.objects.filter(contender__player__game=player.game, id__in=assassin_ids).exclude(contender__player__eliminated=True, contender__player__user__isnull=True)
 	targets_qs = Country.objects.filter(contender__player__game=player.game,
