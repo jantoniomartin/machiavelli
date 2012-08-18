@@ -77,6 +77,7 @@
 {% endif %}
 </dl>
 <ul class="section_menu">
+	<li>{% trans "Version" %}: {{ game.version }}</li>
 	<li>{{ game.comments_count }} {% trans "comments" %}</li>
 	<li>{% rule_icons game.configuration %}</li>
 	{% if game.private %}

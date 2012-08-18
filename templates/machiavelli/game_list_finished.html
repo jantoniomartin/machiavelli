@@ -52,6 +52,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 {% endfor %}
 </dl>
 <ul class="section_menu">
+	<li>{% trans "Version" %}: {{ game.version }}</li>
 	<li>{{ game.comments_count }} {% trans "comments" %}</li>
 	<li>{% rule_icons game.configuration %}</li>
 	<li><a href="{% url show-game game.slug %}">{% trans "View scores" %}</a></li>

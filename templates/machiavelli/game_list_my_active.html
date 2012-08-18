@@ -76,6 +76,7 @@
 </dd>
 </dl>
 <ul class="section_menu">
+	<li>{% trans "Version" %}: {{ player.game.version }}</li>
 	<li>{% rule_icons player.game.configuration %}</li>
 	<li><a href="{% url show-game player.game.slug %}">{% trans "View game" %}</a></li>
 	<li><a href="{% url game-log player.game.slug %}">{% trans "Log" %}</a></li> 

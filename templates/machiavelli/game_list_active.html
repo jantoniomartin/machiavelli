@@ -53,6 +53,7 @@
 {% endif %}
 </dl>
 <ul class="section_menu">
+	<li>{% trans "Version" %}: {{ game.version }}</li>
 	<li>{% rule_icons game.configuration %}</li>
 	<li><a href="{% url show-game game.slug %}">{% trans "View game" %}</a></li>
 	<li><a href="{% url game-log game.slug %}">{% trans "Log" %}</a></li> 

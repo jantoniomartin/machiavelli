@@ -88,6 +88,7 @@
 {% endif %}
 </dl>
 <ul class="section_menu">
+	<li>{% trans "Version" %}: {{ promoted_game.version }}</li>
 	<li>{{ num_comments }} {% trans "comments" %}</li>
 	<li>{% rule_icons promoted_game.configuration %}</li>
 	<li><a href="{% url join-game promoted_game.slug %}">{% trans "Join game" %}</a></li>
