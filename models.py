@@ -1618,8 +1618,8 @@ class Game(models.Model):
 					return t
 			return False
 		winner_found = False
-		## get the players list ordered by cities
-		players = list(self.player_set.filter(user__isnull=False))
+		## get the players list ordered by cities, exclude assassinated players
+		players = list(self.player_set.filter(user__isnull=False, assassinated=False))
 		players.sort(cmp=lambda x,y: cmp(x.number_of_cities, y.number_of_cities), reverse=True)
 		for p in players:
 			if p.number_of_cities >= self.cities_to_win:
