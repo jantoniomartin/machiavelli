@@ -2085,16 +2085,33 @@ class Player(models.Model):
 
 		if not self.user:
 			return 0
-		cities = self.number_of_cities
-		if self.game.configuration.famine:
+		if self.game.version < 2:
+			cities = self.number_of_cities
+			if self.game.configuration.famine:
+				famines = self.gamearea_set.filter(famine=True, board_area__has_city=True).exclude(unit__type__exact='G').count()
+				cities -= famines
+			units = len(self.unit_set.filter(placed=True))
+			place = cities - units
+			slots = len(self.get_areas_for_new_units())
+			if place > slots:
+				place = slots
+			return place
+		else:
+			## new version
+			cities = self.number_of_cities
 			famines = self.gamearea_set.filter(famine=True, board_area__has_city=True).exclude(unit__type__exact='G').count()
-			cities -= famines
-		units = len(self.unit_set.filter(placed=True))
-		place = cities - units
-		slots = len(self.get_areas_for_new_units())
-		if place > slots:
-			place = slots
-		return place
+			units = len(self.unit_set.filter(placed=True))
+			if cities <= units:
+				place = cities - units ## negative
+			else:
+				if cities - famines <= units:
+					place = 0
+				else:
+					place = cities - famines - units
+			slots = len(self.get_areas_for_new_units())
+			if place > slots:
+				place = slots
+			return place
 	
 	def home_country(self):
 		""" Returns a queryset with Game Areas in home country. """
