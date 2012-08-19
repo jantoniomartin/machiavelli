@@ -2290,6 +2290,11 @@ class Player(models.Model):
 		if logging:
 			msg = "Player %s excommunicated" % self.pk
 			logger.info(msg)
+		if notification:
+			user = [self.user,]
+			extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
+			notification.send(user, "player_excommunicated", extra_context,
+				on_site=True)
 	
 	def unset_excommunication(self):
 		self.is_excommunicated = False
@@ -2300,6 +2305,11 @@ class Player(models.Model):
 		if logging:
 			msg = "Player %s is forgiven" % self.pk
 			logger.info(msg)
+		if notification:
+			user = [self.user,]
+			extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
+			notification.send(user, "player_absolved", extra_context,
+				on_site=True)
 
 	def assassinate(self):
 		self.assassinated = True
@@ -2422,7 +2432,7 @@ class Player(models.Model):
 			logger.info("New revolution for player %s" % self)
 			if notification:
 				user = [self.user,]
-				extra_context = {'game': self.game,}
+				extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
 				notification.send(user, "new_revolution", extra_context,
 					on_site=True)
 		else:

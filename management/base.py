@@ -40,6 +40,12 @@ if "notification" in settings.INSTALLED_APPS:
 		notification.create_notice_type("team_message_received",
 										_("Team message received"),
 										_("you receive a team message"))
+		notification.create_notice_type("player_excommunicated",
+										_("Player excommunicated"),
+										_("you are excommunicated in a game"))
+		notification.create_notice_type("player_absolved",
+										_("Player absolved"),
+										_("your excommunication is lifted"))
 
 	signals.post_syncdb.connect(create_notice_types, sender=notification)
 else:
