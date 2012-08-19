@@ -2671,7 +2671,7 @@ def notify_overthrow_attempt(sender, instance, created, **kw):
 			'STATIC_URL': settings.STATIC_URL,}
 		notification.send(user, "overthrow_attempt", extra_context , on_site=True)
 
-models.signals.post_save.connect(notify_overthrow_attempt, sender=Revolution)
+signals.overthrow_attempted.connect(notify_overthrow_attempt)
 
 class UnitManager(models.Manager):
 	def get_with_strength(self, game, **kwargs):

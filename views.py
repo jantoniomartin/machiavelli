@@ -51,7 +51,7 @@ from django.views.generic.list import ListView
 ## machiavelli
 import machiavelli.models as machiavelli
 import machiavelli.forms as forms
-from machiavelli.signals import player_joined
+from machiavelli.signals import player_joined, overthrow_attempted
 from machiavelli.context_processors import activity, latest_gossip
 from machiavelli.listappend import ListAppendView
 
@@ -1127,6 +1127,7 @@ def overthrow(request, revolution_id):
 				return redirect("summary")
 			revolution.opposition = request.user
 			revolution.save()
+			signals.overthrow_attempted.send(sender=revolution)
 			messages.success(request, _("Your overthrow attempt has been saved."))
 		else:
 			messages.error(request, _("You are already attempting an overthrow on another player in the same game."))
