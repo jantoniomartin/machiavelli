@@ -2635,7 +2635,7 @@ class Revolution(models.Model):
 		if notification:
 			## notify the old player
 			user = [self.government,]
-			extra_context = {'game': self.game,}
+			extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
 			notification.send(user, "lost_player", extra_context, on_site=True)
 			## notify the new player
 			user = [self.opposition]
@@ -2657,7 +2657,8 @@ class Revolution(models.Model):
 def notify_overthrow_attempt(sender, instance, created, **kw):
 	if notification and isinstance(instance, Revolution) and not created:
 		user = [instance.government,]
-		extra_context = {'game': instance.game,}
+		extra_context = {'game': instance.game,
+			'STATIC_URL': settings.STATIC_URL,}
 		notification.send(user, "overthrow_attempt", extra_context , on_site=True)
 
 models.signals.post_save.connect(notify_overthrow_attempt, sender=Revolution)
