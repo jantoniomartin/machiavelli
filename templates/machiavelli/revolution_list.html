@@ -39,7 +39,11 @@
 		{% if not revolution.opposition %}
 		<td><a href="{% url overthrow revolution.pk %}">{% trans "Overthrow" %}</a></td>
 		{% else %}
-		<td><a href="{% url undo_overthrow revolution.pk %}">{% trans "Withdraw" %}</a></td>
+			{% if revolution.opposition == user %}
+				<td><a href="{% url undo_overthrow revolution.pk %}">{% trans "Withdraw" %}</a></td>
+			{% else %}
+				<td>&nbsp;</td>
+			{% endif %}
 		{% endif %}
 	{% endif %}
 	</tr>
