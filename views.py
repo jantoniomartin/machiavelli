@@ -250,7 +250,7 @@ class RevolutionList(LoginRequiredMixin, ListView):
 			**kwargs)
 
 	def get_queryset(self):
-		return machiavelli.Revolution.objects.exclude(overthrow=True)
+		return machiavelli.Revolution.objects.exclude(overthrow=True).order_by("-active")
 
 class GameBaseView(DetailView):
 	context_object_name = 'game'
