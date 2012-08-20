@@ -112,10 +112,6 @@ class SummaryView(TemplateView):
 		if self.request.user.is_authenticated():
 			joinable = joinable.exclude(player__user=self.request.user)
 			promoted = promoted.exclude(player__user=self.request.user)
-			my_games_ids = machiavelli.Game.objects.filter(player__user=self.request.user).values('id')
-			my_rev_ids = machiavelli.Revolution.objects.filter(opposition=self.request.user).values('game__id')
-			revolutions = machiavelli.Revolution.objects.exclude(game__id__in=my_games_ids).exclude(game__id__in=my_rev_ids).filter(active__isnull=False, opposition__isnull=True)
-			context.update( {'revolutions': revolutions})
 			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, done=False)
 			player_list = []
 			for p in my_players:
