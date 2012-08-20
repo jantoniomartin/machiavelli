@@ -16,7 +16,7 @@
 <li><a href="{% url new-game %}">{% trans "New game" %}</a></li>
 <li><a href="{% url games-joinable %}">{% trans "Join game" %}</a></li> 
 {% if user.is_authenticated %}
-<li><a href="{% url revolution-list %}">{% trans "Revolutions" %}</a></li> 
+<li><a href="{% url revolution_list %}">{% trans "Revolutions" %}</a></li> 
 <li><a href="{% url games-my-active %}">{% trans "Active games" %}</a></li>
 <li><a href="{% url games-pending %}">{% trans "Pending games" %}</a></li>
 <li><a href="{% url games-my-finished %}">{% trans "Finished games" %}</a></li>
