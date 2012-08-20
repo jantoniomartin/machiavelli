@@ -104,24 +104,6 @@
 {% endif %}
 <p><a href="{% url new-game %}">{% trans "New game" %}</a></p>
 
-{% if revolutions %}
-<h3>{% trans "Revolutions" %}</h3>
-<p>
-{% blocktrans %}The following countries are governed by leaders that are not paying enough attention to their duties. If you feel that you could do better, you may try to overthrow a leader.{% endblocktrans %}
-</p>
-<p>
-{% blocktrans %}If you try to overthrow a leader, he will have a chance to recover control in the current phase. If he does not, you will take his place. You will be notified when you get control of the country.{% endblocktrans %}
-</p>
-<p>
-{% blocktrans %}In doing this, you will probably run a damaged country, so you will get some karma for your sacrifice.{% endblocktrans %}
-</p>
-{% for r in revolutions %}
-	<div class="mini_game">
-	<h3><a href="{% url show-game r.game.slug %}">{{ r.game.slug }}</a></h3>
-	<ul><li>{{ r.country }} | <a href="{% url overthrow r.pk %}">{% trans "Overthrow" %}</a></li></ul>
-	</div>
-{% endfor %}
-{% endif %}
 </div>
 
 

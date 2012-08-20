@@ -2664,10 +2664,10 @@ class Revolution(models.Model):
 		self.overthrow = True
 		self.save()
 
-def notify_overthrow_attempt(sender, instance, created, **kw):
-	if notification and isinstance(instance, Revolution) and not created:
-		user = [instance.government,]
-		extra_context = {'game': instance.game,
+def notify_overthrow_attempt(sender, **kw):
+	if notification and isinstance(sender, Revolution):
+		user = [sender.government,]
+		extra_context = {'game': sender.game,
 			'STATIC_URL': settings.STATIC_URL,}
 		notification.send(user, "overthrow_attempt", extra_context , on_site=True)
 

@@ -237,6 +237,21 @@ class PendingGamesList(LoginRequiredMixin, GameListView):
 		context["joinable"] = False
 		return context
 
+class RevolutionList(LoginRequiredMixin, ListView):
+	model = machiavelli.Revolution
+	paginate_by = 10
+	context_object_name = 'revolution_list'
+	
+	def render_to_response(self, context, **kwargs):
+		return super(RevolutionList, self).render_to_response(
+			RequestContext(self.request,
+				context,
+				processors=[activity, sidebar_ranking,]),
+			**kwargs)
+
+	def get_queryset(self):
+		return machiavelli.Revolution.objects.exclude(overthrow=True)
+
 class GameBaseView(DetailView):
 	context_object_name = 'game'
 	model = machiavelli.Game
@@ -1127,13 +1142,21 @@ def overthrow(request, revolution_id):
 				return redirect("summary")
 			revolution.opposition = request.user
 			revolution.save()
-			signals.overthrow_attempted.send(sender=revolution)
+			overthrow_attempted.send(sender=revolution)
 			messages.success(request, _("Your overthrow attempt has been saved."))
 		else:
 			messages.error(request, _("You are already attempting an overthrow on another player in the same game."))
 	else:
 		messages.error(request, _("You are already playing this game."))
-	return redirect("summary")
+	return redirect("revolution_list")
+
+@login_required
+def undo_overthrow(request, revolution_id):
+	revolution = get_object_or_404(machiavelli.Revolution, pk=revolution_id, opposition=request.user, overthrow=False)
+	revolution.opposition = None
+	revolution.save()
+	messages.success(request, _("You have withdrawn from this revolution."))
+	return redirect("revolution_list")
 
 @login_required
 def excommunicate(request, slug, player_id):

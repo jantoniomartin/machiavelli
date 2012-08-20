@@ -1,0 +1,67 @@
+{% extends "machiavelli/base.html" %}
+
+{% load i18n %}
+{% load machiavelli_tags %}
+{% load condottieri_profiles_tags %}
+
+{% block head_title %}
+{% blocktrans %}Revolutions{% endblocktrans %}
+{% endblock %}
+
+{% block left_column %}
+<h1>{% trans "Revolutions" %}</h1>
+<p>{% blocktrans %}A "revolution" occurs when a player fails to submit his actions on time. When a revolution is created, any user may try to overthrow the player and take his place in the game. The first time, the player has the chance to keep control of his country if he submits his actions in a few hours. If the same player fails again and there's a candidate to take his place, the overthrow will be inmediate.{% endblocktrans %}</p>
+<p>{% blocktrans %}Taking other player's place usually means playing a country in disadvantage, but you will be helping other players to play a good game. Because of that, your karma will be raised.{% endblocktrans %}</p>
+{% if not revolution_list %}
+	<p>{% blocktrans %}At this moment there are no available revolutions.{% endblocktrans %}</p>
+{% else %}
+
+<table>
+<thead><tr>
+<th>{% trans "Game" %}</th>
+<th>{% trans "Country" %}</th>
+<th>{% trans "Status" %}</th>
+<th>{% trans "Actions" %}</th>
+</tr></thead>
+<tbody>
+{% for revolution in revolution_list %}
+	<tr>
+	<td><a href="{% url show-game revolution.game.slug %}">{{ revolution.game.slug }}</a></td>
+	<td>{{ revolution.country }}</td>
+	{% if revolution.active %}
+	<td>{% trans "Active" %} ({{ revolution.active|timesince }})</td>
+	{% else %}
+	<td>{% trans "Playing" %}</td>
+	{% endif %}
+	{% if revolution.government == user %}
+	<td><a href="{% url show-game revolution.game.slug %}">{% trans "Play" %}</a></td>
+	{% else %}
+		{% if not revolution.opposition %}
+		<td><a href="{% url overthrow revolution.pk %}">{% trans "Overthrow" %}</a></td>
+		{% else %}
+		<td><a href="{% url undo_overthrow revolution.pk %}">{% trans "Withdraw" %}</a></td>
+		{% endif %}
+	{% endif %}
+	</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<div class="pagination">
+	<span class="step-links">
+		{% if page_obj.has_previous %}
+			<a href="?page={{ page_obj.previous_page_number }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}.
+		</span>
+
+		{% if page_obj.has_next %}
+			<a href="?page={{ page_obj.next_page_number }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
+
+{% endif %}
+{% endblock %}
