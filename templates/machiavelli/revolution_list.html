@@ -37,7 +37,11 @@
 	<td><a href="{% url show-game revolution.game.slug %}">{% trans "Play" %}</a></td>
 	{% else %}
 		{% if not revolution.opposition %}
-		<td><a href="{% url overthrow revolution.pk %}">{% trans "Overthrow" %}</a></td>
+			{% if revolution.active %}
+			<td><a href="{% url overthrow revolution.pk %}">{% trans "Overthrow" %}</a></td>
+			{% else %}
+				<td>&nbsp;</td>
+			{% endif %}
 		{% else %}
 			{% if revolution.opposition == user %}
 				<td><a href="{% url undo_overthrow revolution.pk %}">{% trans "Withdraw" %}</a></td>

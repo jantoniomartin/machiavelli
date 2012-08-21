@@ -1135,7 +1135,11 @@ def overthrow(request, revolution_id):
 			if karma < settings.KARMA_TO_JOIN:
 				err = _("You need a minimum karma of %s to join a game.") % settings.KARMA_TO_JOIN
 				messages.error(request, err)
-				return redirect("summary")
+				return redirect("revolution_list")
+			if not revolution.active:
+				err = _("This revolution is inactive.")
+				messages.error(request, err)
+				return redirect("revolution_list")
 			revolution.opposition = request.user
 			revolution.save()
 			overthrow_attempted.send(sender=revolution)
