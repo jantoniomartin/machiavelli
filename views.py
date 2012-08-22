@@ -384,6 +384,18 @@ def base_context(request, game, player):
 #
 
 @login_required
+def surrender(request, slug=''):
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, eliminated=False, surrendered=False)
+	if request.method == 'POST':
+		player.surrender()
+		messages.success(request, _("You have surrendered in this game.")) 
+		return redirect(game)
+	return render_to_response('machiavelli/surrender.html',
+							context,
+							context_instance=RequestContext(request))
+
+@login_required
 def undo_actions(request, slug=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
 	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, eliminated=False, surrendered=False)

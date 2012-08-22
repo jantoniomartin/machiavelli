@@ -1,0 +1,18 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Surrender" %}</h2>
+<p>{% blocktrans %}If you can't play the game, and you don't want to lose lots of karma, you can surrender and give other user the option of taking your place. This way, the rest of players won't need to wait for you to end the turns.{% endblocktrans %}</p>
+<p>{% blocktrans %}Surrender cannot be undone. You won't be able to recover your country, and you will be slightly penalized (both with points and karma). Keep in mind that if you don't surrender and you are overthrown, you will lose much more karma and points.{% endblocktrans %}</p>
+<p>{% blocktrans %}If you really wish to surrender, press the button below.{% endblocktrans %}</p>
+<form action="" method="post">
+{% csrf_token %}
+<p><input type="submit" value="{% trans "Surrender" %}" /></p>
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+</div>
+{% endblock %}
