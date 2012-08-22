@@ -2002,6 +2002,7 @@ class Player(models.Model):
 	excommunicated = models.PositiveIntegerField(blank=True, null=True)
 	assassinated = models.BooleanField(default=False)
 	defaulted = models.BooleanField(default=False)
+	surrendered = models.BooleanField(default=False)
 	ducats = models.PositiveIntegerField(default=0)
 	double_income = models.BooleanField(default=False)
 	may_excommunicate = models.BooleanField(default=False)
@@ -2245,6 +2246,20 @@ class Player(models.Model):
 			if self.game.configuration.excommunication:
 				if self.may_excommunicate:
 					self.game.player_set.all().update(is_excommunicated=False, pope_excommunicated=False)
+
+	def surrender(self):
+		self.surrendered = True
+		self.done = True
+		try:
+			rev = Revolution.objects.get(game=self.game, government=self.user)
+		except ObjectDoesNotExist:
+			rev = Revolution(game=self.game, government=self.user,
+				country = self.contender.country)
+		rev.active = datetime.now()
+		rev.voluntary = True
+		rev.save()
+		self.save()
+		signals.player_surrendered.send(sender=self)
 
 	def set_conqueror(self, player):
 		if player != self:
@@ -2607,6 +2622,7 @@ class Revolution(models.Model):
 	overthrow = models.BooleanField(default=False)
 	""" Copy of the country """
 	country = models.ForeignKey(Country)
+	voluntary = models.BooleanField(default=False)
 
 	class Meta:
 		verbose_name = _("Revolution")
@@ -2639,8 +2655,6 @@ class Revolution(models.Model):
 			player = Player.objects.get(game=self.game, user=self.opposition)
 		return player.contender.country
 	
-	#country = property(_get_country)
-
 	def resolve(self):
 		if notification:
 			## notify the old player
