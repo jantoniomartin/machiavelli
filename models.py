@@ -643,8 +643,7 @@ class Game(models.Model):
 					elif self.phase == PHORDERS:
 						pass
 					elif self.phase == PHRETREATS:
-						## disband the units that should retreat
-						Unit.objects.filter(player=p).exclude(must_retreat__exact='').delete()
+						pass
 					p.end_phase(forced=True)
 		
 	def time_to_limit(self):
@@ -678,7 +677,7 @@ class Game(models.Model):
 		msg += u"All players done.\n"
 		if logging:
 			logger.info(msg)
-		self.all_players_done()
+		self.process_turn()
 		self.clear_phase_cache()
 		## If I don't reload players, p.new_phase overwrite the changes made by
 		## self.assign_incomes()
@@ -719,7 +718,7 @@ class Game(models.Model):
 		Unit.objects.filter(player__game=self).update(must_retreat='')
 		GameArea.objects.filter(game=self).update(standoff=False)
 
-	def all_players_done(self):
+	def process_turn(self):
 		end_season = False
 		if self.phase == PHINACTIVE:
 			return
@@ -1553,7 +1552,11 @@ class Game(models.Model):
 
 	def process_retreats(self):
 		""" From the saved RetreaOrders, process the retreats. """
-
+		## disband retreating units that didn't receive a retreat order
+		forced = Unit.objects.filter(player__game=self).exclude(must_retreat='')
+		for f in forced:
+			f.delete()
+		## disband units with a RetreatOrder without area
 		disbands = RetreatOrder.objects.filter(unit__player__game=self, area__isnull=True)
 		for d in disbands:
 			d.unit.delete()
@@ -2249,7 +2252,6 @@ class Player(models.Model):
 
 	def surrender(self):
 		self.surrendered = True
-		self.done = True
 		try:
 			rev = Revolution.objects.get(game=self.game, government=self.user)
 		except ObjectDoesNotExist:
