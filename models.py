@@ -1740,12 +1740,24 @@ class Game(models.Model):
 			profile.total_score += s.points
 			profile.save()
 		## assign negative points to overthrown players
-		overthrows = self.revolution_set.filter(overthrow=True)
-		if settings.OVERTHROW_PENALTY and self.version >= 1:
+		try:
+			overthrow_penalty = settings.OVERTHROW_PENALTY
+		except:
+			overthrow_penalty = -10
+		try:
+			surrender_penalty = settings.SURRENDER_PENALTY
+		except:
+			surrender_penalty = -5
+		if self.version >= 1:
+			overthrows = self.revolution_set.filter(overthrow=True)
 			pos = len(scores)
 			for o in overthrows:
+				if o.voluntary:
+					p = surrender_penalty
+				else:
+					p = overthrow_penalty
 				s = Score(user=o.government, game=self, country=o.country,
-					points=settings.OVERTHROW_PENALTY, cities=0, position=pos)
+					points=p, cities=0, position=pos)
 				s.save()
 				s.user.get_profile().total_score += s.points
 				s.user.get_profile().save()
