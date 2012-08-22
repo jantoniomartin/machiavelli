@@ -28,7 +28,7 @@ def activity(request):
 		context = {}
 		context['activity'] = machiavelli.Player.objects.exclude(user__isnull=True).values("user").distinct().count()
 		context['games'] = machiavelli.LiveGame.objects.count()
-		context['joinable_counter'] = machiavelli.Game.objects.joinable_by_user(user).count()
+		context['joinable_counter'] = machiavelli.Game.objects.joinable_by_user(user).exclude(private=True).count()
 		if user.is_authenticated():
 			context['revolution_counter'] = machiavelli.Revolution.objects.filter(overthrow=False, active__isnull=False, opposition__isnull=True).count()
 			context['active_counter'] = machiavelli.Player.objects.filter(user=user, game__started__isnull=False, game__finished__isnull=True).count()
