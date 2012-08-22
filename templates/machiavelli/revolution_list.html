@@ -12,6 +12,10 @@
 <h1>{% trans "Revolutions" %}</h1>
 <p>{% blocktrans %}A "revolution" occurs when a player fails to submit his actions on time. When a revolution is created, any user may try to overthrow the player and take his place in the game. The first time, the player has the chance to keep control of his country if he submits his actions in a few hours. If the same player fails again and there's a candidate to take his place, the overthrow will be inmediate.{% endblocktrans %}</p>
 <p>{% blocktrans %}Taking other player's place usually means playing a country in disadvantage, but you will be helping other players to play a good game. Because of that, your karma will be raised.{% endblocktrans %}</p>
+
+<h2>{% trans "Surrenders" %}</h2>
+<p>{% blocktrans %}Revolutions marked as "voluntary" refer to a surrendered player. In this case, you can get the control of the country inmediately.{% endblocktrans %}</p>
+
 {% if not revolution_list %}
 	<p>{% blocktrans %}At this moment there are no available revolutions.{% endblocktrans %}</p>
 {% else %}
