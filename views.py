@@ -387,6 +387,7 @@ def base_context(request, game, player):
 def surrender(request, slug=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
 	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, eliminated=False, surrendered=False)
+	context = base_context(request, game, player)
 	if request.method == 'POST':
 		player.surrender()
 		messages.success(request, _("You have surrendered in this game.")) 
