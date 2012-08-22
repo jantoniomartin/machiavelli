@@ -1556,7 +1556,10 @@ class Game(models.Model):
 		## disband retreating units that didn't receive a retreat order
 		forced = Unit.objects.filter(player__game=self).exclude(must_retreat='')
 		for f in forced:
-			f.delete()
+			try:
+				RetreatOrder.objects.get(unit=f)
+			except ObjectDoesNotExist:
+				f.delete()
 		## disband units with a RetreatOrder without area
 		disbands = RetreatOrder.objects.filter(unit__player__game=self, area__isnull=True)
 		for d in disbands:
