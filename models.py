@@ -622,28 +622,6 @@ class Game(models.Model):
 		else: #game in extended deadline
 			for p in self.player_set.all():
 				if not p.done:
-					if self.phase == PHREINFORCE:
-						if self.configuration.finances:
-							units = Unit.objects.filter(player=p).order_by('id')
-							ducats = p.ducats
-							for u in units:
-								if ducats >= u.cost:
-									u.paid = True
-									u.save()
-									ducats -= u.cost
-							p.ducats = ducats
-							p.save()
-						else:
-							units = Unit.objects.filter(player=p).order_by('-id')
-							reinforce = p.units_to_place()
-							if reinforce < 0:
-								## delete the newest units
-								for u in units[:-reinforce]:
-									u.delete()
-					elif self.phase == PHORDERS:
-						pass
-					elif self.phase == PHRETREATS:
-						pass
 					p.end_phase(forced=True)
 		
 	def time_to_limit(self):
@@ -723,6 +701,7 @@ class Game(models.Model):
 		if self.phase == PHINACTIVE:
 			return
 		elif self.phase == PHREINFORCE:
+			self.auto_reinforcements()
 			self.adjust_units()
 			next_phase = PHORDERS
 		elif self.phase == PHORDERS:
@@ -829,7 +808,29 @@ class Game(models.Model):
 		self.save()
 		self.make_map()
 		self.notify_players("new_phase", {"game": self})
-    
+   	
+	def auto_reinforcements(self):
+		## automatic reinforcements for players not done OR surrendered
+		for p in self.player_set.exclude(done=True, surrendered=False):
+			if self.configuration.finances:
+				units = Unit.objects.filter(player=p).order_by('id')
+				ducats = p.ducats
+				for u in units:
+					if ducats >= u.cost:
+						u.paid = True
+						u.save()
+						ducats -= u.cost
+				p.ducats = ducats
+				p.save()
+			else:
+				units = Unit.objects.filter(player=p).order_by('-id')
+				reinforce = p.units_to_place()
+				if reinforce < 0:
+					## delete the newest units
+					for u in units[:-reinforce]:
+						u.paid = False
+						u.save()
+
 	def adjust_units(self):
 		""" Places new units and disbands the ones that are not paid """
 		to_disband = Unit.objects.filter(player__game=self, paid=False)
@@ -2252,6 +2253,7 @@ class Player(models.Model):
 
 	def surrender(self):
 		self.surrendered = True
+		self.done = True
 		try:
 			rev = Revolution.objects.get(game=self.game, government=self.user)
 		except ObjectDoesNotExist:
@@ -2361,7 +2363,7 @@ class Player(models.Model):
 
 	def new_phase(self):
 		## check that the player is not autonomous and is not eliminated
-		if self.user and not self.eliminated:
+		if self.user and not self.eliminated and not self.surrendered:
 			if self.game.phase == PHREINFORCE and not self.game.configuration.finances:
 				if self.units_to_place() == 0:
 					self.done = True
