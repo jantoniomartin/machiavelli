@@ -1155,8 +1155,13 @@ def overthrow(request, revolution_id):
 				return redirect("revolution_list")
 			revolution.opposition = request.user
 			revolution.save()
-			overthrow_attempted.send(sender=revolution)
-			messages.success(request, _("Your overthrow attempt has been saved."))
+			if revolution.voluntary:
+				revolution.resolve()
+				messages.success(request, _("You are now playing this game."))
+				return redirect(revolution.game)
+			else:
+				overthrow_attempted.send(sender=revolution)
+				messages.success(request, _("Your overthrow attempt has been saved."))
 		else:
 			messages.error(request, _("You are already attempting an overthrow on another player in the same game."))
 	else:

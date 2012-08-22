@@ -2676,6 +2676,8 @@ class Revolution(models.Model):
 			signals.government_overthrown.send(sender=self)
 		player = Player.objects.get(game=self.game, user=self.government)
 		player.user = self.opposition
+		if self.voluntary:
+			player.surrendered = False
 		player.save()
 		self.opposition.get_profile().adjust_karma(10)
 		self.active = None
