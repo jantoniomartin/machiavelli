@@ -103,9 +103,13 @@
 {% block actions %}{% endblock %}
 </div>
 <div id="mini_shoutbox">
+
+{% if player %}
 <h2>{% trans "Journal" %}</h2>
 <p>{{ excerpt|linebreaks }}</p>
 <p><a href="{% url edit-journal game.slug %}">{% trans "Edit journal" %}</a></p>
+{% endif %}
+
 {% if game.configuration.gossip %}
 <h2>{% trans "Gossip" %}</h2>
 <ul>
@@ -122,6 +126,12 @@
 {% endif %}
 <p><a href="{% url whisper-list game.slug %}">{% trans "Show all" %}</a></p>
 {% endif %}
+
+{% if player %}
+<h2>{% trans "Surrender" %}</h2>
+<p><a href="{% url surrender game.slug %}">{% trans "Surrender" %}</a></p>
+{% endif %}
+
 </div>
 
 {% endblock %}
