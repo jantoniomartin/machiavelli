@@ -21,6 +21,7 @@
 <th>{% trans "Game" %}</th>
 <th>{% trans "Country" %}</th>
 <th>{% trans "Status" %}</th>
+<th>{% trans "Voluntary" %}</th>
 <th>{% trans "Actions" %}</th>
 </tr></thead>
 <tbody>
@@ -33,6 +34,7 @@
 	{% else %}
 	<td>{% trans "Playing" %}</td>
 	{% endif %}
+	<td>{{ revolution.voluntary|yesno }}</td>
 	{% if revolution.government == user %}
 	<td><a href="{% url show-game revolution.game.slug %}">{% trans "Play" %}</a></td>
 	{% else %}
