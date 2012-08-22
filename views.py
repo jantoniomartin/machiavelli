@@ -807,7 +807,7 @@ def delete_order(request, slug='', order_id=''):
 def confirm_orders(request, slug=''):
 	""" Confirms orders and expenses in Order Writing phase """
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, done=False, surrenedered=False)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, done=False, surrendered=False)
 	if request.method == 'POST':
 		msg = u"Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (player.id,
 			player.static_name,
