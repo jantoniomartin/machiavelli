@@ -285,7 +285,7 @@ class GameBaseView(DetailView):
 			context.update({'excerpt': journal.excerpt})
 			if game.slots == 0:
 				context['time_exceeded'] = player.time_exceeded()
-			if player.done and not player.in_last_seconds() and not player.eliminated:
+			if player.done and not player.in_last_seconds() and not player.eliminated and not player.surrendered:
 				context.update({'undoable': True,})
 		log = log.exclude(season__exact=game.season,
 							phase__exact=game.phase)
