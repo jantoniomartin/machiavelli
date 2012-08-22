@@ -112,7 +112,7 @@ class SummaryView(TemplateView):
 		if self.request.user.is_authenticated():
 			joinable = joinable.exclude(player__user=self.request.user)
 			promoted = promoted.exclude(player__user=self.request.user)
-			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, done=False)
+			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, done=False, surrendered=False)
 			player_list = []
 			for p in my_players:
 				p.deadline = p.next_phase_change()
@@ -149,7 +149,7 @@ class MyActiveGamesList(GameListView):
 
 	def get_queryset(self):
 		if self.request.user.is_authenticated():
-			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__slots=0).select_related("contender", "game__scenario", "game__configuration")
+			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__slots=0, surrendered=False).select_related("contender", "game__scenario", "game__configuration")
 		else:
 			my_players = machiavelli.Player.objects.none()
 		player_list = []
@@ -324,6 +324,7 @@ def base_context(request, game, player):
 	log = game.baseevent_set.all()
 	if player:
 		context['done'] = player.done
+		context['surrendered'] = player.surrendered
 		if game.configuration.finances:
 			context['ducats'] = player.ducats
 		context['can_excommunicate'] = player.can_excommunicate()
@@ -385,7 +386,7 @@ def base_context(request, game, player):
 @login_required
 def undo_actions(request, slug=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, game=game, user=request.user)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, eliminated=False, surrendered=False)
 	profile = request.user.get_profile()
 	if request.method == 'POST' and player.done and not player.in_last_seconds():
 		player.done = False
@@ -515,7 +516,7 @@ def play_game(request, slug='', **kwargs):
 	if game.started is None or not game.finished is None or (game.paused and not request.user.is_staff):
 		return show_inactive_game(request, game)
 	try:
-		player = machiavelli.Player.objects.get(game=game, user=request.user)
+		player = machiavelli.Player.objects.get(game=game, user=request.user, surrendered=False)
 	except:
 		player = machiavelli.Player.objects.none()
 	if player:
@@ -774,7 +775,7 @@ def play_orders(request, game, player):
 @login_required
 def delete_order(request, slug='', order_id=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, game=game, user=request.user)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, surrendered=False)
 	#order = get_object_or_404(Order, id=order_id, unit__player=player, confirmed=False)
 	order = get_object_or_404(machiavelli.Order, id=order_id, player=player, confirmed=False)
 	response_dict = {'bad': 'false',
@@ -793,7 +794,7 @@ def delete_order(request, slug='', order_id=''):
 def confirm_orders(request, slug=''):
 	""" Confirms orders and expenses in Order Writing phase """
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, done=False)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, done=False, surrenedered=False)
 	if request.method == 'POST':
 		msg = u"Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (player.id,
 			player.static_name,
@@ -878,7 +879,7 @@ def play_expenses(request, game, player):
 @login_required
 def undo_expense(request, slug='', expense_id=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, game=game, user=request.user)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, surrendered=False)
 	expense = get_object_or_404(machiavelli.Expense, id=expense_id, player=player)
 	try:
 		expense.undo()
@@ -1166,7 +1167,8 @@ def excommunicate(request, slug, player_id):
 		return redirect(game)
 	papacy = get_object_or_404(machiavelli.Player, user=request.user,
 								game=game,
-								may_excommunicate=True)
+								may_excommunicate=True,
+								surrendered=False)
 	if not papacy.can_excommunicate():
 		messages.error(request, _("You cannot excommunicate in the current season."))
 		return redirect(game)
@@ -1190,7 +1192,8 @@ def forgive_excommunication(request, slug, player_id):
 		return redirect(game)
 	papacy = get_object_or_404(machiavelli.Player, user=request.user,
 								game=game,
-								may_excommunicate=True)
+								may_excommunicate=True,
+								surrendered=False)
 	if not papacy.can_forgive():
 		messages.error(request, _("You cannot forgive excommunications in the current season."))
 		return redirect(game)
@@ -1289,7 +1292,7 @@ def give_money(request, slug, player_id):
 		messages.error(request, _("You cannot give money in this game."))
 		return redirect(game)
 	borrower = get_object_or_404(machiavelli.Player, id=player_id, game=game)
-	lender = get_object_or_404(machiavelli.Player, user=request.user, game=game)
+	lender = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)
 	context = base_context(request, game, lender)
 
 	if request.method == 'POST':
@@ -1327,7 +1330,7 @@ def give_money(request, slug, player_id):
 @login_required
 def borrow_money(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, user=request.user, game=game)
+	player = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)
 	if game.phase != machiavelli.PHORDERS or not game.configuration.lenders or player.done:
 		messages.error(request, _("You cannot borrow money in this moment."))
 		return redirect(game)
@@ -1385,7 +1388,7 @@ def borrow_money(request, slug):
 @login_required
 def assassination(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, user=request.user, game=game)
+	player = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)
 	if game.phase != machiavelli.PHORDERS or not game.configuration.assassinations or player.done:
 		messages.error(request, _("You cannot buy an assassination in this moment."))
 		return redirect(game)
@@ -1433,7 +1436,7 @@ def assassination(request, slug):
 def new_whisper(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
 	try:
-		player = machiavelli.Player.objects.get(user=request.user, game=game)
+		player = machiavelli.Player.objects.get(user=request.user, game=game, surrendered=False)
 	except ObjectDoesNotExist:
 		messages.error(request, _("You cannot write messages in this game"))
 		return redirect(game)
@@ -1480,7 +1483,7 @@ class WhisperListView(LoginRequiredMixin, ListAppendView):
 @login_required
 def edit_journal(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
-	player = get_object_or_404(machiavelli.Player, game=game, user=request.user)
+	player = get_object_or_404(machiavelli.Player, game=game, user=request.user, surrendered=False)
 	context = base_context(request, game, player)
 	try:
 		journal = machiavelli.Journal.objects.get(user=request.user, game=game)
