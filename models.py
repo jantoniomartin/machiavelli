@@ -1856,6 +1856,7 @@ class GameArea(models.Model):
 	standoff = models.BooleanField(default=False)
 	famine = models.BooleanField(default=False)
 	storm = models.BooleanField(default=False)
+	taxed = models.BooleanField(default=False)
 
 	def abbr(self):
 		return self.board_area.code
@@ -3407,6 +3408,7 @@ class Configuration(models.Model):
 	storms = models.BooleanField(_('storms'), default=False)
 	gossip = models.BooleanField(_('gossip'), default=True)
 	variable_home = models.BooleanField(_('variable home country'), default=False)
+	taxation = models.BooleanField(_('taxation'), default=False)
 
 	def __unicode__(self):
 		return unicode(self.game)

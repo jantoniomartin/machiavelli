@@ -102,7 +102,8 @@ class ConfigurationForm(forms.ModelForm):
 		exclude = ('gossip',
 				'bribes',
 				'strategic',
-				'variable_home',)
+				'variable_home',
+				'taxation',)
 
 class InvitationForm(forms.Form):
 	user_list = forms.CharField(required=True,
