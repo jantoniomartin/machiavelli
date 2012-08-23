@@ -1346,6 +1346,34 @@ def give_money(request, slug, player_id):
 							context_instance=RequestContext(request))
 
 @login_required
+def taxation(request, slug):
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	player = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)
+	if game.phase != machiavelli.PHORDERS or not game.configuration.taxation or player.done:
+		messages.error(request, _("You cannot impose taxes in this moment."))
+		return redirect(game)
+	context = base_context(request, game, player)
+	TaxationForm = forms.make_taxation_form(player)
+	if request.method == 'POST':
+		form = TaxationForm(request.POST)
+		print "form is valid"
+		if form.is_valid():
+			ducats = 0
+			areas = form.cleaned_data["areas"]
+			for a in areas:
+				print a
+				ducats += a.tax()
+			player.ducats += ducats
+			player.save()
+			messages.success(request, _("Taxation has produced %s ducats for your treasury") % ducats)
+			return redirect(game)
+	form = TaxationForm()
+	context["form"] = form
+	return render_to_response('machiavelli/taxation.html',
+							context,
+							context_instance=RequestContext(request))
+
+@login_required
 def borrow_money(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
 	player = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)

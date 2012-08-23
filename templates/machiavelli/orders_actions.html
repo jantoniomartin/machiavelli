@@ -49,6 +49,17 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 {% endif %}
 </div>
 
+{% if game.configuration.taxation %}
+
+<div class="action_block">
+<h2>{% trans "Taxation" %}</h2>
+<p>{% blocktrans %}You can get some additional ducats through taxation.{% endblocktrans %}</p>
+<p><a href="{% url taxation game.slug %}">{% trans "Select areas to tax" %}</a></p>
+</div>
+
+{% endif %}
+
+
 {% if game.configuration.lenders and not player.defaulted %}
 
 <div class="action_block">

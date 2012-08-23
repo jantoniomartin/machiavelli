@@ -31,6 +31,8 @@ def rule_icons(config):
 		icons.append('conquering')
 	if config.variable_home:
 		icons.append('variable-home')
+	if config.taxation:
+		icons.append('taxation')
 
 	return {'icons' : icons,
 			'STATIC_URL': settings.STATIC_URL}

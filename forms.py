@@ -95,6 +95,8 @@ class ConfigurationForm(forms.ModelForm):
 			cleaned_data['lenders'] = True
 		if cleaned_data['assassinations'] or cleaned_data['lenders'] or cleaned_data['special_units'] or cleaned_data['taxation']:
 			cleaned_data['finances'] = True
+			if cleaned_data['taxation']:
+				cleaned_data['famine'] = True
 		return cleaned_data
 
 	class Meta:
@@ -465,6 +467,16 @@ def make_expense_form(player):
 			return cleaned_data
 	
 	return ExpenseForm
+
+def make_taxation_form(player):
+	rebellion_ids = machiavelli.Rebellion.objects.filter(player=player).values_list('area', flat=True)
+	qs = player.gamearea_set.filter(taxed=False, board_area__has_city=True).exclude(id__in=rebellion_ids)
+	class TaxationForm(forms.Form):
+		areas = forms.ModelMultipleChoiceField(required=False,
+					      queryset=qs,
+						  widget=forms.CheckboxSelectMultiple,
+					      label=_("Areas to tax"))
+	return TaxationForm
 
 class LendForm(forms.Form):
 	ducats = forms.IntegerField(required=True, min_value=0)

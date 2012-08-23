@@ -709,6 +709,10 @@ class Game(models.Model):
 				self.check_loans()
 			if self.configuration.finances:
 				self.process_expenses()
+			if self.configuration.taxation:
+				for a in self.gamearea_set.filter(taxed=True):
+					if a.famine:
+						a.check_assassination_rebellion(mod=a.board_area.control_income - 1)
 			if self.configuration.assassinations:
 				self.process_assassinations()
 			if self.configuration.assassinations or self.configuration.lenders:
@@ -730,9 +734,6 @@ class Game(models.Model):
 		if end_season:
 			## delete repressed rebellions
 			Rebellion.objects.filter(player__game=self, repressed=True).delete()
-			## clear taxation flags
-			if self.configuration.taxation:
-				self.gamearea_set.all().update(taxed=False)
 			if self.season == 1:
 				## delete units in famine areas
 				if self.configuration.famine:
@@ -779,12 +780,17 @@ class Game(models.Model):
 				if self.configuration.famine:
 					self.mark_famine_areas()
 				## if finances are enabled, assign incomes
-				if self.configuration.finances:
-					try:
-						self.assign_incomes()
-					except Exception, e:
-						print "Error assigning incomes in game %s:\n" % self.id
-						print e
+			## reset taxation
+			if self.configuration.taxation:
+				taxed = self.gamearea_set.filter(taxed=True)
+				taxed.update(famine=True)
+				for t in taxed:
+					signals.famine_marker_placed.send(sender=t)
+				self.gamearea_set.all().update(taxed=False)
+			## if finances are enabled, assign incomes
+			## this has been moved after taxation famines
+			if self.season == 3 and self.configuration.finances:
+				self.assign_incomes()
 			## reset assassinations, and the pope can excommunicate again
 			self.player_set.all().update(assassinated=False, has_sentenced=False)
 			self._next_season()
@@ -1956,20 +1962,20 @@ class GameArea(models.Model):
 			if result:
 				rebellion = Rebellion(area=self)
 				rebellion.save()
-		return False
+		return result
 			
 	def tax(self):
 		if self.player is None or self.taxed or self.has_rebellion(self.player):
 			return 0
-		if self.board_area.control_income >= 1:
+		if self.board_area.control_income <= 1:
 			return 0
 		self.taxed = True
 		ducats = self.board_area.control_income - 1
-		if not self.famine:
-			self.famine = True
-			signals.famine_marker_placed.send(sender=self)
-		else:
-			self.check_assassination_rebellion(mod=ducats)
+		#if not self.famine:
+		#	self.famine = True
+		#	signals.famine_marker_placed.send(sender=self)
+		#if self.famine:
+		#	self.check_assassination_rebellion(mod=ducats)
 		self.save()
 		return ducats
 
@@ -3426,7 +3432,7 @@ class Configuration(models.Model):
 	gossip = models.BooleanField(_('gossip'), default=True)
 	variable_home = models.BooleanField(_('variable home country'), default=False)
 	taxation = models.BooleanField(_('taxation'), default=False,
-					help_text=_('will enable Finances'))
+					help_text=_('will enable Finances and Famine'))
 
 	def __unicode__(self):
 		return unicode(self.game)
