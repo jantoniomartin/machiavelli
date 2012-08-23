@@ -730,6 +730,9 @@ class Game(models.Model):
 		if end_season:
 			## delete repressed rebellions
 			Rebellion.objects.filter(player__game=self, repressed=True).delete()
+			## clear taxation flags
+			if self.configuration.taxation:
+				self.gamearea_set.all().update(taxed=False)
 			if self.season == 1:
 				## delete units in famine areas
 				if self.configuration.famine:
