@@ -3408,7 +3408,8 @@ class Configuration(models.Model):
 	storms = models.BooleanField(_('storms'), default=False)
 	gossip = models.BooleanField(_('gossip'), default=True)
 	variable_home = models.BooleanField(_('variable home country'), default=False)
-	taxation = models.BooleanField(_('taxation'), default=False)
+	taxation = models.BooleanField(_('taxation'), default=False,
+					help_text=_('will enable Finances'))
 
 	def __unicode__(self):
 		return unicode(self.game)
