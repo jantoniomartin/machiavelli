@@ -1,0 +1,20 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Taxation" %}</h2>
+<p>{% blocktrans %}You can impose tax to the cities you control to get more money for your wars. You may tax an area once per season. When you tax an area, it will give you its normal income minus 1 ducat. However, this area will be affected by famine until the end of the next Spring. If you tax an area affected by famine, a rebellion may outbreak (the richer the city, the more likely the rebellion). You cannot tax a rebelled area.{% endblocktrans %}</p>
+<p>{% blocktrans %}Please, mark the areas that you wish to tax.{% endblocktrans %}</p>
+<form action="" method="post">
+{% csrf_token %}
+<table>
+{{ form }}
+</table>
+<p><input type="submit" value="{% trans "Confirm" %}" /></p>
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+</div>
+{% endblock %}
