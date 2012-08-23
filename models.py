@@ -2140,10 +2140,6 @@ class Player(models.Model):
 	def home_country(self):
 		""" Returns a queryset with Game Areas in home country. """
 
-		#return GameArea.objects.filter(game=self.game,
-		#							board_area__home__scenario=self.game.scenario,
-		#							board_area__home__country=self.country,
-		#							board_area__home__is_home=True)
 		return GameArea.objects.filter(game=self.game,
 			board_area__home__contender=self.contender,
 			board_area__home__is_home=True)
@@ -2163,20 +2159,15 @@ class Player(models.Model):
 		""" Returns a queryset with the GameAreas that accept new units. """
 
 		if self.game.configuration.conquering:
-			#conq_countries = []
 			conq_contenders = []
 			for c in self.conquered.all():
-				#conq_countries.append(c.country)
 				conq_contenders.append(c.contender)
 			areas = GameArea.objects.filter(Q(player=self) &
 										Q(board_area__has_city=True) &
-										#Q(board_area__home__scenario=self.game.scenario) &
 										Q(board_area__home__contender__scenario=self.game.scenario) &
 										Q(board_area__home__is_home=True) &
 										Q(famine=False) &
-										#(Q(board_area__home__country=self.country) |
 										(Q(board_area__home__contender=self.contender) |
-										#Q(board_area__home__country__in=conq_countries)))
 										Q(board_area__home__contender__in=conq_contenders)))
 		else:
 			areas = self.controlled_home_cities().exclude(famine=True)
