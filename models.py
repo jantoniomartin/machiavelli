@@ -1932,7 +1932,7 @@ class GameArea(models.Model):
 			return False
 		if not self.has_rebellion(self.player):
 			result = False
-			die = dice.roll_1d6() + mod
+			die = dice.roll_1d6() - mod
 			try:
 				Unit.objects.get(area=self, player=self.player)
 			except ObjectDoesNotExist:
@@ -1943,21 +1943,35 @@ class GameArea(models.Model):
 				occupied = True
 			## the province is a home province
 			if self in self.player.home_country():
-				if occupied and die == 1:
+				if occupied and die <= 1:
 					result = True
-				elif not occupied and die in (1, 2):
+				elif not occupied and die <= 2:
 					result = True
 			## the province is conquered
 			else:
-				if occupied and die in (1, 2, 3):
+				if occupied and die <= 3:
 					result = True
-				elif not occupied and die != 6:
+				elif not occupied and die <= 5:
 					result = True
 			if result:
 				rebellion = Rebellion(area=self)
 				rebellion.save()
 		return False
 			
+	def tax(self):
+		if self.player is None or self.taxed or self.has_rebellion(self.player):
+			return 0
+		if self.board_area.control_income >= 1:
+			return 0
+		self.taxed = True
+		ducats = self.board_area.control_income - 1
+		if not self.famine:
+			self.famine = True
+			signals.famine_marker_placed.send(sender=self)
+		else:
+			self.check_assassination_rebellion(mod=ducats)
+		self.save()
+		return ducats
 
 def check_min_karma(sender, instance=None, **kwargs):
 	if isinstance(instance, CondottieriProfile):
