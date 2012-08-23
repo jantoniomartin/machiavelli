@@ -1918,7 +1918,7 @@ class GameArea(models.Model):
 			return False
 		return reb
 
-	def check_assassination_rebellion(self):
+	def check_assassination_rebellion(self, mod=0):
 		""" When a player is assassinated this function checks if a new
 		rebellion appears in the game area. """
 		if self.board_area.is_sea:
@@ -1929,7 +1929,7 @@ class GameArea(models.Model):
 			return False
 		if not self.has_rebellion(self.player):
 			result = False
-			die = dice.roll_1d6()
+			die = dice.roll_1d6() + mod
 			try:
 				Unit.objects.get(area=self, player=self.player)
 			except ObjectDoesNotExist:
