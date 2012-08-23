@@ -40,7 +40,7 @@ class SpecialUnitAdmin(admin.ModelAdmin):
 	list_display = ('__unicode__', 'cost', 'power', 'loyalty')
 
 class GameAreaAdmin(admin.ModelAdmin):
-	list_display = ('game', 'board_area', 'player', 'standoff', 'famine', 'storm')
+	list_display = ('game', 'board_area', 'player', 'home_of', 'years', 'standoff', 'famine', 'storm')
 	list_per_page = 73
 	ordering = ['board_area']
 	list_filter = ('player', )

@@ -36,7 +36,7 @@ order_placed = Signal(providing_args=["destination", "subtype",
 									"subconversion"])
 standoff_happened = Signal(providing_args=[])
 unit_converted = Signal(providing_args=["before", "after"])
-area_controlled = Signal(providing_args=[])
+area_controlled = Signal(providing_args=["new_home",])
 unit_moved = Signal(providing_args=["destination"])
 unit_retreated = Signal(providing_args=["destination"])
 support_broken = Signal(providing_args=[])

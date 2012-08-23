@@ -1590,17 +1590,28 @@ class Game(models.Model):
 				err_msg = "%s units in %s (game %s)" % (len(players),area, self)
 				raise exceptions.WrongUnitCount(err_msg)
 			elif len(players) == 1 and players[0].user:
+				## the area is controlled by a player
 				if area.player != players[0]:
+					## the player controlling the area changes
 					area.player = players[0]
+					area.years = 0
 					area.save()
 					if signals:
-						signals.area_controlled.send(sender=area)
+						signals.area_controlled.send(sender=area, new_home=False)
 					else:
-						#self.log_event(ControlEvent, country=area.player.country, area=area.board_area)
 						self.log_event(ControlEvent, country=area.player.contender.country,
 							area=area.board_area)
+				else:
+					## the player controlling the area is the same
+					if self.configuration.variable_home and area.home_of != players[0] and area.years < 2:
+						area.years += 1
+						if area.years == 2:
+							area.home_of = players[0]
+							signals.area_controlled.send(sender=area, new_home=True)
+						area.save()
 			else:
 					area.player = None
+					area.years = 0
 					area.save()
 
 	##---------------------
@@ -1844,6 +1855,10 @@ class GameArea(models.Model):
 	board_area = models.ForeignKey(Area)
 	## player is who controls the area, if any
 	player = models.ForeignKey('Player', blank=True, null=True)
+	## the player whose this area is home
+	home_of = models.ForeignKey('Player', blank=True, null=True, related_name="homes")
+	## number of years that the area has belong to 'player'
+	years = models.PositiveIntegerField(default=0)
 	standoff = models.BooleanField(default=False)
 	famine = models.BooleanField(default=False)
 	storm = models.BooleanField(default=False)
@@ -2070,11 +2085,9 @@ class Player(models.Model):
 	
 	def home_control_markers(self):
 		""" Assigns each GameArea the player as owner. """
-		#GameArea.objects.filter(game=self.game,
-		#						board_area__home__scenario=self.game.scenario,
-		#						board_area__home__country=self.country).update(player=self)
 		GameArea.objects.filter(game=self.game,
-			board_area__home__contender=self.contender).update(player=self)
+			board_area__home__contender=self.contender).update(player=self,
+			home_of=self)
 	
 	def place_initial_units(self):
 		for s in self.get_setups():
@@ -2140,9 +2153,10 @@ class Player(models.Model):
 	def home_country(self):
 		""" Returns a queryset with Game Areas in home country. """
 
-		return GameArea.objects.filter(game=self.game,
-			board_area__home__contender=self.contender,
-			board_area__home__is_home=True)
+		#return GameArea.objects.filter(game=self.game,
+		#	board_area__home__contender=self.contender,
+		#	board_area__home__is_home=True)
+		return self.homes.all()
 
 	def controlled_home_country(self):
 		""" Returns a queryset with GameAreas in home country controlled by player.
@@ -3402,6 +3416,7 @@ class Configuration(models.Model):
 	plague = models.BooleanField(_('plague'), default=False)
 	storms = models.BooleanField(_('storms'), default=False)
 	gossip = models.BooleanField(_('gossip'), default=True)
+	variable_home = models.BooleanField(_('variable home country'), default=False)
 
 	def __unicode__(self):
 		return unicode(self.game)
