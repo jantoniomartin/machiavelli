@@ -851,23 +851,17 @@ class Game(models.Model):
 		## a player can only be conquered if he is eliminated
 		for p in self.player_set.filter(eliminated=True):
 			## try fo find a home province that is not controlled by any player
-			#neutral = GameArea.objects.filter(game=self,
-			#						board_area__home__country=p.country,
-			#						board_area__home__scenario=self.scenario,
-			#						board_area__home__is_home=True,
-			#						player__isnull=True).count()
 			neutral = GameArea.objects.filter(game=self,
-				board_area__home__contender=p.contender,
-				board_area__home__is_home=True,
+				#board_area__home__contender=p.contender,
+				#board_area__home__is_home=True,
+				home_of=p,
 				player__isnull=True).count()
 			if neutral > 0:
 				continue
 			## get the players that control part of this player's home country
-			#controllers = self.player_set.filter(gamearea__board_area__home__country=p.country,
-			#						gamearea__board_area__home__scenario=self.scenario,
-			#						gamearea__board_area__home__is_home=True).distinct()
-			controllers = self.player_set.filter(gamearea__board_area__home__contender=p.contender,
-				gamearea__board_area__home__is_home=True).distinct()
+			#controllers = self.player_set.filter(gamearea__board_area__home__contender=p.contender,
+			#	gamearea__board_area__home__is_home=True).distinct()
+			controllers = self.player_set.filter(gamearea__home_of=p).distinct
 			if len(controllers) == 1:
 				## all the areas in home country belong to the same player
 				if p != controllers[0] and p.conqueror != controllers[0]:
@@ -2173,16 +2167,12 @@ class Player(models.Model):
 		""" Returns a queryset with the GameAreas that accept new units. """
 
 		if self.game.configuration.conquering:
-			conq_contenders = []
-			for c in self.conquered.all():
-				conq_contenders.append(c.contender)
+			conq_players = self.conquered.all()
 			areas = GameArea.objects.filter(Q(player=self) &
 										Q(board_area__has_city=True) &
-										Q(board_area__home__contender__scenario=self.game.scenario) &
-										Q(board_area__home__is_home=True) &
 										Q(famine=False) &
-										(Q(board_area__home__contender=self.contender) |
-										Q(board_area__home__contender__in=conq_contenders)))
+										(Q(home_of=self) |
+										Q(home_of__in=conq_players)))
 		else:
 			areas = self.controlled_home_cities().exclude(famine=True)
 		excludes = []
