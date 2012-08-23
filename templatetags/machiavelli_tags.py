@@ -29,6 +29,8 @@ def rule_icons(config):
 		icons.append('unbalanced-loans')
 	if config.conquering:
 		icons.append('conquering')
+	if config.variable_home:
+		icons.append('variable-home')
 
 	return {'icons' : icons,
 			'STATIC_URL': settings.STATIC_URL}
