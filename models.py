@@ -56,6 +56,7 @@ import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.finances as finances
 import machiavelli.exceptions as exceptions
+import slugify
 
 ## condottieri_scenarios
 from condottieri_scenarios.models import Scenario, Contender, Country, Area
@@ -167,6 +168,8 @@ class Game(models.Model):
 	data.
 	"""
 
+	title = models.CharField(max_length=128, unique=True,
+		verbose_name=_("title"), help_text=_("max. 128 characters"))
 	slug = models.SlugField(_("slug"), max_length=20, unique=True,
 		help_text=_("4-20 characters, only letters, numbers, hyphens and underscores"))
 	year = models.PositiveIntegerField(_("year"), blank=True, null=True)
@@ -236,6 +239,8 @@ class Game(models.Model):
 			if self.cities_to_win == 12:
 				self.require_home_cities = True
 				self.extra_conquered_cities = 6
+		if not self.slug:
+			slugify.unique_slugify(self, self.title)
 		super(Game, self).save(*args, **kwargs)
 
 	##------------------------

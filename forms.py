@@ -29,10 +29,10 @@ class GameBaseForm(forms.ModelForm):
 		self.instance.created_by = user
 
 	def clean(self):
-		cleaned_data = self.cleaned_data
-		if not cleaned_data['slug'] or len(cleaned_data['slug']) < 4:
-			msg = _("Slug is too short")
-			raise forms.ValidationError(msg)
+		cleaned_data = super(GameBaseForm, self).clean()		
+		#if not cleaned_data['slug'] or len(cleaned_data['slug']) < 4:
+		#	msg = _("Slug is too short")
+		#	raise forms.ValidationError(msg)
 		karma = self.instance.created_by.get_profile().karma
 		if karma < settings.KARMA_TO_JOIN:
 			msg = _("You don't have enough karma to create a game.")
@@ -47,13 +47,13 @@ class GameBaseForm(forms.ModelForm):
 				raise forms.ValidationError(msg)
 		return cleaned_data
 
-
 class GameForm(GameBaseForm):
 	cities_to_win = forms.ChoiceField(choices=CITIES_TO_WIN, label=_("How to win"))
 
 	class Meta:
 		model = machiavelli.Game
-		fields = ('slug',
+		fields = (#'slug',
+				'title',
 				'scenario',
 				'time_limit',
 				'cities_to_win',
@@ -71,7 +71,8 @@ class TeamGameForm(GameBaseForm):
 
 	class Meta:
 		model = machiavelli.Game
-		fields = ('slug',
+		fields = (#'slug',
+				'title',
 				'scenario',
 				'teams',
 				'time_limit',
@@ -93,10 +94,11 @@ class ConfigurationForm(forms.ModelForm):
 		cleaned_data = self.cleaned_data
 		if cleaned_data['unbalanced_loans']:
 			cleaned_data['lenders'] = True
-		if cleaned_data['assassinations'] or cleaned_data['lenders'] or cleaned_data['special_units'] or cleaned_data['taxation']:
+		if cleaned_data['assassinations'] or cleaned_data['lenders'] or cleaned_data['special_units']:
 			cleaned_data['finances'] = True
-			if cleaned_data['taxation']:
-				cleaned_data['famine'] = True
+		if 'taxation' in cleaned_data.keys() and cleaned_data['taxation']:
+			cleaned_data['finances'] = True
+			cleaned_data['famine'] = True
 		return cleaned_data
 
 	class Meta:
