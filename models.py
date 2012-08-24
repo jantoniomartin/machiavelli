@@ -870,7 +870,7 @@ class Game(models.Model):
 			## get the players that control part of this player's home country
 			#controllers = self.player_set.filter(gamearea__board_area__home__contender=p.contender,
 			#	gamearea__board_area__home__is_home=True).distinct()
-			controllers = self.player_set.filter(gamearea__home_of=p).distinct
+			controllers = self.player_set.filter(gamearea__home_of=p).distinct()
 			if len(controllers) == 1:
 				## all the areas in home country belong to the same player
 				if p != controllers[0] and p.conqueror != controllers[0]:
