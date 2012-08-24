@@ -9,7 +9,7 @@
 {% block left_column %}
 
 {% if game.private %}
-<h1>{% trans "Private game:" %} '{{ game.slug }}'</h1>
+<h1>{% trans "Private game:" %} '{{ game.title }}'</h1>
 <p>{% blocktrans %}Here you can manage the invitations for this private game that you have created. To join this game, a player must be invited by you first.{% endblocktrans %}</p>
 <p>{% blocktrans with game.slots as slots %}The game is currently waiting for {{ slots }} users to join.{% endblocktrans %}</p>
 <p>{% blocktrans %}The following users have already joined the game:{% endblocktrans %}</p>

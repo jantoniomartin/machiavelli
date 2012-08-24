@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% blocktrans with game.slug as slug %}You have been invited to play the
+{% blocktrans with game.title as slug %}You have been invited to play the
 private game '{{ slug }}'.{% endblocktrans %}
 
 {% ifnotequal invitation.message "" %}

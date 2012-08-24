@@ -6,10 +6,10 @@
 {% load machiavelli_tags %}
 {% load condottieri_profiles_tags %}
 
-{% block head_title %}{{ game.slug }}{% endblock %}
+{% block head_title %}{{ game.title }}{% endblock %}
 
 {% block left_column %}
-<h1>{{ game.slug }}</h1>
+<h1>{{ game.title }}</h1>
 {% if started %}
 	{% if game.paused %}
 	<p>{% trans "This game is paused for maintenance. It will be resumed soon." %}</p>

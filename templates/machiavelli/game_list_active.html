@@ -17,7 +17,7 @@
 
 {% for game in game_list %}
 <div class="game_info {% if game.fast %}fast{% endif %}">
-<h2><span><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span></h2>
+<h2><span><a href="{{ game.get_absolute_url }}">{{ game.title }}</a></span></h2>
 <div class="map">
 <img src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
 </div>

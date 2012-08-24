@@ -35,7 +35,7 @@ from django.contrib.auth.models import User
 import django.forms as forms
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from django.template.defaultfilters import capfirst, truncatewords, timesince, force_escape
+from django.template.defaultfilters import capfirst, timesince, force_escape
 
 if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
@@ -247,7 +247,7 @@ class Game(models.Model):
 	## representation methods
 	##------------------------
 	def __unicode__(self):
-		return "%d" % (self.pk)
+		return self.title
 
 	def _get_map_filename(self):
 		if self.finished:

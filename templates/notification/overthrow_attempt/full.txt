@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% blocktrans with game.slug as slug %}You have neglected your government
+{% blocktrans with game.title as slug %}You have neglected your government
 duties in game '{{ slug }}' and someone wants to take your place.{% endblocktrans %}
 
 {% blocktrans %}If you want to keep playing in this game, you have only to

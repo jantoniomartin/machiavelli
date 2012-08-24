@@ -31,7 +31,7 @@
 <tbody>
 {% for revolution in revolution_list %}
 	<tr>
-	<td><a href="{% url show-game revolution.game.slug %}">{{ revolution.game.slug }}</a></td>
+	<td><a href="{% url show-game revolution.game.slug %}" title="{{ revolution.game.title }}">{{ revolution.game.title|truncatewords:5 }}</a></td>
 	<td>{{ revolution.country }}</td>
 	{% if revolution.active %}
 	<td>{% trans "Active" %} ({{ revolution.active|timesince }})</td>

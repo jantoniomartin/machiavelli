@@ -34,7 +34,7 @@
 	<td>{{ q.points }}</td>
 	<td>{{ q.cities }}</td>
 	<td>{{ q.position }}</td>
-	<td><a href="{% url show-game q.game.slug %}">{{ q.game.slug }}</a></td> 
+	<td><a href="{% url show-game q.game.slug %}" title="{{ q.game.title }}">{{ q.game.title|truncatewords:5 }}</a></td> 
 	{% if key == "user" %}
 	<td><a href="{% url scenario_detail q.game.scenario.name %}">{{ q.game.scenario }}</a></td>
 	<td>{{ q.country }}</td>

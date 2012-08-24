@@ -1,5 +1,5 @@
 {% load i18n %}
 
-{% blocktrans with game.slug as slug %}Your excommunication has been lifted in the game '{{ slug }}'.{% endblocktrans %}
+{% blocktrans with game.title as slug %}Your excommunication has been lifted in the game '{{ slug }}'.{% endblocktrans %}
 
 {% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}
