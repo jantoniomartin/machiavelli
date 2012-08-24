@@ -67,7 +67,7 @@ class GameAdmin(admin.ModelAdmin):
 	player_list.short_description = 'Player list'
 
 class LiveGameAdmin(admin.ModelAdmin):
-	list_display = ('pk', 'slug', 'paused', 'extended_deadline', 'year', 'season', 'phase', 'next_phase_change', 'started', 'version')
+	list_display = ('pk', 'slug', 'paused', 'extended_deadline', 'year', 'season', 'phase', 'last_phase_change', 'next_phase_change', 'started', 'version')
 	actions = ['redraw_map',
 				'check_finished_phase',
 				'pause',
