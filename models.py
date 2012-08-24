@@ -2108,9 +2108,13 @@ class Player(models.Model):
 	
 	def home_control_markers(self):
 		""" Assigns each GameArea the player as owner. """
-		GameArea.objects.filter(game=self.game,
-			board_area__home__contender=self.contender).update(player=self,
-			home_of=self)
+		controls = GameArea.objects.filter(game=self.game,
+			board_area__home__contender=self.contender)
+		controls.update(player=self)
+		homes = GameArea.objects.filter(game=self.game,
+			board_area__home__contender=self.contender,
+			board_area__home__is_home=True)
+		homes.update(home_of=self)
 	
 	def place_initial_units(self):
 		for s in self.get_setups():
