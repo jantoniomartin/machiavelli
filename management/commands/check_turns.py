@@ -57,5 +57,5 @@ when all the players have finished OR the time limit is exceeded
 		revolutions = models.Revolution.objects.filter(active__isnull=False, opposition__isnull=False, overthrow=False)
 		for r in revolutions:
 			if r.game.extended_deadline:
-				if r.game.time_to_limit() < r.game.time_limit / 2:
+				if r.game.time_to_limit().total_seconds() < r.game.time_limit / 2:
 					r.resolve()
