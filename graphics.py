@@ -76,7 +76,7 @@ def make_map(game):
 			area = game_area.board_area
 			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 15), flag)
 		## paste As and Fs (not garrisons because of sieges)
-		units = player.unit_set.all()
+		units = player.unit_set.filter(placed=True)
 		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.static_name))
 		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.static_name))
 		for unit in units:
