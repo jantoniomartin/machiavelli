@@ -134,62 +134,6 @@
 	background: #4f4f4f;
 }
 
-#countries .france {
-	background: #a375d1;
-	color: black;
-}
-
-#countries .milan {
-	background: #cc0000;
-	color: black;
-}
-
-#countries .florence {
-	background: #66ccff;
-	color: black;
-}
-
-#countries .austria {
-	background: #b8b8b8;
-	color: black;
-}
-
-#countries .papacy {
-	background: #00991a;
-	color: black;
-}
-
-#countries .venice {
-	background: #996600;
-	color: black;
-}
-
-#countries .turks {
-	background: #00cccc;
-	color: black;
-}
-
-#countries .naples {
-	background: #3d3dff;
-	color: black;
-}
-#countries .hre {
-	background: #ffdd11;
-	color: black;
-}
-#countries .savoy {
-	background: #bbffdd;
-	color: black;
-}
-#countries .spain {
-	background: #fcfcfc;
-	color: black;
-}
-#countries .genoa {
-	background: #0080ff;
-	color: black;
-}
-
 .france a,
 .france a:visited,
 .milan a,

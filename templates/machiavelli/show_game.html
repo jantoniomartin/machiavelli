@@ -3,6 +3,22 @@
 {% load i18n %}
 {% load avatar_tags %}
 
+{% block country_styles %}
+<style type="text/css">
+
+{% for p in player_list %}
+#countries .{{ p.static_name }} {
+	background: #{{ p.contender.country.color }};
+	color: black;
+}
+.log_list li span.{{ p.static_name }} {
+	background-image: url('{{ MEDIA_URL }}scenarios/badges/icon-{{ p.static_name }}.png');
+}
+{% endfor %}
+
+</style>
+{% endblock %}
+
 {% block game_body %}
 <div class="col2">
 	<div id="map" class="viewer">

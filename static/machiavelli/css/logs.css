@@ -48,43 +48,6 @@
 	padding-left: 30px;
 }
 
-.log_list li span.austria {
-	background-image: url('../img/icon-austria.png');
-}
-.log_list li span.florence {
-	background-image: url('../img/icon-florence.png');
-}
-.log_list li span.france {
-	background-image: url('../img/icon-france.png');
-}
-.log_list li span.hre {
-	background-image: url('../img/icon-hre.png');
-}
-.log_list li span.milan {
-	background-image: url('../img/icon-milan.png');
-}
-.log_list li span.naples {
-	background-image: url('../img/icon-naples.png');
-}
-.log_list li span.papacy {
-	background-image: url('../img/icon-papacy.png');
-}
-.log_list li span.savoy {
-	background-image: url('../img/icon-savoy.png');
-}
-.log_list li span.turks {
-	background-image: url('../img/icon-turks.png');
-}
-.log_list li span.venice {
-	background-image: url('../img/icon-venice.png');
-}
-.log_list li span.spain {
-	background-image: url('../img/icon-spain.png');
-}
-.log_list li span.genoa {
-	background-image: url('../img/icon-genoa.png');
-}
-
 .log_list li.besieging-event {
 	background-image: url('../img/besieging-event.png');
 }

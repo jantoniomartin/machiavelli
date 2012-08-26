@@ -24,9 +24,9 @@ import os.path
 
 from django.conf import settings
 
-#BASE_DIR=os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/tokens')
 APP_ROOT=os.path.abspath(os.path.dirname(__file__))
-TOKENS_DIR=os.path.join(APP_ROOT, 'media/machiavelli/tokens')
+#TOKENS_DIR=os.path.join(APP_ROOT, 'media/machiavelli/tokens')
+TOKENS_DIR=os.path.join(settings.MEDIA_ROOT, 'scenarios', 'tokens')
 
 BASEMAP='base-map.png'
 #if settings.DEBUG:
