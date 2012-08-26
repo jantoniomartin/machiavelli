@@ -23,7 +23,7 @@
 
 {% for player in player_list %}
 <div class="game_info {% if player.game.fast %}fast{% endif %}">
-<h2 style="background: #191919 url('{{ STATIC_URL }}machiavelli/img/badge-{{ player.static_name }}.png') no-repeat top right"><span>
+<h2 style="background: #191919 url('{{ MEDIA_URL }}scenarios/badges/badge-{{ player.static_name }}.png') no-repeat top right"><span>
 	<a href="{{ player.game.get_absolute_url }}">{{ player.game.title }}</a>
 </span></h2>
 <div class="map">

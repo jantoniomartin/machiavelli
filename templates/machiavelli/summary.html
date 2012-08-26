@@ -29,7 +29,7 @@
 	<p>{% blocktrans %}You must complete your actions in the following games:{% endblocktrans %}</p>
 	{% for player in actions %}
 	<div class="game_short">
-	<h2 style="background: url('{{ STATIC_URL }}machiavelli/img/icon-{{ player.static_name }}.png') no-repeat top right"><span>
+	<h2 style="background: url('{{ MEDIA_URL }}scenarios/badges/icon-{{ player.static_name }}.png') no-repeat top right"><span>
 	<a href="{{ player.game.get_absolute_url }}" title="{{ player.game.title }}">{{ player.game.title|truncatewords:5 }}</a>
 	</span></h2>
 	{% if player.game.started %}
