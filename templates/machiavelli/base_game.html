@@ -17,7 +17,21 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/game.css" />
 <link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/logs.css" />
-{% block country_styles %}{% endblock %}
+{% block country_styles %}
+<style type="text/css">
+
+{% for p in player_list %}
+#countries .{{ p.static_name }} {
+	background: #{{ p.contender.country.color }};
+	color: black;
+}
+.log_list li span.{{ p.static_name }} {
+	background-image: url('{{ MEDIA_URL }}scenarios/badges/icon-{{ p.static_name }}.png');
+}
+{% endfor %}
+
+</style>
+{% endblock %}
 {% endblock %}
 
 {% block logo_link_image %}
