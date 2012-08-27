@@ -28,7 +28,6 @@ APP_ROOT=os.path.abspath(os.path.dirname(__file__))
 #TOKENS_DIR=os.path.join(APP_ROOT, 'media/machiavelli/tokens')
 TOKENS_DIR=os.path.join(settings.MEDIA_ROOT, 'scenarios', 'tokens')
 
-BASEMAP='base-map.png'
 #if settings.DEBUG:
 #	MAPSDIR = os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/maps')
 #else:
@@ -45,7 +44,7 @@ def make_map(game):
 	""" Opens the base map and add flags, control markers, unit tokens and other tokens. Then saves
 	the map with an appropriate name in the maps directory.
 	"""
-	base_map = Image.open(os.path.join(TOKENS_DIR, BASEMAP))
+	base_map = Image.open(game.scenario.setting.board)
 	if game.configuration.special_units:
 		loyal_army = Image.open("%s/loyal-army.png" % TOKENS_DIR)
 		loyal_fleet = Image.open("%s/loyal-fleet.png" % TOKENS_DIR)
