@@ -149,7 +149,7 @@ class MyActiveGamesList(GameListView):
 
 	def get_queryset(self):
 		if self.request.user.is_authenticated():
-			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__slots=0, surrendered=False).select_related("contender", "game__scenario", "game__configuration")
+			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, game__finished__isnull=True, surrendered=False).select_related("contender", "game__scenario", "game__configuration")
 		else:
 			my_players = machiavelli.Player.objects.none()
 		player_list = []
