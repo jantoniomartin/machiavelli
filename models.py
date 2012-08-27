@@ -2256,7 +2256,17 @@ class Player(models.Model):
 			return True
 		else:
 			## new version of elimination rule
-			return self.controlled_home_country().count() <= 0
+			## find a home province controlled by the player, and empty
+			safe = self.home_country().filter(unit__isnull=True).count()
+			if safe > 0:
+				return False
+			## find a home province occupied only by the player
+			enemies = self.game.player_set.exclude(id=self.id)
+			occupied = self.home_country().filter(unit__player__in=enemies).distinct().values('id')
+			safe = self.home_country().filter(unit__player=self).exclude(id__in=occupied).count()
+			if safe > 0:
+				return False
+			return True
 
 	def eliminate(self):
 		""" Eliminates the player and removes units, controls, etc.
