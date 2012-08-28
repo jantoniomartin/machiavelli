@@ -58,7 +58,7 @@ import machiavelli.exceptions as exceptions
 import slugify
 
 ## condottieri_scenarios
-from condottieri_scenarios.models import Scenario, Contender, Country, Area, CountryRandomIncome, CityRandomIncome
+from condottieri_scenarios.models import Scenario, Contender, Country, Area, CountryRandomIncome, CityRandomIncome, FamineCell, PlagueCell, StormCell
 
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
@@ -884,9 +884,14 @@ class Game(models.Model):
 	def mark_famine_areas(self):
 		if not self.configuration.famine:
 			return
-		codes = disasters.get_famine()
+		#codes = disasters.get_famine()
+		year = disasters.get_year()
+		row = disasters.get_row(year)
+		column = disasters.get_column(year)
+		codes = FamineCell.objects.roll(self.scenario.setting, row, column).values_list('area__code', flat=True)
 		famine_areas = GameArea.objects.filter(game=self, board_area__code__in=codes)
 		for f in famine_areas:
+			print f
 			f.famine=True
 			f.save()
 			signals.famine_marker_placed.send(sender=f)
@@ -894,7 +899,11 @@ class Game(models.Model):
 	def mark_storm_areas(self):
 		if not self.configuration.storms:
 			return
-		codes = disasters.get_storms()
+		#codes = disasters.get_storms()
+		year = disasters.get_year()
+		row = disasters.get_row(year)
+		column = disasters.get_column(year)
+		codes = StormCell.objects.roll(self.scenario.setting, row, column).values_list('area__code', flat=True)
 		storm_areas = GameArea.objects.filter(game=self, board_area__code__in=codes)
 		for f in storm_areas:
 			f.storm=True
@@ -904,7 +913,11 @@ class Game(models.Model):
 	def kill_plague_units(self):
 		if not self.configuration.plague:
 			return
-		codes = disasters.get_plague()
+		#codes = disasters.get_plague()
+		year = disasters.get_year()
+		row = disasters.get_row(year)
+		column = disasters.get_column(year)
+		codes = PlagueCell.objects.roll(self.scenario.setting, row, column).values_list('area__code', flat=True)
 		plague_areas = GameArea.objects.filter(game=self, board_area__code__in=codes)
 		for p in plague_areas:
 			signals.plague_placed.send(sender=p)
