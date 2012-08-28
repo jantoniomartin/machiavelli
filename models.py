@@ -504,7 +504,7 @@ class Game(models.Model):
 		#	neutrals = self.scenario.neutral_set.values_list('country', flat=True)[:neutral_count]
 		#	neutrals = list(neutrals)
 		#	neutral_ids = self.scenario.home_set.filter(country__id__in=neutrals, is_home=True).values_list('area__id', flat=True)
-		for a in Area.objects.all():
+		for a in Area.objects.filter(setting=self.scenario.setting):
 			if not (a.id in disabled_ids or a.id in neutral_ids):
 				ga = GameArea(game=self, board_area=a)
 				ga.save()
