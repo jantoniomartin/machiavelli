@@ -54,12 +54,11 @@ else:
 from machiavelli.graphics import make_map
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
-import machiavelli.finances as finances
 import machiavelli.exceptions as exceptions
 import slugify
 
 ## condottieri_scenarios
-from condottieri_scenarios.models import Scenario, Contender, Country, Area
+from condottieri_scenarios.models import Scenario, Contender, Country, Area, CountryRandomIncome, CityRandomIncome
 
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
@@ -2540,8 +2539,8 @@ class Player(models.Model):
 		""" Gets the sum of the control income of all controlled AND empty
 		provinces. Note that provinces affected by plague don't genearate
 		any income"""
-		gamearea_ids = self.gamearea_set.filter(famine=False).exclude(id__in=rebellion_ids).values_list('board_area', flat=True)
-		income = Area.objects.filter(id__in = gamearea_ids).aggregate(Sum('control_income'))
+		area_ids = self.gamearea_set.filter(famine=False).exclude(id__in=rebellion_ids).values_list('board_area', flat=True)
+		income = Area.objects.filter(id__in = area_ids).aggregate(Sum('control_income'))
 
 		i =  income['control_income__sum']
 		if i is None:
@@ -2549,10 +2548,9 @@ class Player(models.Model):
 		
 		v = 0
 		for a in majors_ids:
-			if a in gamearea_ids:
+			if a in area_ids:
 				city = Area.objects.get(id=a)
-				v += finances.get_ducats(city.code, die)
-
+				v += city.get_random_income(die)
 		return income['control_income__sum'] + v
 
 	def get_occupation_income(self):
@@ -2586,20 +2584,22 @@ class Player(models.Model):
 				v = 0
 				for a in income:
 					if a.id in majors_ids:
-						v += finances.get_ducats(a.code, die)
+						v += a.get_random_income(die)
 				income = income.aggregate(Sum('garrison_income'))
 				return income['garrison_income__sum'] + v
 		return 0
 
 	def get_variable_income(self, die):
 		""" Gets the variable income for the country """
-		v = finances.get_ducats(self.static_name, die, self.double_income)
+		setting = self.game.scenario.setting
+		v = self.contender.country.get_random_income(setting, die,
+			self.double_income)
 		## the player gets the variable income of conquered players
 		if self.game.configuration.conquering:
 			conquered = self.game.player_set.filter(conqueror=self)
 			for c in conquered:
-				v += finances.get_ducats(c.static_name, die, c.double_income)
-
+				v += c.contender.country.get_random_income(setting, die,
+					c.double_income)
 		return v
 
 	def get_income(self, die, majors_ids):
