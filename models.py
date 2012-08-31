@@ -1128,7 +1128,7 @@ class Game(models.Model):
 											(Q(order__code__exact='-') &
 											Q(order__destination__board_area__is_sea=True)) |
 											(Q(order__code__exact='=') &
-											Q(area__board_area__code__exact='VEN') &
+											Q(area__board_area__mixed=True) &
 											Q(type__exact='G')))
 		for s in sea_attackers:
 			order = s.get_order()
@@ -1139,7 +1139,7 @@ class Game(models.Model):
 											area=order.destination,
 											type__exact='F',
 											order__code__exact='C')
-				elif order.code == '=' and s.area.board_area.code == 'VEN':
+				elif order.code == '=' and s.area.board_area.mixed:
 					defender = Unit.objects.get(player__game=self,
 												area=s.area,
 												type__exact='F',
@@ -1604,7 +1604,7 @@ class Game(models.Model):
 		for area in GameArea.objects.filter(Q(game=self) &
 								Q(unit__isnull=False) &
 								(Q(board_area__is_sea=False) |
-								Q(board_area__code__exact='VEN'))).distinct():
+								Q(board_area__mixed=True))).distinct():
 			players = self.player_set.filter(unit__area=area).distinct()
 			if len(players) > 2:
 				err_msg = "%s units in %s (game %s)" % (len(players),area, self)
@@ -2941,7 +2941,7 @@ class Unit(models.Model):
 		## for armies, exclude seas
 		if self.type == 'A':
 			cond = cond & Q(board_area__is_sea=False)
-			cond = cond & ~Q(board_area__code__exact='VEN')
+			cond = cond & ~Q(board_area__mixed=True)
 		## for fleets, exclude areas that are adjacent but their coasts are not
 		elif self.type == 'F':
 			exclude = []
@@ -3189,7 +3189,7 @@ class Order(models.Model):
 						## in this game
 						(Q(game=self.unit.player.game) &
 						## being sea areas or Venice
-						(Q(board_area__is_sea=True) | Q(board_area__code__exact="VEN")) & 
+						(Q(board_area__is_sea=True) | Q(board_area__mixed=True)) & 
 						## with convoy orders
 						Q(unit__order__code__exact='C') &
 						## convoying this unit
@@ -3330,7 +3330,7 @@ class Order(models.Model):
 			if self.unit.type == 'A':
 				## it only can advance to adjacent or coastal provinces (with convoy)
 				## it cannot go to Venice or seas
-				if self.destination.board_area.is_sea or self.destination.board_area.code=='VEN':
+				if self.destination.board_area.is_sea or self.destination.board_area.mixed:
 					return False
 				if self.unit.area.board_area.is_coast and self.destination.board_area.is_coast:
 					return True
@@ -3361,7 +3361,7 @@ class Order(models.Model):
 		elif self.code == '=':
 			if self.unit.area.board_area.is_fortified:
 				if self.unit.type == 'G':
-					if self.type == 'A' and not self.unit.area.board_area.is_sea and not self.unit.area.board_area.code == 'VEN':
+					if self.type == 'A' and not self.unit.area.board_area.is_sea and not self.unit.area.board_area.mixed:
 						return True
 					if self.type == 'F' and self.unit.area.board_area.has_port:
 						return True
@@ -3377,7 +3377,7 @@ class Order(models.Model):
 		elif self.code == 'C':
 			if self.unit.type == 'F':
 				if self.subunit.type == 'A':
-					if self.unit.area.board_area.is_sea or self.unit.area.board_area.code == 'VEN':
+					if self.unit.area.board_area.is_sea or self.unit.area.board_area.mixed:
 						return True
 		elif self.code == 'S':
 			if self.subunit.type == 'G' and self.subcode != '=':
@@ -3644,7 +3644,7 @@ class Rebellion(models.Model):
 					self.garrisoned = True
 				else:
 					## there is a garrison in the city
-					if self.area.board_area.code == 'VEN':
+					if self.area.board_area.mixed:
 						## there cannot be a rebellion in Venice sea area
 						return False
 			if signals:
