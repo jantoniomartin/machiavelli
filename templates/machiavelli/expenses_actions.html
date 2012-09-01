@@ -24,10 +24,10 @@
 <td>{% trans "Pacify rebellion" %}</td><td>12</td><td>{% trans "No" %}</td>
 </tr>
 <tr>
-<td>{% trans "Conquered province to rebel" %}</td><td>9</td><td>{% trans "No" %}</td>
+<td>{% trans "Conquered province to rebel" %}</td><td>9&dagger;&dagger;</td><td>{% trans "No" %}</td>
 </tr>
 <tr>
-<td>{% trans "Home province to rebel" %}</td><td>15</td><td>{% trans "No" %}</td>
+<td>{% trans "Home province to rebel" %}</td><td>15&dagger;&dagger;</td><td>{% trans "No" %}</td>
 </tr>
 <tr>
 <td>{% trans "Counter bribe" %}</td><td>3+</td><td>{% trans "No" %}</td>
@@ -50,6 +50,7 @@
 </tbody>
 </table>
 <p>&dagger; {% blocktrans %}The minimum cost of these bribes is doubled if the bribed unit is a garrison in a major city (the ones with a number inside the circle).{% endblocktrans %}</p>
+<p>&dagger;&dagger; {% blocktrans %}In settings with the "religious wars" rule, the cost is reduced three ducats if both the area and the country controlling it are religious and their religions are not the same.{% endblocktrans %}</p>
 {% if form %}
 <h3>{% trans "New expense" %}</h3>
 <div class="action_form">

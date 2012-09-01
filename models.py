@@ -490,7 +490,7 @@ class Game(models.Model):
 		""" Returns the disabled Areas in the game scenario """
 		enabled = self.gamearea_set.values_list('board_area', flat=True)
 		#return Area.objects.filter(disabledarea__scenario=self.scenario)
-		return Area.objects.exclude(id__in=enabled)
+		return Area.objects.filter(setting=self.scenario.setting).exclude(id__in=enabled)
 
 	def create_game_board(self):
 		""" Creates the GameAreas for the Game.	"""
@@ -1947,13 +1947,20 @@ class GameArea(models.Model):
 	def check_assassination_rebellion(self, mod=0):
 		""" When a player is assassinated this function checks if a new
 		rebellion appears in the game area. """
-		if self.board_area.is_sea:
+		if not self.player:
 			return False
 		## if there are units of other players in the area, there is no rebellion
 		## this is not too clear in the rules
 		if Unit.objects.filter(area=self).exclude(player=self.player).count() > 0:
 			return False
 		if not self.has_rebellion(self.player):
+			if self.game.scenario.setting.configuration.religious_war:
+				r_player = self.player.contender.country.religion
+				r_area = self.board_area.religion
+				if r_player and r_area:
+					if r_player != r_area:
+						mod += 1
+						print "modifier is %s" % mod
 			result = False
 			die = dice.roll_1d6() - mod
 			try:
@@ -3514,7 +3521,7 @@ EXPENSE_COST = {
 	9: 18,
 }
 
-def get_expense_cost(type, unit=None):
+def get_expense_cost(type, unit=None, area=None):
 	assert type in EXPENSE_COST.keys()
 	k = 1
 	if type in (5, 6, 7, 8, 9):
@@ -3523,8 +3530,15 @@ def get_expense_cost(type, unit=None):
 		if unit.type == 'G' and unit.area.board_area.garrison_income > 1:
 			k = 2
 		return k * unit.loyalty * EXPENSE_COST[type]
-	else:
-		return k * EXPENSE_COST[type]
+	elif type in (2, 3):
+		assert isinstance(area, GameArea)
+		if area.game.scenario.setting.configuration.religious_war:
+			r_player = area.player.contender.country.religion
+			r_area = area.board_area.religion
+			if r_player and r_area:
+				if r_player != r_area:
+					return (k * EXPENSE_COST[type]) - 3
+	return k * EXPENSE_COST[type]
 
 class Expense(models.Model):
 	""" A player may expend unit to affect some units or areas in the game. """
