@@ -58,7 +58,7 @@ import machiavelli.exceptions as exceptions
 import slugify
 
 ## condottieri_scenarios
-from condottieri_scenarios.models import Scenario, Contender, Country, Area, CountryRandomIncome, CityRandomIncome, FamineCell, PlagueCell, StormCell
+from condottieri_scenarios.models import Scenario, Contender, Country, Area, CountryRandomIncome, CityRandomIncome, FamineCell, PlagueCell, StormCell, TradeRoute
 
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
@@ -396,6 +396,8 @@ class Game(models.Model):
 		self.season = 1
 		self.phase = PHORDERS
 		self.create_game_board()
+		if self.scenario.setting.configuration.trade_routes:
+			self.create_routes()
 		self.shuffle_countries()
 		self.copy_country_data()
 		if self.teams > 1:
@@ -508,6 +510,13 @@ class Game(models.Model):
 			if not (a.id in disabled_ids or a.id in neutral_ids):
 				ga = GameArea(game=self, board_area=a)
 				ga.save()
+
+	def create_routes(self):
+		""" Creates game trade routes """
+		routes = TradeRoute.objects.filter(left__setting=self.scenario.setting)
+		for r in routes:
+			gr = GameRoute(game=self, trade_route=r)
+			gr.save()
 
 	def get_autonomous_setups(self):
 		return self.scenario.autonomous
@@ -783,7 +792,6 @@ class Game(models.Model):
 				## if famine enabled, place famine markers
 				if self.configuration.famine:
 					self.mark_famine_areas()
-				## if finances are enabled, assign incomes
 			## reset taxation
 			if self.configuration.taxation:
 				taxed = self.gamearea_set.filter(taxed=True)
@@ -791,6 +799,10 @@ class Game(models.Model):
 				for t in taxed:
 					signals.famine_marker_placed.send(sender=t)
 				self.gamearea_set.all().update(taxed=False)
+			## check which trade routes are safe
+			if self.scenario.setting.configuration.trade_routes:
+				for r in self.gameroute_set.all():
+					r.update_status()
 			## if finances are enabled, assign incomes
 			## this has been moved after taxation famines
 			if self.season == 3 and self.configuration.finances:
@@ -1815,6 +1827,7 @@ class Game(models.Model):
 		self.invitation_set.all().delete()
 		self.whisper_set.all().delete()
 		self.revolution_set.filter(overthrow=False).delete()
+		self.gameroute_set.all().delete()
 	
 	##------------------------
 	## notification methods
@@ -2622,6 +2635,15 @@ class Player(models.Model):
 					c.double_income)
 		return v
 
+	def get_trade_income(self):
+		i = 0
+		safe_routes = self.game.gameroute_set.filter(safe=True)
+		for r in safe_routes:
+			for t in r.traders:
+				if t == self:
+					i += 2
+		return i
+			
 	def get_income(self, die, majors_ids):
 		""" Gets the total income in one turn """
 		rebellion_ids = Rebellion.objects.filter(player=self).values_list('area', flat=True)
@@ -2629,6 +2651,8 @@ class Player(models.Model):
 		income += self.get_occupation_income()
 		income += self.get_garrisons_income(die, majors_ids, rebellion_ids)
 		income += self.get_variable_income(die)
+		if self.game.scenario.setting.configuration.trade_routes:
+			income += self.get_trade_income()
 		return income
 
 	def add_ducats(self, d):
@@ -3789,3 +3813,32 @@ class Journal(models.Model):
 		return self.content.split("%%")[0]
 	
 	excerpt = property(_get_excerpt)
+
+class GameRoute(models.Model):
+	game = models.ForeignKey(Game)
+	trade_route = models.ForeignKey(TradeRoute)
+	safe = models.BooleanField(default=True)
+
+	class Meta:
+		unique_together = (('game', 'trade_route'),)
+
+	def __unicode__(self):
+		return unicode(self.trade_route)
+	
+	def _get_traders(self):
+		""" gets the two players who control the trade route ends. The same player can be
+		returned twice """
+
+		return Player.objects.filter(gamearea__board_area__routestep__is_end=True,
+			gamearea__board_area__routestep__route=self.trade_route)
+	
+	traders = property(_get_traders)
+
+	def update_status(self):
+		trader_ids = self.traders.values_list('id', flat=True)
+		enemies = Unit.objects.filter(player__game=self.game).exclude(player__id__in=trader_ids).filter(area__board_area__routestep__route=self.trade_route).count()
+		if enemies > 0:
+			self.safe = False
+		else:
+			self.safe = True
+		self.save()	
