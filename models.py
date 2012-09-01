@@ -2641,7 +2641,7 @@ class Player(models.Model):
 		for r in safe_routes:
 			for t in r.traders:
 				if t == self:
-					i += 2
+					i += 1
 		return i
 			
 	def get_income(self, die, majors_ids):
