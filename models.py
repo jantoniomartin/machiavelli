@@ -513,7 +513,7 @@ class Game(models.Model):
 
 	def create_routes(self):
 		""" Creates game trade routes """
-		routes = TradeRoute.objects.filter(left__setting=self.scenario.setting)
+		routes = TradeRoute.objects.filter(routestep__area__setting=self.scenario.setting).distinct()
 		for r in routes:
 			gr = GameRoute(game=self, trade_route=r)
 			gr.save()
