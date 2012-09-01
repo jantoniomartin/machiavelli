@@ -359,7 +359,8 @@ def base_context(request, game, player):
 		context.update({'whispers': whispers, })
 		if player:
 			context.update({'whisper_form': forms.WhisperForm(),})
-		
+	if game.scenario.setting.configuration.religious_war:
+		context.update({'show_religions': True })
 	return context
 
 #@never_cache
