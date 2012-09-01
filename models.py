@@ -3836,7 +3836,7 @@ class GameRoute(models.Model):
 
 	def update_status(self):
 		trader_ids = self.traders.values_list('id', flat=True)
-		enemies = Unit.objects.filter(player__game=self.game).exclude(player__id__in=trader_ids).filter(area__board_area__routestep__route=self.trade_route).count()
+		enemies = Unit.objects.filter(player__game=self.game, player__user__isnull=False).exclude(player__id__in=trader_ids).filter(area__board_area__routestep__route=self.trade_route).count()
 		if enemies > 0:
 			self.safe = False
 		else:
