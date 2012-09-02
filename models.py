@@ -2124,9 +2124,9 @@ class Player(models.Model):
 
 	def __unicode__(self):
 		if self.user:
-			return "%s (%s)" % (self.user, self.game)
+			return u"%s (%s)" % (self.user, self.game)
 		else:
-			return "Autonomous in %s" % self.game
+			return u"Autonomous in %s" % self.game
 
 	def get_language(self):
 		if self.user:
