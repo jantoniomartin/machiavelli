@@ -1,0 +1,4 @@
+{% load i18n %}
+
+{% blocktrans %}The game '{{ title }}' has expired and has been deleted.{% endblocktrans %}
+

@@ -242,6 +242,18 @@ class Game(models.Model):
 			slugify.unique_slugify(self, self.title)
 		super(Game, self).save(*args, **kwargs)
 
+	def _get_expired(self):
+		""" Returns True if the game is not started and a certain time has passed. """
+		if self.started or self.finished:
+			return False
+		term = timedelta(0, settings.GAME_EXPIRATION)
+		expiration = self.created + term
+		if datetime.now() > expiration:
+			return True
+		return False
+
+	expired = property(_get_expired)
+
 	##------------------------
 	## representation methods
 	##------------------------

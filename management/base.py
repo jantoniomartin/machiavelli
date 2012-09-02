@@ -46,6 +46,9 @@ if "notification" in settings.INSTALLED_APPS:
 		notification.create_notice_type("player_absolved",
 										_("Player absolved"),
 										_("your excommunication is lifted"))
+		notification.create_notice_type("game_expired",
+										_("Expired game"),
+										_("one of your games expires and is deleted"))
 
 	signals.post_syncdb.connect(create_notice_types, sender=notification)
 else:
