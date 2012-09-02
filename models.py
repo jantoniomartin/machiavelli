@@ -2004,6 +2004,13 @@ class GameArea(models.Model):
 	def tax(self):
 		if self.player is None or self.taxed or self.has_rebellion(self.player):
 			return 0
+		## if there is an enemy unit it cannot be taxed
+		try:
+			Unit.objects.exclude(player=self.player).get(area=self)
+		except ObjectDoesNotExist:
+			pass
+		except MultipleObjectsReturned:
+			return 0
 		if self.board_area.control_income <= 1:
 			return 0
 		self.taxed = True
