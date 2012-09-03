@@ -1298,6 +1298,8 @@ class TurnLogListView(LoginRequiredMixin, ListView):
 
 	def get_queryset(self):
 		self.game = get_object_or_404(machiavelli.Game, slug=self.kwargs['slug'])
+		if self.game.configuration.fow:
+			return machiavelli.TurnLog.objects.none()
 		return self.game.turnlog_set.all()
 
 	def get_context_data(self, **kwargs):
