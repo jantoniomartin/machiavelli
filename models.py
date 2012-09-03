@@ -2275,6 +2275,15 @@ class Player(models.Model):
 		areas = areas.exclude(id__in=excludes)
 		return areas
 
+	def visible_areas(self):
+		""" Returns the Areas that are controlled or occupied by the player
+		or adjacent to them """
+		q = Q(gamearea__player=self) | \
+			Q(gamearea__unit__player=self) | \
+			Q(borders__gamearea__player=self) | \
+			Q(borders__gamearea__unit__player=self)
+		return Area.objects.filter(q).distinct()
+
 	def cancel_orders(self):
 		""" Delete all the player's orders """
 		self.order_set.all().delete()
