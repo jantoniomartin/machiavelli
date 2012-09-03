@@ -260,12 +260,12 @@ class Game(models.Model):
 	def __unicode__(self):
 		return self.title
 
-	def _get_map_filename(self):
+	def get_map_filename(self, player=None):
 		if self.finished:
 			return "%s_final.jpg" % self.id
+		if isinstance(player, Player) and self.configuration.fow:
+			return "%s_%s_%s_%s_%s.jpg" % (self.id, self.year, self.season, self.phase, player.static_name)
 		return "%s_%s_%s_%s.jpg" % (self.id, self.year, self.season, self.phase)
-
-	map_filename = property(_get_map_filename)
 
 	def _get_map_dir(self):
 		return "%s" % self.slug
@@ -2133,6 +2133,11 @@ class Player(models.Model):
 		self.__deadline = None
 		super(Player, self,).__init__(*args, **kwargs)
 
+	def _get_map_filename(self):
+		return self.game.get_map_filename(player=self)
+
+	map_filename = property(_get_map_filename)
+	
 	def _get_deadline(self):
 		return self.__deadline
 	
