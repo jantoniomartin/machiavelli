@@ -318,6 +318,7 @@ def base_context(request, game, player):
 		'player': player,
 		'player_list': game.player_list_ordered_by_cities(),
 		'show_users': game.visible,
+		'fow': game.configuration.fow,
 		}
 	if game.slots > 0:
 		context['player_list'] = game.player_set.filter(user__isnull=False)

@@ -50,8 +50,8 @@
 		<td><a href="{% url profile_detail username=p.user.username %}" title="{{ p.user.username }}">{% avatar p.user 20 %}</a></td>
 		{% endif %}
 
-		<td style="text-align: center">{{ p.number_of_cities }}</td>
-		<td style="text-align: center">{{ p.placed_units_count }}</td>
+		<td style="text-align: center">{% if not fow %}{{ p.number_of_cities }}{% endif %}</td>
+		<td style="text-align: center">{% if not fow %}{{ p.placed_units_count }}{% endif %}</td>
 
 		<td><!-- actions -->
 {% if player %}
@@ -92,8 +92,10 @@
 <div class="log_list">
 <h3>{% trans "Campaign log" %}</h3>
 <div class="menu">
-<p><a href="{% url game-log game.slug %}">{% trans "See all" %}</a> | 
-<a href="{% url turn-log-list game.slug %}">{% trans "Process" %}</a></p>
+<p><a href="{% url game-log game.slug %}">{% trans "See all" %}</a>
+{% if not fow %}
+| <a href="{% url turn-log-list game.slug %}">{% trans "Process" %}</a></p>
+{% endif %}
 </div>
 <ul>
 {% for l in log %}
