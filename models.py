@@ -3524,6 +3524,8 @@ class Configuration(models.Model):
 	variable_home = models.BooleanField(_('variable home country'), default=False)
 	taxation = models.BooleanField(_('taxation'), default=False,
 					help_text=_('will enable Finances and Famine'))
+	fow = models.BooleanField(_('fog of war'), default=False,
+		help_text=_('each player sees only what happens near his borders'))
 
 	def __unicode__(self):
 		return unicode(self.game)

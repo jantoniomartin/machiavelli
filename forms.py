@@ -107,7 +107,8 @@ class ConfigurationForm(forms.ModelForm):
 				'bribes',
 				'strategic',
 				'variable_home',
-				'taxation',)
+				'taxation',
+				'fow',)
 
 class InvitationForm(forms.Form):
 	user_list = forms.CharField(required=True,
