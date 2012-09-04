@@ -115,27 +115,6 @@ def make_map(game, fow=False):
 	for i in game.scenario.cityincome_set.all():
 		base_map.paste(marker, (i.city.gtoken.x + 32, i.city.gtoken.y), marker)
 	##
-	## paste famine markers
-	if game.configuration.famine:
-		famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
-		for a in game.gamearea_set.filter(famine=True):
-			coords = (a.board_area.aftoken.x + 10, a.board_area.aftoken.y + 10)
-			base_map.paste(famine, coords, famine)
-	## paste storm markers
-	if game.configuration.storms:
-		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
-		for a in game.gamearea_set.filter(storm=True):
-			coords = (a.board_area.aftoken.x + 10, a.board_area.aftoken.y + 10)
-			base_map.paste(storm, coords, storm)
-	## paste rebellion markers
-	if game.configuration.finances:
-		rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
-		for r in game.get_rebellions():
-			if r.garrisoned:
-				coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
-			else:
-				coords = (r.area.board_area.aftoken.x, r.area.board_area.aftoken.y)
-			base_map.paste(rebellion_marker, coords, rebellion_marker)
 	for player in game.player_set.filter(user__isnull=False):
 		## paste control markers
 		controls = player.gamearea_set.all()
@@ -148,6 +127,27 @@ def make_map(game, fow=False):
 		for game_area in home:
 			area = game_area.board_area
 			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 10), flag)
+	## paste famine markers
+	if game.configuration.famine:
+		famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
+		for a in game.gamearea_set.filter(famine=True):
+			coords = (a.board_area.controltoken.x + 12, a.board_area.controltoken.y + 12)
+			base_map.paste(famine, coords, famine)
+	## paste storm markers
+	if game.configuration.storms:
+		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
+		for a in game.gamearea_set.filter(storm=True):
+			coords = (a.board_area.controltoken.x + 12, a.board_area.controltoken.y + 12)
+			base_map.paste(storm, coords, storm)
+	## paste rebellion markers
+	if game.configuration.finances:
+		rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
+		for r in game.get_rebellions():
+			if r.garrisoned:
+				coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
+			else:
+				coords = (r.area.board_area.controltoken.x - 12, r.area.board_area.controltoken.y - 12)
+			base_map.paste(rebellion_marker, coords, rebellion_marker)
 	if fow:
 		for player in game.player_set.filter(user__isnull=False):
 			player_map = base_map.copy()
