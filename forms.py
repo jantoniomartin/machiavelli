@@ -168,6 +168,11 @@ def make_order_form(player):
 	else:
 		units_qs = player.unit_set.select_related().all()
 	all_units = player.game.get_all_units()
+	if player.game.configuration.fow:
+		visible = player.visible_areas()	
+		subunits_qs = all_units.filter(area__board_area__in=visible)
+	else:
+		subunits_qs = all_units
 	all_areas = player.game.get_all_gameareas()
 	
 	class OrderForm(forms.ModelForm):
@@ -175,7 +180,7 @@ def make_order_form(player):
 		code = forms.ChoiceField(choices=machiavelli.ORDER_CODES, label=_("Order"))
 		destination = forms.ModelChoiceField(required=False, queryset=all_areas, label=_("Destination"))
 		type = forms.ChoiceField(choices=machiavelli.UNIT_TYPES, label=_("Convert into"))
-		subunit = forms.ModelChoiceField(required=False, queryset=all_units, label=_("Unit"))
+		subunit = forms.ModelChoiceField(required=False, queryset=subunits_qs, label=_("Unit"))
 		subcode = forms.ChoiceField(required=False, choices=machiavelli.ORDER_SUBCODES, label=_("Order"))
 		subdestination = forms.ModelChoiceField(required=False, queryset=all_areas, label=_("Destination"))
 		subtype = forms.ChoiceField(required=False, choices=machiavelli.UNIT_TYPES, label=_("Convert into"))
@@ -369,6 +374,9 @@ def make_ducats_list(ducats, f=3):
 def make_expense_form(player):
 	ducats_list = make_ducats_list(player.ducats)
 	unit_qs = machiavelli.Unit.objects.filter(player__game=player.game).order_by('area__board_area__code')
+	if player.game.configuration.fow:
+		visible = player.visible_areas()
+		unit_qs = unit_qs.filter(area__board_area__in=visible)
 	area_qs = machiavelli.GameArea.objects.filter(game=player.game).order_by('board_area__code')
 
 	class ExpenseForm(forms.ModelForm):
@@ -391,9 +399,6 @@ def make_expense_form(player):
 			area = cleaned_data.get('area')
 			unit = cleaned_data.get('unit')
 	
-			## temporarily disable rebellion related expenses
-			#if type in (1,2,3):
-			#	raise forms.ValidationError(_("This expense is not yet implemented"))
 			if type in (0,1,2,3):
 				if not isinstance(area, machiavelli.GameArea):
 					raise forms.ValidationError(_("You must choose an area"))
