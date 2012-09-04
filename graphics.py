@@ -24,34 +24,88 @@ import os.path
 
 from django.conf import settings
 
-APP_ROOT=os.path.abspath(os.path.dirname(__file__))
-#TOKENS_DIR=os.path.join(APP_ROOT, 'media/machiavelli/tokens')
-TOKENS_DIR=os.path.join(settings.MEDIA_ROOT, 'scenarios', 'tokens')
+import models as machiavelli
 
-#if settings.DEBUG:
-#	MAPSDIR = os.path.join(settings.PROJECT_ROOT, 'machiavelli/media/machiavelli/maps')
-#else:
-#	MAPSDIR = os.path.join(settings.MEDIA_ROOT, 'maps')
-MAPSDIR=os.path.join(settings.MEDIA_ROOT, 'maps')
-SCENARIOSDIR=os.path.join(settings.MEDIA_ROOT, 'scenarios')
+TOKENS_DIR=os.path.join(settings.MEDIA_ROOT, settings.SCENARIOS_ROOT, 'tokens')
 
 def ensure_dir(f):
 	d = os.path.dirname(f)
 	if not os.path.exists(d):
 		os.makedirs(d)
 
-def make_map(game):
+LOYAL_A = Image.open("%s/loyal-army.png" % TOKENS_DIR)
+LOYAL_F = Image.open("%s/loyal-fleet.png" % TOKENS_DIR)
+LOYAL_G = Image.open("%s/loyal-garrison.png" % TOKENS_DIR)
+ELITE_A = Image.open("%s/elite-army.png" % TOKENS_DIR)
+ELITE_F = Image.open("%s/elite-fleet.png" % TOKENS_DIR)
+ELITE_G = Image.open("%s/elite-garrison.png" % TOKENS_DIR)
+
+
+def load_unit_tokens(game):
+	tokens = dict()
+	for player in game.player_set.filter(user__isnull=False):
+		t = dict()
+		name = player.static_name
+		t.update({'A': Image.open("%s/A-%s.png" % (TOKENS_DIR, name))})
+		t.update({'F': Image.open("%s/F-%s.png" % (TOKENS_DIR, name))})
+		t.update({'G': Image.open("%s/G-%s.png" % (TOKENS_DIR, name))})
+		tokens.update({name: t })
+	tokens.update({'autonomous': {'G': Image.open("%s/G-autonomous.png" % TOKENS_DIR)}})
+	return tokens
+
+
+def paste_units(board, game, watcher=None):
+	tokens = load_unit_tokens(game)
+	if isinstance(watcher, machiavelli.Player):
+		visible = watcher.visible_areas()
+		print "Making secret map for %s" % watcher.static_name
+	afs = machiavelli.Unit.objects.filter(type__in=('A','F'), player__game=game, placed=True)
+	gars = machiavelli.Unit.objects.filter(type__exact='G', player__game=game, placed=True)
+	if isinstance(watcher, machiavelli.Player):
+		afs = afs.filter(area__board_area__in=visible)
+		gars = gars.filter(area__board_area__in=visible)
+	## paste Armies and Fleets
+	for unit in afs:
+			t = tokens[unit.player.static_name][unit.type]
+			if unit.besieging:
+				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
+			else:
+				coords = (unit.area.board_area.aftoken.x, unit.area.board_area.aftoken.y)
+			if unit.type == 'A':
+				board.paste(t, coords, t)
+				if unit.power > 1:
+					board.paste(ELITE_A, coords, ELITE_A)
+				if unit.loyalty > 1:
+					board.paste(LOYAL_A, coords, LOYAL_A)
+			elif unit.type == 'F':
+				board.paste(t, coords, t)
+				if unit.power > 1:
+					board.paste(ELITE_F, coords, ELITE_F)
+				if unit.loyalty > 1:
+					board.paste(LOYAL_F, coords, LOYAL_F)
+			else:
+				pass
+	## paste Garrisons
+	for unit in gars:
+		if unit.player.user:
+			t = tokens[unit.player.static_name]['G']
+		else:
+			t = tokens['autonomous']['G']
+		coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
+		board.paste(t, coords, t)
+		if unit.power > 1:
+			board.paste(ELITE_G, coords, ELITE_G)
+		if unit.loyalty > 1:
+			board.paste(LOYAL_G, coords, LOYAL_G)
+	
+def make_map(game, fow=False):
 	""" Opens the base map and add flags, control markers, unit tokens and other tokens. Then saves
 	the map with an appropriate name in the maps directory.
+	If fow == True, makes one map for every player and doesn't make a thumbnail
 	"""
+	if game.finished:
+		fow = False
 	base_map = Image.open(game.scenario.setting.board)
-	if game.configuration.special_units:
-		loyal_army = Image.open("%s/loyal-army.png" % TOKENS_DIR)
-		loyal_fleet = Image.open("%s/loyal-fleet.png" % TOKENS_DIR)
-		loyal_garrison = Image.open("%s/loyal-garrison.png" % TOKENS_DIR)
-		elite_army = Image.open("%s/elite-army.png" % TOKENS_DIR)
-		elite_fleet = Image.open("%s/elite-fleet.png" % TOKENS_DIR)
-		elite_garrison = Image.open("%s/elite-garrison.png" % TOKENS_DIR)
 	## if there are disabled areas, mark them
 	marker = Image.open("%s/disabled.png" % TOKENS_DIR)
 	for a in game.get_disabled_areas():
@@ -59,9 +113,29 @@ def make_map(game):
 	## mark special city incomes
 	marker = Image.open("%s/chest.png" % TOKENS_DIR)
 	for i in game.scenario.cityincome_set.all():
-		base_map.paste(marker, (i.city.gtoken.x + 48, i.city.gtoken.y), marker)
+		base_map.paste(marker, (i.city.gtoken.x + 32, i.city.gtoken.y), marker)
 	##
-	garrisons = []
+	## paste famine markers
+	if game.configuration.famine:
+		famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
+		for a in game.gamearea_set.filter(famine=True):
+			coords = (a.board_area.aftoken.x + 10, a.board_area.aftoken.y + 10)
+			base_map.paste(famine, coords, famine)
+	## paste storm markers
+	if game.configuration.storms:
+		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
+		for a in game.gamearea_set.filter(storm=True):
+			coords = (a.board_area.aftoken.x + 10, a.board_area.aftoken.y + 10)
+			base_map.paste(storm, coords, storm)
+	## paste rebellion markers
+	if game.configuration.finances:
+		rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
+		for r in game.get_rebellions():
+			if r.garrisoned:
+				coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
+			else:
+				coords = (r.area.board_area.aftoken.x, r.area.board_area.aftoken.y)
+			base_map.paste(rebellion_marker, coords, rebellion_marker)
 	for player in game.player_set.filter(user__isnull=False):
 		## paste control markers
 		controls = player.gamearea_set.all()
@@ -73,79 +147,30 @@ def make_map(game):
 		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.static_name))
 		for game_area in home:
 			area = game_area.board_area
-			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 15), flag)
-		## paste As and Fs (not garrisons because of sieges)
-		units = player.unit_set.filter(placed=True)
-		army = Image.open("%s/A-%s.png" % (TOKENS_DIR, player.static_name))
-		fleet = Image.open("%s/F-%s.png" % (TOKENS_DIR, player.static_name))
-		for unit in units:
-			if unit.besieging:
-				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
-			else:
-				coords = (unit.area.board_area.aftoken.x, unit.area.board_area.aftoken.y)
-			if unit.type == 'A':
-				base_map.paste(army, coords, army)
-				if unit.power > 1:
-					base_map.paste(elite_army, coords, elite_army)
-				if unit.loyalty > 1:
-					base_map.paste(loyal_army, coords, loyal_army)
-			elif unit.type == 'F':
-				base_map.paste(fleet, coords, fleet)
-				if unit.power > 1:
-					base_map.paste(elite_fleet, coords, elite_fleet)
-				if unit.loyalty > 1:
-					base_map.paste(loyal_fleet, coords, loyal_fleet)
-			else:
-				pass
-	## paste garrisons
-	for player in game.player_set.all():
-		if player.user:
-			garrison = Image.open("%s/G-%s.png" % (TOKENS_DIR, player.static_name))
-		else:
-			## autonomous
-			garrison = Image.open("%s/G-autonomous.png" % TOKENS_DIR)
-		for unit in player.unit_set.filter(type__exact='G'):
-			coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
-			base_map.paste(garrison, coords, garrison)
-			if unit.power > 1:
-				base_map.paste(elite_garrison, coords, elite_garrison)
-			if unit.loyalty > 1:
-				base_map.paste(loyal_garrison, coords, loyal_garrison)
-	## paste famine markers
-	if game.configuration.famine:
-		famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
-		for a in game.gamearea_set.filter(famine=True):
-			coords = (a.board_area.aftoken.x + 16, a.board_area.aftoken.y + 16)
-			base_map.paste(famine, coords, famine)
-	## paste storm markers
-	if game.configuration.storms:
-		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
-		for a in game.gamearea_set.filter(storm=True):
-			coords = (a.board_area.aftoken.x + 16, a.board_area.aftoken.y + 16)
-			base_map.paste(storm, coords, storm)
-	## paste rebellion markers
-	if game.configuration.finances:
-		rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
-		for r in game.get_rebellions():
-			if r.garrisoned:
-				coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
-			else:
-				coords = (r.area.board_area.aftoken.x, r.area.board_area.aftoken.y)
-			base_map.paste(rebellion_marker, coords, rebellion_marker)
-	## save the map
-	#result = base_map
-	result = base_map.resize((1250, 1780), Image.ANTIALIAS)
-	filename = os.path.join(MAPSDIR, game.map_dir, game.map_filename)
-	ensure_dir(filename)
-	result.save(filename)
-	make_game_thumb(game, 187, 267)
+			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 10), flag)
+	if fow:
+		for player in game.player_set.filter(user__isnull=False):
+			player_map = base_map.copy()
+			paste_units(player_map, game, watcher=player)
+			result = player_map
+			filename = game.get_map_path(player)
+			ensure_dir(filename)
+			result.save(filename)
+	else:
+		paste_units(base_map, game)
+		result = base_map
+		filename = game.get_map_path()
+		ensure_dir(filename)
+		result.save(filename)
+		make_game_thumb(game, 187, 267)
+
 	return True
 
 def make_game_thumb(game, w, h):
 	""" Make a thumbnail of the game map image """
 	size = w, h
-	fd = os.path.join(MAPSDIR, game.map_dir, game.map_filename)
-	outfile = os.path.join(MAPSDIR, game.map_dir, "thumb", game.map_filename)
+	fd = game.get_map_path()
+	outfile = game.thumbnail_path
 	im = Image.open(fd)
 	im.thumbnail(size, Image.ANTIALIAS)
 	ensure_dir(outfile)

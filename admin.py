@@ -76,7 +76,7 @@ class LiveGameAdmin(admin.ModelAdmin):
 
 	def redraw_map(self, request, queryset):
 		for obj in queryset:
-			obj.make_map()
+			obj.make_map(fow=obj.configuration.fow)
 	redraw_map.short_description = "Redraw map"
 
 	def check_finished_phase(self, request, queryset):

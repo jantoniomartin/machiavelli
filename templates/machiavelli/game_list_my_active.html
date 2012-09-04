@@ -27,7 +27,7 @@
 	<a href="{{ player.game.get_absolute_url }}">{{ player.game.title }}</a>
 </span></h2>
 <div class="map">
-<img src="{{ MEDIA_URL }}maps/{{ player.game.thumbnail_url }}" />
+<img src="{{ player.game.thumbnail_url }}" />
 </div>
 {% if player.game.started %}
 <div class="time">

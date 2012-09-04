@@ -314,7 +314,7 @@ def base_context(request, game, player):
 	context = {
 		'user': request.user,
 		'game': game,
-		'map' : game.get_map_url(),
+		#'map' : game.get_map_url(),
 		'player': player,
 		'player_list': game.player_list_ordered_by_cities(),
 		'show_users': game.visible,
@@ -323,6 +323,11 @@ def base_context(request, game, player):
 	if game.slots > 0:
 		context['player_list'] = game.player_set.filter(user__isnull=False)
 	log = game.baseevent_set.all()
+	if player:
+		context['map'] = game.get_map_url(player)
+	else:
+		context['map'] = game.get_map_url()
+		print context['map']
 	if player:
 		context['done'] = player.done
 		context['surrendered'] = player.surrendered

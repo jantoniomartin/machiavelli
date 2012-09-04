@@ -27,7 +27,7 @@
 <div class="game_info">
 <h2><span><a href="{{ game.get_absolute_url }}">{{ game.title }}</a></span></h2>
 <div class="map">
-<img src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
+<img src="{{ game.thumbnail_url }}" />
 </div>
 {% if game.started and game.finished %}
 <div class="time">

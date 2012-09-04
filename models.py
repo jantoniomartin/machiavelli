@@ -25,6 +25,9 @@ Defines the core classes of the machiavelli game.
 import random
 import thread
 from datetime import datetime, timedelta
+import string
+import os
+import os.path
 
 ## django
 from django.db import models
@@ -260,29 +263,6 @@ class Game(models.Model):
 	def __unicode__(self):
 		return self.title
 
-	def get_map_filename(self, player=None):
-		if self.finished:
-			return "%s_final.jpg" % self.id
-		if isinstance(player, Player) and self.configuration.fow:
-			return "%s_%s_%s_%s_%s.jpg" % (self.id, self.year, self.season, self.phase, player.static_name)
-		return "%s_%s_%s_%s.jpg" % (self.id, self.year, self.season, self.phase)
-
-	def _get_map_dir(self):
-		return "%s" % self.slug
-
-	map_dir = property(_get_map_dir)
-
-	def get_map_url(self):
-		#return "map-%s.jpg" % self.id
-		return "%s/%s" % (self.map_dir, self.map_filename)
-
-	map_url = property(get_map_url)
-	
-	def _get_thumbnail_url(self):
-		return "%s/thumb/%s" % (self.map_dir, self.map_filename)
-
-	thumbnail_url = property(_get_thumbnail_url)
-	
 	def get_absolute_url(self):
 		return ('show-game', None, {'slug': self.slug})
 	get_absolute_url = models.permalink(get_absolute_url)
@@ -375,9 +355,8 @@ class Game(models.Model):
 	## map methods
 	##------------------------
 	
-	def make_map(self):
-		make_map(self)
-		#thread.start_new_thread(make_map, (self,))
+	def make_map(self, fow=False):
+		make_map(self, fow)
 		return True
 
 	def map_changed(self):
@@ -389,6 +368,65 @@ class Game(models.Model):
 		if self.map_outdated == True:
 			self.map_outdated = False
 			self.save()
+
+	def get_map_name(self, player=None):
+		if self.finished:
+			return "%s_final.jpg" % self.id
+		elif not self.configuration.fow:
+			return "%s_%s_%s_%s.jpg" % (self.id, self.year, self.season,
+				self.phase)
+		else: #fow is enabled
+			if isinstance(player, Player):
+				return "%s_%s_%s_%s.jpg" % (player.secret_key, self.year,
+					self.season, self.phase)
+			else:
+				return "" ## show scenario map
+
+	def get_map_path(self, player=None):
+		""" returns the absolute path of the map file """
+		name = self.get_map_name(player)
+		if name == "":
+			return self.scenario.map_path
+		else:
+			return os.path.join(settings.MEDIA_ROOT, settings.MAPS_ROOT,
+				self.slug, name)
+
+	def get_map_url(self, player=None):
+		""" returns the relative url of the map file """
+		name = self.get_map_name(player)
+		if name == "":
+			return self.scenario.map_url
+		else:
+			return os.path.join(settings.MEDIA_URL, settings.MAPS_ROOT,
+				self.slug, name)
+
+	def _get_thumbnail_path(self):
+		name = self.get_map_name()
+		if name == "" or not self.started:
+			return self.scenario.thumbnail_path
+		else:
+			return os.path.join(settings.MEDIA_ROOT, settings.MAPS_ROOT,
+				self.slug, "thumb", name)
+
+	thumbnail_path = property(_get_thumbnail_path)
+
+	def _get_thumbnail_url(self):
+		name = self.get_map_name()
+		if name == "" or not self.started:
+			return self.scenario.thumbnail_url
+		else:
+			return os.path.join(settings.MEDIA_URL, settings.MAPS_ROOT,
+				self.slug, "thumb", name)
+	
+	thumbnail_url = property(_get_thumbnail_url)
+
+	def remove_private_maps(self):
+		for p in self.player_set.filter(user__isnull=False):
+			path = self.get_map_path(p)
+			try:
+				os.remove(path)
+			except:
+				logger.error("Can't delete map %s" % path)
 
 	##------------------------
 	## game starting methods
@@ -420,11 +458,11 @@ class Game(models.Model):
 			self.assign_initial_income()
 		if self.configuration.assassinations:
 			self.create_assassins()
-		self.make_map()
 		self.started = datetime.now()
 		self.last_phase_change = datetime.now()
 		self.notify_players("game_started", {"game": self})
 		self.save()
+		self.make_map(fow=self.configuration.fow)
 
 	def player_joined(self):
 		self.slots -= 1
@@ -722,6 +760,10 @@ class Game(models.Model):
 		GameArea.objects.filter(game=self).update(standoff=False)
 
 	def process_turn(self):
+		## remove current private maps in games with Fog of War
+		if self.configuration.fow:
+			self.remove_private_maps()
+		##
 		end_season = False
 		if self.phase == PHINACTIVE:
 			return
@@ -794,7 +836,6 @@ class Game(models.Model):
 					self.check_conquerings()
 				winner = self.check_winner()
 				if winner:
-					self.make_map()
 					if isinstance(winner, Player):
 						self.assign_scores()
 					elif isinstance(winner, Team):
@@ -843,7 +884,7 @@ class Game(models.Model):
 		#self.map_changed()
 		self.extended_deadline = False
 		self.save()
-		self.make_map()
+		self.make_map(fow=self.configuration.fow)
 		self.notify_players("new_phase", {"game": self})
    	
 	def auto_reinforcements(self):
@@ -1824,7 +1865,7 @@ class Game(models.Model):
 		self.phase = PHINACTIVE
 		self.finished = datetime.now()
 		self.save()
-		self.make_map()
+		self.make_map(fow=False)
 		if signals:
 			signals.game_finished.send(sender=self)
 		self.notify_players("game_over", {"game": self})
@@ -2095,6 +2136,17 @@ class Team(models.Model):
 
 	cities_count = property(_get_cities_count)
 
+def generate_secret_key():
+	min_size = getattr(settings, 'MIN_KEY_SIZE', 6)
+	max_size = getattr(settings, 'MAX_KEY_SIZE', 10)
+	size = random.randint(min_size, max_size)
+	while 1:
+		key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(size))
+		try:
+			Player.objects.get(secret_key=key)
+		except ObjectDoesNotExist:
+			return key
+
 class Player(models.Model):
 	""" This class defines the relationship between a User and a Game. """
 
@@ -2126,6 +2178,7 @@ class Player(models.Model):
 	pope_excommunicated = models.BooleanField(default=False)
 	""" the player may belong to a team, in a team game """
 	team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"))
+	secret_key = models.CharField(_("secret key"), max_length=20, default="", editable=False)
 
 	## the 'deadline' is not persistent, and is used to order a user's players by the time
 	## that they have to play
@@ -2133,6 +2186,11 @@ class Player(models.Model):
 		self.__deadline = None
 		super(Player, self,).__init__(*args, **kwargs)
 
+	def save(self, *args, **kwargs):
+		if self.id is None:
+			self.secret_key = generate_secret_key()
+		super(Player, self).save(*args, **kwargs)
+	
 	def _get_map_filename(self):
 		return self.game.get_map_filename(player=self)
 

@@ -8,6 +8,21 @@
 
 {% block head_title %}{{ game.title }}{% endblock %}
 
+{% if map %}
+{% block extra_head %}
+<style type="text/css">
+#map {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 740px;
+}
+</style>
+{% endblock %}
+{% endif %}
+
+
 {% block left_column %}
 <h1>{{ game.title }}</h1>
 {% if started %}
@@ -24,7 +39,7 @@
 {% endif %}
 
 <div itemscope itemtype="http://schema.org/Thing" class="game_info {% if game.fast %}fast{% endif %}">
-<h2><span itemprop="name"><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></span>
+<h2><span itemprop="name"><a href="{{ game.get_absolute_url }}">{{ game.title }}</a></span>
 {% if not started %}
 	<span>
 		({% trans "Slots" %}: {{ game.slots }})
@@ -39,11 +54,7 @@
 	</h2>
 
 <div class="map">
-{% if game.started %}
-<img itemprop="image" src="{{ MEDIA_URL }}maps/{{ game.thumbnail_url }}" />
-{% else %}
-<img itemprop="image" src="{{ MEDIA_URL }}scenarios/thumbnails/{{ game.scenario.map_name }}" />
-{% endif %}
+<img itemprop="image" src="{{ game.thumbnail_url }}" />
 </div>
 
 {% if finished %}
@@ -114,7 +125,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 
 {% if finished %}
 
-<h2>{% trans "Results of game" %} "{{ game.slug }}"</h2>
+<h2>{% trans "Results of game" %} "{{ game.title }}"</h2>
 
 {% if game.is_team_game %}
 <p>{% blocktrans %}These are the results for each team{% endblocktrans %}</p>
@@ -163,7 +174,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 </table>
 
 {% if overthrows %}
-<h2>{% trans "Overthrows" %} "{{ game.slug }}"</h2>
+<h2>{% trans "Overthrows" %}</h2>
 <p>{% blocktrans %}This is the history of overthrows in this game.{% endblocktrans %}</p>
 
 <table>
@@ -184,7 +195,10 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 {% if show_log %}
 <p><a href="{% url game-log game.slug %}">{% trans "Campaign log" %}</a></p>
 {% endif %}
-<p><a href="{{ MEDIA_URL }}maps/{{ game.map_url }}">{% trans "Map" %}</a>.</p>
+
+{% if map %}
+<div id="map" class="viewer"></div>
+{% endif %}
 
 {% endif %}
 
@@ -234,3 +248,32 @@ window.___gcfg = {lang: "{{LANGUAGE_CODE}}", parsetags: 'onload'};
 </script>
 
 {% endblock %}
+
+{% if map %}
+{% block extra_body %}
+<script src="{{ STATIC_URL }}js/jquery.mousewheel.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}js/jquery.iviewer.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(function() {
+		makeLayout();
+	});
+
+	function makeLayout() {
+		var viewer_opts = {
+			src: "{{ map }}",
+			ui_disabled: true,
+			zoom: "fit",
+			zoom_max: 100,
+			zoom_min: 10,
+			zoom_delta: 1.4,
+			//zoom_base:
+			update_on_resize: true
+		};
+
+		$("#map").iviewer(viewer_opts);
+	}
+</script>
+
+
+{% endblock %}
+{% endif %}
