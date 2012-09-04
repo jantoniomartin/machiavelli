@@ -50,7 +50,7 @@
 		<td><a href="{% url profile_detail username=p.user.username %}" title="{{ p.user.username }}">{% avatar p.user 20 %}</a></td>
 		{% endif %}
 
-		<td style="text-align: center">{% if not fow %}{{ p.number_of_cities }}{% endif %}</td>
+		<td style="text-align: center">{{ p.number_of_cities }}</td>
 		<td style="text-align: center">{% if not fow %}{{ p.placed_units_count }}{% endif %}</td>
 
 		<td><!-- actions -->
