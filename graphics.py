@@ -139,7 +139,7 @@ def make_map(game, fow=False):
 	if game.configuration.storms:
 		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
 		for a in game.gamearea_set.filter(storm=True):
-			coords = (a.board_area.controltoken.x + 12, a.board_area.controltoken.y + 12)
+			coords = (a.board_area.aftoken.x + 12, a.board_area.aftoken.y + 12)
 			base_map.paste(storm, coords, storm)
 	## paste rebellion markers
 	if game.configuration.finances:
