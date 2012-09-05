@@ -310,6 +310,28 @@ class GameBaseView(DetailView):
 		
 		return context
 
+def get_log_qs(game, player):
+	log = game.baseevent_set.exclude(season__exact=game.season, phase__exact=game.phase)
+	if game.configuration.fow:
+		## show all control events and all country events
+		q = Q(controlevent__area__isnull=False) | \
+		Q(countryevent__country__isnull=False)
+		if player:
+			visible = player.visible_areas()
+			## add events visible by the player
+			q = q | \
+				Q(conversionevent__area__in=visible) | \
+				Q(disasterevent__area__in=visible) | \
+				Q(disbandevent__area__in=visible) | \
+				Q(expenseevent__area__in=visible) | \
+				Q(movementevent__destination__in=visible) | \
+				Q(newunitevent__area__in=visible) | \
+				Q(retreatevent__destination__in=visible) | \
+				Q(standoffevent__area__in=visible) | \
+				Q(unitevent__area__in=visible)
+		log = log.filter(q)
+	return log
+
 def base_context(request, game, player):
 	context = {
 		'user': request.user,
@@ -322,7 +344,7 @@ def base_context(request, game, player):
 		}
 	if game.slots > 0:
 		context['player_list'] = game.player_set.filter(user__isnull=False)
-	log = game.baseevent_set.all()
+	#log = game.baseevent_set.all()
 	if player:
 		context['map'] = game.get_map_url(player)
 	else:
@@ -344,8 +366,8 @@ def base_context(request, game, player):
 			context['time_exceeded'] = player.time_exceeded()
 		if player.done and not player.in_last_seconds() and not player.eliminated:
 			context.update({'undoable': True,})
-	log = log.exclude(season__exact=game.season,
-							phase__exact=game.phase)
+	#log = log.exclude(season__exact=game.season, phase__exact=game.phase)
+	log = get_log_qs(game, player)
 	if len(log) > 0:
 		last_year = log[0].year
 		last_season = log[0].season
@@ -940,9 +962,10 @@ def logs_by_game(request, slug=''):
 	except:
 		player = machiavelli.Player.objects.none()
 	context = base_context(request, game, player)
-	log_list = game.baseevent_set.exclude(year__exact=game.year,
-										season__exact=game.season,
-										phase__exact=game.phase)
+	#log_list = game.baseevent_set.exclude(year__exact=game.year,
+	#									season__exact=game.season,
+	#									phase__exact=game.phase)
+	log_list = get_log_qs(game, player)
 	paginator = events_paginator.SeasonPaginator(log_list)
 	try:
 		year = int(request.GET.get('year'))
