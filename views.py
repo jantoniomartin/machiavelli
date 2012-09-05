@@ -317,7 +317,7 @@ def get_log_qs(game, player):
 		q = Q(controlevent__area__isnull=False) | \
 		Q(countryevent__country__isnull=False) | \
 		Q(uncoverevent__country__isnull=False) | \
-		Q(disasterevent__area__isnull=False) | \
+		Q(disasterevent__area__isnull=False)
 		if player:
 			visible = player.visible_areas()
 			## add events visible by the player
