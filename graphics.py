@@ -71,6 +71,8 @@ def paste_units(board, game, watcher=None):
 				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
 			else:
 				coords = (unit.area.board_area.aftoken.x, unit.area.board_area.aftoken.y)
+				if unit.must_retreat != '':
+					coords = (coords[0] + 15, coords[1] + 15)
 			if unit.type == 'A':
 				board.paste(t, coords, t)
 				if unit.power > 1:
