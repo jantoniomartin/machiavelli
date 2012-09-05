@@ -2068,12 +2068,8 @@ class GameArea(models.Model):
 			return 0
 		self.taxed = True
 		ducats = self.board_area.control_income - 1
-		#if not self.famine:
-		#	self.famine = True
-		#	signals.famine_marker_placed.send(sender=self)
-		#if self.famine:
-		#	self.check_assassination_rebellion(mod=ducats)
 		self.save()
+		logger.info("Player %s taxed %s" % (self.player, self))
 		return ducats
 
 def check_min_karma(sender, instance=None, **kwargs):
