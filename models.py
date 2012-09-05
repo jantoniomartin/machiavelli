@@ -1481,7 +1481,7 @@ class Game(models.Model):
 				continue
 			else:
 				reb = h.area.has_rebellion(h.player, same=True)
-				if reb:
+				if reb and not reb.garrisoned:
 					info += u"Rebellion in %s is put down.\n" % h.area
 					reb.delete()
 		
