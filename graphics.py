@@ -39,7 +39,7 @@ LOYAL_G = Image.open("%s/loyal-garrison.png" % TOKENS_DIR)
 ELITE_A = Image.open("%s/elite-army.png" % TOKENS_DIR)
 ELITE_F = Image.open("%s/elite-fleet.png" % TOKENS_DIR)
 ELITE_G = Image.open("%s/elite-garrison.png" % TOKENS_DIR)
-
+DIPLOMAT = Image.open("%s/diplomat-icon.png" % TOKENS_DIR)
 
 def load_unit_tokens(game):
 	tokens = dict()
@@ -64,6 +64,7 @@ def paste_units(board, game, watcher=None):
 	if isinstance(watcher, machiavelli.Player):
 		afs = afs.filter(area__board_area__in=visible)
 		gars = gars.filter(area__board_area__in=visible)
+		dips = watcher.diplomat_set.all()
 	## paste Armies and Fleets
 	for unit in afs:
 			t = tokens[unit.player.static_name][unit.type]
@@ -99,6 +100,10 @@ def paste_units(board, game, watcher=None):
 			board.paste(ELITE_G, coords, ELITE_G)
 		if unit.loyalty > 1:
 			board.paste(LOYAL_G, coords, LOYAL_G)
+	## paste diplomat icons
+	for d in dips:
+		coords = (d.area.board_area.controltoken.x - 24, d.area.board_area.controltoken.y - 4)
+		board.paste(DIPLOMAT, coords, DIPLOMAT)
 	
 def make_map(game, fow=False):
 	""" Opens the base map and add flags, control markers, unit tokens and other tokens. Then saves

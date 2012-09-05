@@ -360,16 +360,16 @@ def make_unit_payment_form(player):
 
 def make_ducats_list(ducats, f=3):
 	assert isinstance(f, int)
+	if ducats > 0:
+		ducats_list = ((1, 1),)
+	else:
+		ducats_list = ((0, 0),)
 	if ducats >= f:
 		items = ducats / f + 1
-		ducats_list = ()
 		for i in range(1, items):
 			j = i * f
 			ducats_list += ((j,j),)
-		print ducats_list
-		return ducats_list
-	else:
-		return ((0, 0),)
+	return ducats_list
 
 def make_expense_form(player):
 	ducats_list = make_ducats_list(player.ducats)
@@ -399,7 +399,7 @@ def make_expense_form(player):
 			area = cleaned_data.get('area')
 			unit = cleaned_data.get('unit')
 	
-			if type in (0,1,2,3):
+			if type in (0,1,2,3, 10, 11):
 				if not isinstance(area, machiavelli.GameArea):
 					raise forms.ValidationError(_("You must choose an area"))
 				unit = None
@@ -415,6 +415,19 @@ def make_expense_form(player):
 			cost = machiavelli.get_expense_cost(type, unit, area)
 			if int(ducats) < cost:
 				raise forms.ValidationError(_("You must pay at least %s ducats") % cost)
+			## check for redundant expenses
+			try:
+				machiavelli.Expense.objects.get(player=player, type=type, area=area, unit=unit)
+			except ObjectDoesNotExist:
+				pass
+			else:
+				raise forms.ValidationError(_("This expense already exists"))
+			## a diplomat cannot be bribed in the sea
+			if type in (10, 11):
+				if not area.game.configuration.fow:
+					raise forms.ValidationError(_("This expense is not allowed in this game"))
+				if area.board_area.is_sea:
+					raise forms.ValidationError(_("You must choose a land area"))
 			## if famine relief, check if there is a famine marker
 			if type == 0:
 				if not area.famine:
@@ -449,6 +462,13 @@ def make_expense_form(player):
 					raise forms.ValidationError(_("You must choose an enemy unit"))
 				if type == 7 and unit.type != 'G':
 					raise forms.ValidationError(_("You must choose a non-autonomous garrison"))
+			## if hiring a diplomat, check the control of area
+			elif type == 10:
+				if not area.player or area.player != player:
+					raise forms.ValidationError(_("You must choose a province that you control"))
+			elif type == 11:
+				if area.player and area.player == player:
+					raise forms.ValidationError(_("You must choose a province that you don't control"))
 			## check if bribing the unit is possible
 			if type in (5,6,7,8,9):
 				check_areas = unit.area.get_adjacent_areas(include_self=True)

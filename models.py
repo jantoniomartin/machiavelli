@@ -885,6 +885,9 @@ class Game(models.Model):
 		self.extended_deadline = False
 		self.save()
 		self.make_map(fow=self.configuration.fow)
+		if end_season and self.configuration.fow:
+			for dip in Diplomat.objects.filter(player__game=self):
+				dip.uncover()
 		self.notify_players("new_phase", {"game": self})
    	
 	def auto_reinforcements(self):
@@ -1026,9 +1029,9 @@ class Game(models.Model):
 		invalid_expenses = Expense.objects.filter(player__game=self, confirmed=False)
 		for e in invalid_expenses:
 			e.undo()
-		## log expenses
+		## log expenses (ignore diplomats)
 		if signals:
-			for e in Expense.objects.filter(player__game=self, confirmed=True):
+			for e in Expense.objects.filter(player__game=self, confirmed=True).exclude(type__in=(10,11)):
 				signals.expense_paid.send(sender=e)
 		## then, process famine reliefs
 		for e in Expense.objects.filter(player__game=self, type=0):
@@ -1042,6 +1045,13 @@ class Game(models.Model):
 			try:
 				rebellion = Rebellion(area=e.area)
 				rebellion.save()
+			except:
+				continue
+		## create diplomats
+		for e in Expense.objects.filter(player__game=self, type__in=(10,11)):
+			try:
+				dip = Diplomat(player=e.player, area=e.area)
+				dip.save()
 			except:
 				continue
 		## then, delete bribes that are countered
@@ -2339,8 +2349,10 @@ class Player(models.Model):
 		or adjacent to them """
 		q = Q(gamearea__player=self) | \
 			Q(gamearea__unit__player=self) | \
+			Q(gamearea__diplomat__player=self) | \
 			Q(borders__gamearea__player=self) | \
-			Q(borders__gamearea__unit__player=self)
+			Q(borders__gamearea__unit__player=self) | \
+			Q(borders__gamearea__diplomat__player=self)
 		return Area.objects.filter(q).distinct()
 
 	def cancel_orders(self):
@@ -3619,6 +3631,8 @@ EXPENSE_TYPES = (
 	(7, _("Convert garrison unit")),
 	(8, _("Disband enemy unit")),
 	(9, _("Buy enemy unit")),
+	(10, _("Hire a diplomat in own area")),
+	(11, _("Hire a diplomat in foreign area")),
 )
 
 EXPENSE_COST = {
@@ -3632,6 +3646,8 @@ EXPENSE_COST = {
 	7: 9,
 	8: 12,
 	9: 18,
+	10: 1,
+	11: 3,
 }
 
 def get_expense_cost(type, unit=None, area=None):
@@ -3664,7 +3680,7 @@ class Expense(models.Model):
 
 	def save(self, *args, **kwargs):
 		## expenses that need an area
-		if self.type in (0, 1, 2, 3):
+		if self.type in (0, 1, 2, 3, 10, 11):
 			assert isinstance(self.area, GameArea), "Expense needs a GameArea"
 		## expenses that need a unit
 		elif self.type in (4, 5, 6, 7, 8, 9):
@@ -3696,6 +3712,8 @@ class Expense(models.Model):
 			7: _("%(country)s tries to turn %(unit)s into an autonomous garrison"),
 			8: _("%(country)s tries to disband %(unit)s"),
 			9: _("%(country)s tries to buy %(unit)s"),
+			10: _("%(country)s hires a diplomat in %(area)s"),
+			11: _("%(country)s hires a diplomat in %(area)s"),
 		}
 
 		if self.type in messages.keys():
@@ -3709,7 +3727,7 @@ class Expense(models.Model):
 	def is_allowed(self):
 		""" Return true if it's not a bribe or the unit is in a valid area as
 		stated in the rules. """
-		if self.type in (0, 1, 2, 3, 4):
+		if self.type in (0, 1, 2, 3, 4, 10, 11):
 			return True
 		elif self.is_bribe():
 			## self.unit must be adjacent to a unit or area of self.player
@@ -3930,4 +3948,37 @@ class GameRoute(models.Model):
 			self.safe = False
 		else:
 			self.safe = True
-		self.save()	
+		self.save()
+
+class Diplomat(models.Model):
+	player = models.ForeignKey(Player)
+	area = models.ForeignKey(GameArea)
+
+	class Meta:
+		unique_together = (('player', 'area'),)
+		verbose_name = _("diplomat")
+		verbose_name_plural = _("diplomats")
+
+	def __unicode__(self):
+		return _("%s's diplomat in %s") % (self.player.contender.country, self.area)
+
+	def save(self, *args, **kwargs):
+		logger.info("Saving diplomat in %s" % self.area)
+		if self.area.board_area.is_sea:
+			return
+		super(Diplomat, self).save(*args, **kwargs)
+
+	def uncover(self):
+		d = random.choice(range(1, 7))
+		if self.area.player == self.player:
+			return False
+		if not self.area.player:
+			if d in (3, 4, 5, 6):
+				return False
+		elif self.area.player != self.player:
+			if d in (4, 5, 6):
+				return False
+		## the diplomat is uncovered
+		signals.diplomat_uncovered.send(sender=self)
+		self.delete()
+		return True
