@@ -47,6 +47,14 @@
 <tr>
 <td>{% trans "Buy enemy unit" %}</td><td>18+&dagger;</td><td>{% trans "Yes" %}</td>
 </tr>
+{% if game.configuration.fow %}
+<tr>
+<td>{% trans "Hire a diplomat in own area" %}</td><td>1</td><td>{% trans "No" %}</td>
+</tr>
+<tr>
+<td>{% trans "Hire a diplomat in foreign area" %}</td><td>3</td><td>{% trans "No" %}</td>
+</tr>
+{% endif %}
 </tbody>
 </table>
 <p>&dagger; {% blocktrans %}The minimum cost of these bribes is doubled if the bribed unit is a garrison in a major city (the ones with a number inside the circle).{% endblocktrans %}</p>
