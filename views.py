@@ -316,13 +316,13 @@ def get_log_qs(game, player):
 		## show all control events and all country events
 		q = Q(controlevent__area__isnull=False) | \
 		Q(countryevent__country__isnull=False) | \
-		Q(uncoverevent__country__isnull=False)
+		Q(uncoverevent__country__isnull=False) | \
+		Q(disasterevent__area__isnull=False) | \
 		if player:
 			visible = player.visible_areas()
 			## add events visible by the player
 			q = q | \
 				Q(conversionevent__area__in=visible) | \
-				Q(disasterevent__area__in=visible) | \
 				Q(disbandevent__area__in=visible) | \
 				Q(expenseevent__area__in=visible) | \
 				Q(movementevent__destination__in=visible) | \
