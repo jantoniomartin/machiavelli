@@ -1107,15 +1107,10 @@ def join_game(request, slug=''):
 			messages.error(request, _("This game is private and you have not been invited."))
 			return redirect("games-joinable")
 	else:
-		karma = request.user.get_profile().karma
-		if karma < settings.KARMA_TO_JOIN:
-			err = _("You need a minimum karma of %s to join a game.") % settings.KARMA_TO_JOIN
-			messages.error(request, err)
+		msg = request.user.get_profile().check_karma_to_join(fast=g.fast)
+		if msg != "": #user can't join
+			messages.error(request, msg)
 			return redirect("summary")
-		if g.fast and karma < settings.KARMA_TO_FAST:
-			err = _("You need a minimum karma of %s to join a fast game.") % settings.KARMA_TO_FAST
-			messages.error(request, err)
-			return redirect("games-joinable")
 	if g.slots > 0:
 		try:
 			machiavelli.Player.objects.get(user=request.user, game=g)

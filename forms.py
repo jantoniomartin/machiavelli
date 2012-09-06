@@ -29,22 +29,16 @@ class GameBaseForm(forms.ModelForm):
 		self.instance.created_by = user
 
 	def clean(self):
-		cleaned_data = super(GameBaseForm, self).clean()		
-		#if not cleaned_data['slug'] or len(cleaned_data['slug']) < 4:
-		#	msg = _("Slug is too short")
-		#	raise forms.ValidationError(msg)
-		karma = self.instance.created_by.get_profile().karma
-		if karma < settings.KARMA_TO_JOIN:
-			msg = _("You don't have enough karma to create a game.")
-			raise forms.ValidationError(msg)
+		cleaned_data = super(GameBaseForm, self).clean()
+		fast = private = False
 		if int(cleaned_data['time_limit']) in machiavelli.FAST_LIMITS:
-			if karma < settings.KARMA_TO_FAST:
-				msg = _("You don't have enough karma for a fast game.")
-				raise forms.ValidationError(msg)
+			fast = True
 		if cleaned_data['private']:
-			if karma < settings.KARMA_TO_PRIVATE:
-				msg = _("You don't have enough karma to create a private game.")
-				raise forms.ValidationError(msg)
+			private = True
+		user = self.instance.created_by
+		msg = user.get_profile().check_karma_to_join(fast=fast, private=private)
+		if msg != "":
+			raise forms.ValidationError(msg)
 		return cleaned_data
 
 class GameForm(GameBaseForm):
