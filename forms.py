@@ -100,8 +100,6 @@ class ConfigurationForm(forms.ModelForm):
 		exclude = ('gossip',
 				'bribes',
 				'strategic',
-				'variable_home',
-				'taxation',
 				'fow',)
 
 class InvitationForm(forms.Form):
