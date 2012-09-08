@@ -311,7 +311,8 @@ class GameBaseView(DetailView):
 		return context
 
 def get_log_qs(game, player):
-	log = game.baseevent_set.exclude(season__exact=game.season, phase__exact=game.phase)
+	log = game.baseevent_set.exclude(season__exact=game.season, phase__exact=game.phase,
+		year__exact=game.year)
 	if game.configuration.fow:
 		## show all control events and all country events
 		q = Q(controlevent__area__isnull=False) | \
