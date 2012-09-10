@@ -2076,11 +2076,12 @@ class GameArea(models.Model):
 
 	def increase_control_counter(self):
 		if self.game.configuration.variable_home and self.years < 2:
-			self.years += 1
-			if self.years == 2:
-				self.home_of = self.player
-				signals.area_controlled.send(sender=self, new_home=True)
-				self.save()
+			if not self.home_of or (self.home_of and self.home_of != self.player):
+				self.years += 1
+				if self.years == 2:
+					self.home_of = self.player
+					signals.area_controlled.send(sender=self, new_home=True)
+					self.save()
 
 def check_min_karma(sender, instance=None, **kwargs):
 	if isinstance(instance, CondottieriProfile):
