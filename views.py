@@ -415,6 +415,19 @@ def base_context(request, game, player):
 #						context_instance=RequestContext(request))
 #
 
+def gamearea_list(request, slug=''):
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	try:
+		player = machiavelli.Player.objects.get(game=game, user=request.user)
+	except:
+		player = machiavelli.Player.objects.none()
+	context = base_context(request, game, player)
+	areas = game.gamearea_set.all().order_by('board_area__code')
+	context["area_list"] = areas
+	return render_to_response('machiavelli/gamearea_list.html',
+							context,
+							context_instance=RequestContext(request))
+
 @login_required
 def surrender(request, slug=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)

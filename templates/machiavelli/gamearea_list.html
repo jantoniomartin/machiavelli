@@ -1,0 +1,33 @@
+{% extends 'machiavelli/base_game.html' %}
+
+{% load i18n %}
+
+{% block game_body %}
+
+<div class="section">
+<h2>{% trans "Areas list" %}</h2>
+
+<table>
+<thead><tr>
+<th>{% trans "Area" %}</th>
+<th>{% trans "Controlled by" %}</th>
+<th>{% trans "Years" %}</th>
+<th>{% trans "Home of" %}</th>
+</tr></thead>
+<tbody>
+{% for area in area_list %}
+<tr>
+	<td>{{ area }}</td>
+	<td>{% if area.player %}{{ area.player.contender.country }}{% endif %}</td>
+	<td>{{ area.years }}</td>
+	<td>{% if area.home_of %}{{ area.home_of.contender.country }}{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+
+{% endblock %}
