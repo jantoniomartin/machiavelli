@@ -9,8 +9,6 @@ def rule_icons(config):
 		icons.append('finances')
 	if config.assassinations:
 		icons.append('assassinations')
-	if config.bribes:
-		icons.append('bribes')
 	if config.excommunication:
 		icons.append('excommunication')
 	if config.famine:
@@ -21,8 +19,6 @@ def rule_icons(config):
 		icons.append('storms')
 	if config.special_units:
 		icons.append('special-units')
-	if config.strategic:
-		icons.append('strategic')
 	if config.lenders:
 		icons.append('lenders')
 	if config.unbalanced_loans:
@@ -33,6 +29,10 @@ def rule_icons(config):
 		icons.append('variable-home')
 	if config.taxation:
 		icons.append('taxation')
+	if config.fow:
+		icons.append('fow')
+	if config.press == 1:
+		icons.append('gunboat')
 
 	return {'icons' : icons,
 			'STATIC_URL': settings.STATIC_URL}

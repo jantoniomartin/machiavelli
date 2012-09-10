@@ -97,10 +97,6 @@ class ConfigurationForm(forms.ModelForm):
 
 	class Meta:
 		model = machiavelli.Configuration
-		exclude = ('gossip',
-				'bribes',
-				'strategic',
-				'fow',)
 
 class InvitationForm(forms.Form):
 	user_list = forms.CharField(required=True,

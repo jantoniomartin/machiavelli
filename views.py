@@ -343,6 +343,7 @@ def base_context(request, game, player):
 		'player_list': game.player_list_ordered_by_cities(),
 		'show_users': game.visible,
 		'fow': game.configuration.fow,
+		'letters': game.configuration.letters,
 		}
 	if game.slots > 0:
 		context['player_list'] = game.player_set.filter(user__isnull=False)
@@ -1510,6 +1511,8 @@ def assassination(request, slug):
 @login_required
 def new_whisper(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
+	if not game.configuration.gossip:
+		raise Http404
 	try:
 		player = machiavelli.Player.objects.get(user=request.user, game=game, surrendered=False)
 	except ObjectDoesNotExist:

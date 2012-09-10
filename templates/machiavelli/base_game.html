@@ -124,16 +124,18 @@
 {% if game.is_team_game %}
 <li><a href="{% url team_messages game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
 {% else %}
-<li class="mailbox_button">
-	{% if player.unread_count > 0 %}
-	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>
+	{% if letters %}
+	<li class="mailbox_button">
+		{% if player.unread_count > 0 %}
+		<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>
 		{% else %}
-	<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" /></a>
+		<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" /></a>
+		{% endif %}
+	</li>
+	<li class="mailbox_button">
+		<a href="{% url condottieri_messages_outbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
+	</li>
 	{% endif %}
-</li>
-<li class="mailbox_button">
-	<a href="{% url condottieri_messages_outbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
-</li>
 {% endif %}
 {% endif %}
 </ul>

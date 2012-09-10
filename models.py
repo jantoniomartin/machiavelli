@@ -3566,6 +3566,12 @@ class TurnLog(models.Model):
 	def __unicode__(self):
 		return self.log
 
+PRESS_TYPES = (
+	(0, _("Normal (private letters, anonymous gossip)")),
+	(1, _("Gunboat diplomacy (no letters, no gossip)")),
+	#(2, _("Public press (no letters, public messages)")),
+)
+
 class Configuration(models.Model):
 	""" Defines the configuration options for each game. 
 	
@@ -3576,13 +3582,9 @@ class Configuration(models.Model):
 	finances = models.BooleanField(_('finances'), default=False)
 	assassinations = models.BooleanField(_('assassinations'), default=False,
 					help_text=_('will enable Finances'))
-	bribes = models.BooleanField(_('bribes'), default=False,
-					help_text=_('will enable Finances'))
 	excommunication = models.BooleanField(_('excommunication'), default=False)
-	#disasters = models.BooleanField(_('natural disasters'), default=False)
 	special_units = models.BooleanField(_('special units'), default=False,
 					help_text=_('will enable Finances'))
-	strategic = models.BooleanField(_('strategic movement'), default=False)
 	lenders = models.BooleanField(_('money lenders'), default=False,
 					help_text=_('will enable Finances'))
 	unbalanced_loans = models.BooleanField(_('unbalanced loans'), default=False,
@@ -3591,12 +3593,12 @@ class Configuration(models.Model):
 	famine = models.BooleanField(_('famine'), default=False)
 	plague = models.BooleanField(_('plague'), default=False)
 	storms = models.BooleanField(_('storms'), default=False)
-	gossip = models.BooleanField(_('gossip'), default=True)
 	variable_home = models.BooleanField(_('variable home country'), default=False)
 	taxation = models.BooleanField(_('taxation'), default=False,
 					help_text=_('will enable Finances and Famine'))
 	fow = models.BooleanField(_('fog of war'), default=False,
 		help_text=_('each player sees only what happens near his borders'))
+	press = models.PositiveIntegerField(_('press'), choices=PRESS_TYPES, default=0)
 
 	def __unicode__(self):
 		return unicode(self.game)
@@ -3608,6 +3610,23 @@ class Configuration(models.Model):
 				if f.value_from_object(self):
 					rules.append(unicode(f.verbose_name))
 		return rules
+
+	def _get_gossip(self):
+		if self.press in (0, 2):
+			return True
+		return False
+
+	gossip = property(_get_gossip)
+
+	def _get_letters(self):
+		return self.press == 0
+
+	letters = property(_get_letters)
+
+	def _get_public_gossip(self):
+		return self.press == 2
+
+	public_gossip = property(_get_public_gossip)
 	
 def create_configuration(sender, instance, created, **kwargs):
     if isinstance(instance, Game) and created:
