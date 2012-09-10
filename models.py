@@ -1676,10 +1676,8 @@ class Game(models.Model):
 		""" Checks which GameAreas have been controlled by a Player and update them.
 		"""
 
-		for area in GameArea.objects.filter(Q(game=self) &
-								Q(unit__isnull=False) &
-								(Q(board_area__is_sea=False) |
-								Q(board_area__mixed=True))).distinct():
+		for area in self.gamearea_set.filter(Q(board_area__is_sea=False) |
+											Q(board_area__mixed=True)).distinct():
 			players = self.player_set.filter(unit__area=area).distinct()
 			if len(players) > 2:
 				err_msg = "%s units in %s (game %s)" % (len(players),area, self)
@@ -1691,23 +1689,17 @@ class Game(models.Model):
 					area.player = players[0]
 					area.years = 0
 					area.save()
-					if signals:
-						signals.area_controlled.send(sender=area, new_home=False)
-					else:
-						self.log_event(ControlEvent, country=area.player.contender.country,
-							area=area.board_area)
+					signals.area_controlled.send(sender=area, new_home=False)
 				else:
 					## the player controlling the area is the same
-					if self.configuration.variable_home and area.home_of != players[0] and area.years < 2:
-						area.years += 1
-						if area.years == 2:
-							area.home_of = players[0]
-							signals.area_controlled.send(sender=area, new_home=True)
-						area.save()
-			else:
+					area.increase_control_counter()
+			elif len(players) == 2: ## 2 units of two different countries
 					area.player = None
 					area.years = 0
 					area.save()
+			else: ## 0 units
+				if area.player: ## control doesn't change
+					area.increase_control_counter()
 
 	##---------------------
 	## logging methods
@@ -2081,6 +2073,14 @@ class GameArea(models.Model):
 		self.save()
 		logger.info("Player %s taxed %s" % (self.player, self))
 		return ducats
+
+	def increase_control_counter(self):
+		if self.game.configuration.variable_home and self.years < 2:
+			self.years += 1
+			if self.years == 2:
+				self.home_of = self.player
+				signals.area_controlled.send(sender=self, new_home=True)
+				self.save()
 
 def check_min_karma(sender, instance=None, **kwargs):
 	if isinstance(instance, CondottieriProfile):
