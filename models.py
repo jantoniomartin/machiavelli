@@ -2287,7 +2287,7 @@ class Player(models.Model):
 		return self.unit_set.filter(~Q(type__exact='G') &
 									Q(besieging=False) &
 									(Q(area__player=self) |
-									Q(type__exact='F'))).distinct()
+									(Q(type__exact='F') & Q(area__board_area__is_sea=True)))).distinct()
 	
 	def units_to_place(self):
 		""" Return the number of units that the player must place. Negative if
