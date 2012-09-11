@@ -25,6 +25,8 @@ def rule_icons(config):
 		icons.append('unbalanced-loans')
 	if config.conquering:
 		icons.append('conquering')
+	if config.strategic:
+		icons.append('strategic')
 	if config.variable_home:
 		icons.append('variable-home')
 	if config.taxation:
