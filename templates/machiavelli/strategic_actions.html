@@ -1,0 +1,65 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load i18n %}
+{% load uni_form_tags %}
+
+{% block actions %}
+<div class="action_block">
+<h2>{% trans "Strategic movement" %}</h2>
+{% if done %}
+
+<p>{% blocktrans %}At least one player has not yet made his movements. You have to wait until all
+players have done it or the time limit is reached.{% endblocktrans %}</p>
+
+{% else %}
+
+<p>{% blocktrans %}You may order up to two units to make a strategic movement. The following
+restrictions are applied:{% endblocktrans %}</p>
+<ul>
+<li>{% blocktrans %}Units may move only through your own controlled areas.{% endblocktrans %}</li>
+<li>{% blocktrans %}An army may be convoyed by any of your fleets.{% endblocktrans %}</li>
+<li>{% blocktrans %}A fleet may move through your own coasts and throgh vacant sea areas that are adjacent to your coasts.{% endblocktrans %}</li>
+<li>{% blocktrans %}A unit cannot enter an area containing other unit, except by convoy.{% endblocktrans %}</li>
+</ul>
+
+
+{% if formset %}
+<div class="action_form">
+<form action="{% url show-game game.slug %}" method="post" class="uniForm">
+{% csrf_token %}
+{{ formset.management_form }}
+{{ formset.non_form_errors }}
+{% for form in formset.forms %}
+	{{ form|as_uni_form }}
+{% endfor %}
+<p><input type="submit" value="{% trans "Confirm" %}" /></p>
+</form>
+</div>
+{% endif %}
+
+
+{% endif %}
+
+{% if orders %}
+<p>{% blocktrans %}These are your strategic movement orders:{% endblocktrans %}</p>
+<ul>
+{% for o in orders %}
+<li>{{ o }}</li>
+{% endfor %}
+</ul>
+
+{% endif %}
+
+{% if undoable %}
+<p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again, even if you don't want to make any movements.{% endblocktrans %}</p>
+<form method="POST" action="{% url undo-actions game.slug %}">
+{% csrf_token %}
+<p><input type="submit" value="{% trans "Undo strategic movements" %}" /></p>
+</form>
+{% endif %}
+
+</div>
+
+
+
+{% endblock %}

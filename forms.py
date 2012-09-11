@@ -97,6 +97,7 @@ class ConfigurationForm(forms.ModelForm):
 
 	class Meta:
 		model = machiavelli.Configuration
+		exclude = ('strategic',)
 
 class InvitationForm(forms.Form):
 	user_list = forms.CharField(required=True,
@@ -147,7 +148,42 @@ class UnitForm(forms.ModelForm):
 	class Meta:
 		model = machiavelli.Unit
 		fields = ('type', 'area')
-    
+
+def strategic_order_form_factory(player):
+	units = player.strategic_units()
+	areas = player.game.get_all_gameareas()
+
+	class StrategicOrderForm(forms.ModelForm):
+		unit = forms.ModelChoiceField(queryset=units, label=_("Unit"))
+		area = forms.ModelChoiceField(queryset=areas, label=_("Destination"))
+
+		class Meta:
+			model = machiavelli.StrategicOrder
+			fields = ('unit', 'area',)
+
+		def clean(self):
+			cleaned_data = super(StrategicOrderForm, self).clean()
+			unit = cleaned_data['unit']
+			area = cleaned_data['area']
+			if not unit.check_strategic_movement(area):
+				print "Validation ERROR"
+				raise forms.ValidationError(_("%s cannot move to %s") % (unit, area.board_area.name))
+			return cleaned_data
+
+	return StrategicOrderForm
+		
+class BaseStrategicOrderFormSet(BaseFormSet):
+	def clean(self):
+		if any(self.errors):
+			return
+		units = []
+		for i in range(0, self.total_form_count()):
+			form = self.forms[i]
+			unit = form.cleaned_data['unit']
+			if unit in units:
+				raise forms.ValidationError(_("You cannot give two orders to the same unit."))
+			units.append(unit)
+
 def make_order_form(player):
 	if player.game.configuration.finances:
 		## units bought by this player

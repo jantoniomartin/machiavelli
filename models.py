@@ -83,11 +83,13 @@ PHINACTIVE=0
 PHREINFORCE=1
 PHORDERS=2
 PHRETREATS=3
+PHSTRATEGIC=4
 
 GAME_PHASES = ((PHINACTIVE, _('Inactive game')),
 	  (PHREINFORCE, _('Military adjustments')),
 	  (PHORDERS, _('Order writing')),
 	  (PHRETREATS, _('Retreats')),
+	  (PHSTRATEGIC, _('Strategic movement')),
 	  )
 
 ORDER_CODES = (('H', _('Hold')),
@@ -794,9 +796,18 @@ class Game(models.Model):
 			if retreats_count > 0:
 				next_phase = PHRETREATS
 			else:
-				end_season = True
+				if self.configuration.strategic:
+					next_phase = PHSTRATEGIC
+				else:
+					end_season = True
 		elif self.phase == PHRETREATS:
 			self.process_retreats()
+			if self.configuration.strategic:
+				next_phase = PHSTRATEGIC
+			else:
+				end_season = True
+		elif self.phase == PHSTRATEGIC:
+			self.process_strategic_movements()
 			end_season = True
 		if end_season:
 			## delete repressed rebellions
@@ -1672,6 +1683,14 @@ class Game(models.Model):
 				unit.retreat(order.area)
 				order.delete()
 	
+	def process_strategic_movements(self):
+		repeated = self.gamearea_set.annotate(str_count=Count('strategicorder')).filter(str_count__gt=1)
+		orders = StrategicOrder.objects.filter(area__game=self)
+		for o in orders:
+			if not o.area in repeated:
+				o.unit.invade_area(o.area)
+		orders.delete()
+
 	def update_controls(self):
 		""" Checks which GameAreas have been controlled by a Player and update them.
 		"""
@@ -2262,6 +2281,13 @@ class Player(models.Model):
 
 	def placed_units_count(self):
 		return self.unit_set.filter(placed=True).count()
+
+	def strategic_units(self):
+		""" Returns a queryset with the Units that are elegible for a strategic movement."""
+		return self.unit_set.filter(~Q(type__exact='G') &
+									Q(besieging=False) &
+									(Q(area__player=self) |
+									Q(type__exact='F'))).distinct()
 	
 	def units_to_place(self):
 		""" Return the number of units that the player must place. Negative if
@@ -2563,6 +2589,12 @@ class Player(models.Model):
 			elif self.game.phase == PHRETREATS:
 				retreats = self.unit_set.exclude(must_retreat__exact='').count()
 				if retreats == 0:
+					self.done = True
+				else:
+					self.done = False
+			elif self.game.phase == PHSTRATEGIC:
+				units = self.unit_set.exclude(type__exact='G').count()
+				if units <= 0:
 					self.done = True
 				else:
 					self.done = False
@@ -3177,6 +3209,54 @@ class Unit(models.Model):
 		if signals:
 			signals.unit_to_autonomous.send(sender=self)
 
+	def valid_strategic_areas(self):
+		game_areas = GameArea.objects.filter(game=self.area.game)
+		## land areas with armies or fleets
+		occupied_ids = game_areas.filter(unit__type__in=['A','F']).values_list('id', flat=True)
+		land_filter = Q(player=self.player) & ~Q(id__in=occupied_ids)
+		if self.type == "A":
+			sea_filter = Q(board_area__is_sea=True) & Q(unit__type='F') & Q(unit__player=self.player)
+		elif self.type == "F":
+			land_filter = land_filter & Q(board_area__is_coast=True)
+			sea_filter = Q(board_area__is_sea=True) & Q(unit__isnull=True) & Q(board_area__borders__gamearea__player=self.player)
+
+		return game_areas.filter(land_filter | sea_filter).distinct()
+
+	def check_strategic_movement(self, destination):
+		""" Returns True if the unit is able to make a strategic movement to the area"""
+		if self.type == "G" or self.besieging:
+			return False
+		if self.type == "A" and (not self.area.player or self.area.player != self.player):
+			return False
+		if self.type == "A" and destination.board_area.is_sea:
+			return False
+		if self.type == "F" and not (destination.board_area.is_coast or destination.board_area.is_sea):
+			return False
+		valid_areas = self.valid_strategic_areas()
+		if not destination in valid_areas:
+			return False
+		##
+		## find a valid strategic path
+		##
+		closed = []
+		pending = [self.area, ]
+		if len(valid_areas) <= 1:
+			return False ## there are no valid areas
+		while len(pending) > 0:
+			for area in pending:
+				if area in closed:
+					continue
+				borders = list(valid_areas.filter(board_area__borders=area.board_area))
+				if destination in borders:
+					return True ## there is a valid strategic line
+				closed.append(area)
+				pending.remove(area)
+				for b in borders:
+					if not b in closed and not b in pending:
+						pending.append(b)
+				break
+		return False ## there is not a valid convoy path
+
 class Order(models.Model):
 	""" This class defines an order from a player to a unit. The order will not be
 	effective unless it is confirmed.
@@ -3549,6 +3629,15 @@ class RetreatOrder(models.Model):
 	def __unicode__(self):
 		return "%s" % self.unit
 
+class StrategicOrder(models.Model):
+	""" Defines the area where the unit will try to go with a strategic movement.
+	"""
+	unit = models.ForeignKey(Unit)
+	area = models.ForeignKey(GameArea)
+
+	def __unicode__(self):
+		return _("%s moves to %s") % (self.unit, self.area.board_area.name)
+
 class TurnLog(models.Model):
 	""" A TurnLog is text describing the processing of the method
 	``Game.process_orders()``.
@@ -3594,6 +3683,7 @@ class Configuration(models.Model):
 	famine = models.BooleanField(_('famine'), default=False)
 	plague = models.BooleanField(_('plague'), default=False)
 	storms = models.BooleanField(_('storms'), default=False)
+	strategic = models.BooleanField(_('strategic movement'), default=False)
 	variable_home = models.BooleanField(_('variable home country'), default=False)
 	taxation = models.BooleanField(_('taxation'), default=False,
 					help_text=_('will enable Finances and Famine'))

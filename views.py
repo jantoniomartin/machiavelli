@@ -477,6 +477,9 @@ def undo_actions(request, slug=''):
 		elif game.phase == machiavelli.PHRETREATS:
 			machiavelli.RetreatOrder.objects.filter(unit__player=player).delete()
 			messages.success(request, _("Your retreat orders have been undone."))
+		elif game.phase == machiavelli.PHSTRATEGIC:
+			machiavelli.StrategicOrder.objects.filter(unit__player=player).delete()
+			messages.success(request, _("Your strategic movements have been undone."))
 		if game.check_bonus_time():
 			profile.adjust_karma( -1 )
 		player.save()
@@ -595,6 +598,8 @@ def play_game(request, slug='', **kwargs):
 			return play_orders(request, game, player)
 		elif game.phase == machiavelli.PHRETREATS:
 			return play_retreats(request, game, player)
+		elif game.phase == machiavelli.PHSTRATEGIC:
+			return play_strategic(request, game, player)
 		else:
 			raise Http404
 	## no player
@@ -910,6 +915,31 @@ def play_retreats(request, game, player):
 		if len(retreat_forms) > 0:
 			context['retreat_forms'] = retreat_forms
 	return render_to_response('machiavelli/retreats_actions.html',
+							context,
+							context_instance=RequestContext(request))
+
+def play_strategic(request, game, player):
+	context = base_context(request, game, player)
+	units = player.strategic_units()
+	context['orders'] = machiavelli.StrategicOrder.objects.filter(unit__player=player)
+	if units.count() <= 0:
+		context.update({'unodeable': False})
+	if not player.done:
+		StrategicOrderForm = forms.strategic_order_form_factory(player)
+		StrategicOrderFormSet = formset_factory(StrategicOrderForm,
+			formset=forms.BaseStrategicOrderFormSet, extra=2)
+		if request.method == 'POST':
+			formset = StrategicOrderFormSet(request.POST)
+			if formset.is_valid():
+				for form in formset.forms:
+					form.save()
+				player.end_phase()
+				messages.success(request, _("You have successfully sent your strategic movements."))
+				return HttpResponseRedirect(request.path)
+		else:
+			formset = StrategicOrderFormSet()
+		context['formset'] = formset
+	return render_to_response('machiavelli/strategic_actions.html',
 							context,
 							context_instance=RequestContext(request))
 
