@@ -95,7 +95,8 @@
 <h3>{% trans "Campaign log" %}</h3>
 <div class="menu">
 <p><a href="{% url gamearea-list game.slug %}">{% trans "Areas list" %}</a>
-| <a href="{% url game-log game.slug %}">{% trans "See all" %}</a>
+| <a href="{% url scenario_detail game.scenario.name %}">{% trans "Scenario" %}</a>
+| <a href="{% url game-log game.slug %}">{% trans "All events" %}</a>
 {% if not fow %}
 | <a href="{% url turn-log-list game.slug %}">{% trans "Process" %}</a></p>
 {% endif %}
