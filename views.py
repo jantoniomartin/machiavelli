@@ -323,6 +323,7 @@ def get_log_qs(game, player):
 			visible = player.visible_areas()
 			## add events visible by the player
 			q = q | \
+				Q(orderevent__origin__in=visible) | \
 				Q(conversionevent__area__in=visible) | \
 				Q(disbandevent__area__in=visible) | \
 				Q(expenseevent__area__in=visible) | \
