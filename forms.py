@@ -179,10 +179,11 @@ class BaseStrategicOrderFormSet(BaseFormSet):
 		units = []
 		for i in range(0, self.total_form_count()):
 			form = self.forms[i]
-			unit = form.cleaned_data['unit']
-			if unit in units:
-				raise forms.ValidationError(_("You cannot give two orders to the same unit."))
-			units.append(unit)
+			if 'unit' in form.cleaned_data:
+				unit = form.cleaned_data['unit']
+				if unit in units:
+					raise forms.ValidationError(_("You cannot give two orders to the same unit."))
+				units.append(unit)
 
 def make_order_form(player):
 	if player.game.configuration.finances:
