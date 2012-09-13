@@ -933,7 +933,8 @@ def play_strategic(request, game, player):
 			formset = StrategicOrderFormSet(request.POST)
 			if formset.is_valid():
 				for form in formset.forms:
-					form.save()
+					if 'unit' in form.cleaned_data:
+						form.save()
 				player.end_phase()
 				messages.success(request, _("You have successfully sent your strategic movements."))
 				return HttpResponseRedirect(request.path)
