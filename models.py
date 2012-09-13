@@ -2415,7 +2415,7 @@ class Player(models.Model):
 		else:
 			## new version of elimination rule
 			## find a home province controlled by the player, and empty
-			safe = self.home_country().filter(unit__isnull=True).count()
+			safe = self.controlled_home_country().filter(unit__isnull=True).count()
 			if safe > 0:
 				return False
 			## find a home province occupied only by the player
