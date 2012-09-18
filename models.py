@@ -3636,7 +3636,8 @@ class StrategicOrder(models.Model):
 	area = models.ForeignKey(GameArea)
 
 	def __unicode__(self):
-		return _("%s moves to %s") % (self.unit, self.area.board_area.name)
+		return _("%(unit)s moves to %(area)s") % {'unit': self.unit,
+			'area': self.area.board_area.name}
 
 class TurnLog(models.Model):
 	""" A TurnLog is text describing the processing of the method
@@ -4070,7 +4071,9 @@ class Diplomat(models.Model):
 		verbose_name_plural = _("diplomats")
 
 	def __unicode__(self):
-		return _("%s's diplomat in %s") % (self.player.contender.country, self.area)
+		return _("%(country)s's diplomat in %(area)s") % {
+			'country': self.player.contender.country,
+			'area': self.area}
 
 	def save(self, *args, **kwargs):
 		logger.info("Saving diplomat in %s" % self.area)

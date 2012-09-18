@@ -167,7 +167,8 @@ def strategic_order_form_factory(player):
 				unit = cleaned_data['unit']
 				area = cleaned_data['area']
 				if not unit.check_strategic_movement(area):
-					raise forms.ValidationError(_("%s cannot move to %s") % (unit, area.board_area.name))
+					raise forms.ValidationError(_("%(unit)s cannot move to %(area)s") % {'unit': unit,
+		'area': area.board_area.name})
 			return cleaned_data
 
 	return StrategicOrderForm
