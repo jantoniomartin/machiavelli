@@ -1603,11 +1603,15 @@ class Game(models.Model):
 		"""
 		Deletes unconfirmed orders and logs confirmed ones.
 		"""
-		## delete all orders that were not confirmed
-		Order.objects.filter(unit__player__game=self, confirmed=False).delete()
 		## delete all orders sent by players that don't control the unit
 		if self.configuration.finances:
 			Order.objects.filter(player__game=self).exclude(player=F('unit__player')).delete()
+		info = u"The following orders are not confirmed and will be deleted:\n"
+		## delete all orders that were not confirmed
+		for o in Order.objects.filter(unit__player__game=self, confirmed=False):
+			info += u"%s\n" % o
+			o.delete()
+		info += u"---------------\n"
 		## cancel interrupted sieges
 		besieging = Unit.objects.filter(player__game=self, besieging=True)
 		for u in besieging:
@@ -1621,14 +1625,18 @@ class Game(models.Model):
 			if o.code != 'H':
 				if signals:
 					signals.order_placed.send(sender=o)
+			else:
+				info += u"%s was ordered to hold\n" % o.unit
+		return info
 	
 	def process_orders(self):
 		""" Run a batch of methods in the correct order to process all the orders.
 		"""
 
-		self.preprocess_orders()
 		info = u"Processing orders in game %s\n" % self.slug
 		info += u"------------------------------\n\n"
+		info += self.preprocess_orders()
+		info += u"\n"
 		## resolve =G that are not opposed
 		info += self.resolve_auto_garrisons()
 		info += u"\n"
