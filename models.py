@@ -2100,7 +2100,7 @@ class GameArea(models.Model):
 				if self.years == 2:
 					self.home_of = self.player
 					signals.area_controlled.send(sender=self, new_home=True)
-					self.save()
+				self.save()
 
 def check_min_karma(sender, instance=None, **kwargs):
 	if isinstance(instance, CondottieriProfile):
