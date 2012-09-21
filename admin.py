@@ -43,7 +43,7 @@ class GameAreaAdmin(admin.ModelAdmin):
 	list_display = ('game', 'board_area', 'player', 'home_of', 'years', 'standoff', 'famine', 'storm')
 	list_per_page = 73
 	ordering = ['board_area']
-	list_filter = ('player', )
+	list_filter = ('game', )
 
 class OrderAdmin(admin.ModelAdmin):
 	list_display = ('player', '__unicode__', 'explain', 'confirmed')
