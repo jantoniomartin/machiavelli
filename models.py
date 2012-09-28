@@ -2048,6 +2048,7 @@ class GameArea(models.Model):
 		## this is not too clear in the rules
 		if Unit.objects.filter(area=self).exclude(player=self.player).count() > 0:
 			return False
+		result = False
 		if not self.has_rebellion(self.player):
 			if self.game.scenario.setting.configuration.religious_war:
 				r_player = self.player.contender.country.religion
@@ -2056,7 +2057,6 @@ class GameArea(models.Model):
 					if r_player != r_area:
 						mod += 1
 						print "modifier is %s" % mod
-			result = False
 			die = dice.roll_1d6() - mod
 			try:
 				Unit.objects.get(area=self, player=self.player)
