@@ -3248,7 +3248,7 @@ class Unit(models.Model):
 		##
 		closed = []
 		pending = [self.area, ]
-		if len(valid_areas) <= 1:
+		if len(valid_areas) < 1:
 			return False ## there are no valid areas
 		while len(pending) > 0:
 			for area in pending:
