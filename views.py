@@ -339,7 +339,7 @@ def get_log_qs(game, player):
 					Q(standoffevent__area__in=visible) | \
 					Q(unitevent__area__in=visible)
 			log = log.filter(q)
-			cache.set(cache_key, log)
+		cache.set(cache_key, log)
 	return log
 
 def base_context(request, game, player):
