@@ -2871,7 +2871,7 @@ class Revolution(models.Model):
 		unique_together = [('game', 'government'), ('game', 'opposition')]
 
 	def __unicode__(self):
-		return "%s (%s)" % (self.government, self.game)
+		return u"%s (%s)" % (self.government, self.game)
 
 	def save(self, *args, **kwargs):
 		if self.id is None:
