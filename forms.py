@@ -97,7 +97,8 @@ class ConfigurationForm(forms.ModelForm):
 
 	class Meta:
 		model = machiavelli.Configuration
-		exclude = ('strategic',)
+		#exclude = ('strategic',)
+		exclude = getattr(settings, 'DISABLED_RULES', ())
 
 class InvitationForm(forms.Form):
 	user_list = forms.CharField(required=True,
