@@ -1008,7 +1008,7 @@ def undo_expense(request, slug='', expense_id=''):
 #							context,
 #							context_instance=RequestContext(request))
 
-@never_cache
+#@never_cache
 #@login_required
 def logs_by_game(request, slug=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
