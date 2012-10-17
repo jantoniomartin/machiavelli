@@ -311,28 +311,35 @@ class GameBaseView(DetailView):
 		return context
 
 def get_log_qs(game, player):
-	log = game.baseevent_set.exclude(season__exact=game.season, phase__exact=game.phase,
-		year__exact=game.year)
-	if game.configuration.fow:
-		## show all control events and all country events
-		q = Q(controlevent__area__isnull=False) | \
-		Q(countryevent__country__isnull=False) | \
-		Q(uncoverevent__country__isnull=False) | \
-		Q(disasterevent__area__isnull=False)
-		if player:
-			visible = player.visible_areas()
-			## add events visible by the player
-			q = q | \
-				Q(orderevent__origin__in=visible) | \
-				Q(conversionevent__area__in=visible) | \
-				Q(disbandevent__area__in=visible) | \
-				Q(expenseevent__area__in=visible) | \
-				Q(movementevent__destination__in=visible) | \
-				Q(newunitevent__area__in=visible) | \
-				Q(retreatevent__destination__in=visible) | \
-				Q(standoffevent__area__in=visible) | \
-				Q(unitevent__area__in=visible)
-		log = log.filter(q)
+	if player and game.configuration.fow:
+		cache_key = "player-%s_log" % player.id
+	else:
+		cache_key = "game-%s_log" % game.id
+	log = cache.get(cache_key)
+	if not log:
+		log = game.baseevent_set.exclude(season__exact=game.season, phase__exact=game.phase,
+			year__exact=game.year)
+		if game.configuration.fow:
+			## show all control events and all country events
+			q = Q(controlevent__area__isnull=False) | \
+			Q(countryevent__country__isnull=False) | \
+			Q(uncoverevent__country__isnull=False) | \
+			Q(disasterevent__area__isnull=False)
+			if player:
+				visible = player.visible_areas()
+				## add events visible by the player
+				q = q | \
+					Q(orderevent__origin__in=visible) | \
+					Q(conversionevent__area__in=visible) | \
+					Q(disbandevent__area__in=visible) | \
+					Q(expenseevent__area__in=visible) | \
+					Q(movementevent__destination__in=visible) | \
+					Q(newunitevent__area__in=visible) | \
+					Q(retreatevent__destination__in=visible) | \
+					Q(standoffevent__area__in=visible) | \
+					Q(unitevent__area__in=visible)
+			log = log.filter(q)
+			cache.set(cache_key, log)
 	return log
 
 def base_context(request, game, player):

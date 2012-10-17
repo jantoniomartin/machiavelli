@@ -628,9 +628,14 @@ class Game(models.Model):
 			"game-%s_player_list" % self.pk,
 			"game-%s_all-units" % self.pk,
 			"game-%s_all-areas" % self.pk,
+			"game-%s_log" % self.pk,
 		]
-		for k in cache_keys:
-			cache.delete(k)
+		try:
+			cache.delete_many(cache_keys)
+		except:
+			logger.error("Error while deleting cache keys")
+		for p in self.player_set.filter(user__isnull=False):
+			p.clear_phase_cache()
 
 	def get_highest_karma(self):
 		""" Returns the karma of the non-finished player with the highest value.
@@ -2249,7 +2254,14 @@ class Player(models.Model):
 			return self.user.account_set.all()[0].get_language_display()
 		else:
 			return ''
-	
+
+	def clear_phase_cache(self):
+		cache_keys = ["player-%s_log" % self.pk,]
+		try:
+			cache.delete_many(cache_keys)
+		except:
+			logger.error("Error while deleting player phase cache")
+
 	def get_setups(self):
 		#return self.game.scenario.setup_set.filter(country=self.country).select_related()
 		return self.contender.setup_set.select_related()
