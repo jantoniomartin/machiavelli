@@ -263,50 +263,7 @@ class GameBaseView(DetailView):
 		context = super(GameBaseView, self).get_context_data(**kwargs)
 		game = self.get_object()
 		player = self.get_player()
-		context.update({
-			'map': game.map_url,
-			'player': player,
-			'player_list': game.player_list_ordered_by_cities(),
-			'show_users': game.visible,
-		})
-		if game.slots > 0:
-			context['player_list'] = game.player_set.filter(user__isnull=False)
-		log = game.baseevent_set.all()
-		if player:
-			context['done'] = player.done
-			if game.configuration.finances:
-				context['ducats'] = player.ducats
-			context['can_excommunicate'] = player.can_excommunicate()
-			context['can_forgive'] = player.can_forgive()
-			try:
-				journal = machiavelli.Journal.objects.get(user=self.request.user, game=game)
-			except ObjectDoesNotExist:
-				journal = machiavelli.Journal()
-			context.update({'excerpt': journal.excerpt})
-			if game.slots == 0:
-				context['time_exceeded'] = player.time_exceeded()
-			if player.done and not player.in_last_seconds() and not player.eliminated and not player.surrendered:
-				context.update({'undoable': True,})
-		log = log.exclude(season__exact=game.season,
-							phase__exact=game.phase)
-		if len(log) > 0:
-			last_year = log[0].year
-			last_season = log[0].season
-			last_phase = log[0].phase
-			context['log'] = log.filter(year__exact=last_year,
-								season__exact=last_season,
-								phase__exact=last_phase)
-		else:
-			context['log'] = log # this will always be an empty queryset
-		rules = game.configuration.get_enabled_rules()
-		if len(rules) > 0:
-			context['rules'] = rules
-	
-		if game.configuration.gossip:
-			whispers = game.whisper_set.all()[:10]
-			context.update({'whispers': whispers, })
-			if player:
-				context.update({'whisper_form': forms.WhisperForm(),})
+		context.update(base_context(self.request, game, player))
 		
 		return context
 
@@ -550,7 +507,7 @@ def show_inactive_game(request, game):
 
 class TeamMessageListView(LoginRequiredMixin, ListAppendView):
 	model = machiavelli.TeamMessage
-	paginate_by = 20
+	paginate_by = 10
 	context_object_name = 'message_list'
 	template_name = 'machiavelli/team_messages.html'
 	form_class = forms.TeamMessageForm
@@ -567,7 +524,12 @@ class TeamMessageListView(LoginRequiredMixin, ListAppendView):
 
 	def get_context_data(self, **kwargs):
 		context = super(TeamMessageListView, self).get_context_data(**kwargs)
-		context['game'] = self.game
+		game = self.game
+		try:
+			player = machiavelli.Player.objects.get(game=game, user=self.request.user)
+		except ObjectDoesNotExist:
+			player = machiavelli.Player.objects.none()
+		context.update(base_context(self.request, game, player))
 		return context
 
 	def form_valid(self, form):

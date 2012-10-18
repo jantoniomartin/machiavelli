@@ -270,18 +270,24 @@
 	padding: 0.2em 0.5em;
 }
 
-#shoutbox ul li, #mini_shoutbox ul li, #latest_gossip ul li {
+#shoutbox ul li,
+#mini_shoutbox ul li,
+#latest_gossip ul li {
 	list-style-type: none;
 	padding: 0.5em;
 }
 
-#shoutbox .date, #mini_shoutbox .date, #latest_gossip .date {
+#shoutbox .date,
+#mini_shoutbox .date,
+#latest_gossip .date {
 	display: block;
 	font-size: smaller;
 	color: #ccc;
 }
 
-#shoutbox .admin, #mini_shoutbox .admin, #latest_gossip .admin {
+#shoutbox .admin,
+#mini_shoutbox .admin,
+#latest_gossip .admin {
 	background-color: #c14200;
 	font-style: italic;
 }
@@ -293,3 +299,29 @@
 #mini_shoutbox textarea {
 	width: 90%;
 }
+
+#team_messages {
+	padding: 0.5em 0.5em 0.5em 2em;
+	color: #333;	
+}
+
+#team_messages div.team_message {
+	position: relative;
+	margin-bottom: 1em;
+	padding: 0.5em 0.5em 1.5em 0.5em;
+	background: #ffd073;
+	/*text-indent: 1.5em;*/
+}
+
+#team_messages div.own_message {
+	background: #fff973;
+}
+
+#team_messages .message_info {
+	position: absolute;
+	left: 1em;
+	bottom: 0.5em;
+	font-size: smaller;
+}
+
+
