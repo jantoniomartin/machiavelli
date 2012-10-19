@@ -34,6 +34,7 @@ from django.db import models
 from django.db.models import permalink, Q, F, Count, Sum, Avg, Max
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.cache import cache
+from django.core.mail import mail_admins
 from django.contrib.auth.models import User
 import django.forms as forms
 from django.utils.translation import ugettext_lazy as _
@@ -1967,6 +1968,29 @@ class LiveGame(Game):
 	
 	class Meta:
 		proxy = True
+
+class ErrorReport(models.Model):
+	""" This class defines an error report sent by a player to the staff """
+	game = models.ForeignKey(Game)
+	user = models.ForeignKey(User)
+	description = models.TextField()
+	created_on = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		verbose_name = _("error report")
+		verbose_name_plural = _("error reports")
+
+	def __unicode__(self):
+		return u"Report #%s in game %s" % (self.pk, self.game)
+
+def send_error_report(sender, instance=None, **kwargs):
+	if isinstance(instance, ErrorReport):
+		subject = u"New error report in '%s'" % instance.game.slug
+		message = u"%s reported a new error in the game '%s':\n\n" % (instance.user, instance.game)
+		message += unicode(instance.description)
+		mail_admins(subject, message)
+
+models.signals.post_save.connect(send_error_report, sender=ErrorReport)
 
 class GameArea(models.Model):
 	""" This class defines the actual game areas where each game is played. """

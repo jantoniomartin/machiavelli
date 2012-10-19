@@ -42,6 +42,7 @@ urlpatterns = patterns('machiavelli.views',
 	url(r'^game/(?P<slug>[-\w]+)/whisper_list$', views.WhisperListView.as_view(), name='whisper-list'),
 	url(r'^game/(?P<slug>[-\w]+)/journal$', 'edit_journal', name='edit-journal'),
 	url(r'^game/(?P<slug>[-\w]+)/team_messages$', views.TeamMessageListView.as_view(), name='team_messages'),
+	url(r'^game/(?P<slug>[-\w]+)/report$', 'new_error_report', name='new-report'),
 	url(r'^game/(?P<slug>[-\w]+)', 'play_game', name='show-game'),
 	#url(r'^jsgame/(?P<slug>[-\w]+)', 'js_play_game', name='js-play-game'),
 )

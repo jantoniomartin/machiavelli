@@ -1,0 +1,26 @@
+{% extends 'machiavelli/show_game.html' %}
+
+{% load uni_form_tags %}
+{% load avatar_tags %}
+{% load i18n %}
+
+{% block actions %}
+<div class="action_block">
+
+<h2>{% trans "Report error in" %} "{{ game.slug }}"</h2>
+
+<p>{% blocktrans %}If you have found an error in this game, you can use this form to report it. The admins will be notified, and they will reply to your email
+address.{% endblocktrans %}</p>
+
+<p>{% blocktrans %}Please, double check that this is really an error and, if you are pretty sure, be as specific as possible in the description.{% endblocktrans %}</p>
+
+<form action="" method="POST" class="uniForm">
+{% csrf_token %}
+{{ form|as_uni_form }}
+<p><input type="submit" value="{% trans "Send" %}" /></p>
+</form>
+
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+
+</div>
+{% endblock %}

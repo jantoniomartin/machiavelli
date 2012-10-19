@@ -141,8 +141,11 @@
 {% endif %}
 
 {% if player %}
-<h2>{% trans "Surrender" %}</h2>
-<p><a href="{% url surrender game.slug %}">{% trans "Surrender" %}</a></p>
+<h2>{% trans "Game management" %}</h2>
+<ul>
+<li><a href="{% url surrender game.slug %}">{% trans "Surrender" %}</a></li>
+<li><a href="{% url new-report game.slug %}">{% trans "Report error" %}</a></li>
+</ul>
 {% endif %}
 
 </div>

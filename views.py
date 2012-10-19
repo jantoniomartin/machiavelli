@@ -47,6 +47,7 @@ from django.contrib import messages
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView
 
 ## machiavelli
 import machiavelli.models as machiavelli
@@ -1598,3 +1599,27 @@ def edit_journal(request, slug):
 							context,
 							context_instance=RequestContext(request))
 
+@login_required
+def new_error_report(request, slug):
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	try:
+		player = machiavelli.Player.objects.get(user=request.user, game=game, surrendered=False)
+	except ObjectDoesNotExist:
+		messages.error(request, _("You cannot report errors in this game"))
+		return redirect(game)
+	context = base_context(request, game, player)
+	if request.method == 'POST':
+		form = forms.ErrorReportForm(request.POST)
+		if form.is_valid():
+			report = form.save(commit=False)
+			report.user=request.user
+			report.game=game
+			report.save()
+			messages.success(request, _("Your error report has been saved"))
+			return redirect(game)
+	else:
+		form = forms.ErrorReportForm()
+	context.update({'form': form})
+	return render_to_response('machiavelli/error_report_form.html',
+							context,
+							context_instance=RequestContext(request))

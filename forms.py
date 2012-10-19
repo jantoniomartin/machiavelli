@@ -576,3 +576,10 @@ def make_assassination_form(player):
 		target = forms.ModelChoiceField(required=True, queryset=targets_qs, label=_("Target country"))
 
 	return AssassinationForm
+
+class ErrorReportForm(forms.ModelForm):
+	class Meta:
+		model = machiavelli.ErrorReport
+		fields = ('description',)
+		exclude = ('user', 'game',)
+
