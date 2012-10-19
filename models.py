@@ -1988,6 +1988,7 @@ def send_error_report(sender, instance=None, **kwargs):
 		subject = u"New error report in '%s'" % instance.game.slug
 		message = u"%s reported a new error in the game '%s':\n\n" % (instance.user, instance.game)
 		message += unicode(instance.description)
+		message += u"\n\nThe user's email is %s\n" % instance.user.email
 		mail_admins(subject, message)
 
 models.signals.post_save.connect(send_error_report, sender=ErrorReport)
