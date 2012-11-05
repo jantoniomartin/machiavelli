@@ -292,10 +292,10 @@ class Game(models.Model):
 			FROM machiavelli_player \
 			LEFT JOIN (machiavelli_gamearea \
 			INNER JOIN condottieri_scenarios_area \
-			ON machiavelli_gamearea.board_area_id=condottieri_scenarios_area.id) \
+			ON machiavelli_gamearea.board_area_id=condottieri_scenarios_area.id \
+			AND condottieri_scenarios_area.has_city=1) \
 			ON machiavelli_gamearea.player_id=machiavelli_player.id \
 			WHERE (machiavelli_player.game_id=%s \
-			AND (condottieri_scenarios_area.has_city=1 OR machiavelli_gamearea.id IS NULL)) \
 			GROUP BY machiavelli_player.id \
 			ORDER BY machiavelli_player.team_id, cities DESC, machiavelli_player.id;" % self.id)
 			result_list = []
