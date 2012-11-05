@@ -295,7 +295,7 @@ class Game(models.Model):
 			ON machiavelli_gamearea.board_area_id=condottieri_scenarios_area.id \
 			AND condottieri_scenarios_area.has_city=1) \
 			ON machiavelli_gamearea.player_id=machiavelli_player.id \
-			WHERE (machiavelli_player.game_id=%s \
+			WHERE machiavelli_player.game_id=%s \
 			GROUP BY machiavelli_player.id \
 			ORDER BY machiavelli_player.team_id, cities DESC, machiavelli_player.id;" % self.id)
 			result_list = []
