@@ -1323,7 +1323,7 @@ class Game(models.Model):
 				continue
 			else:
 				info += u"%s was ordered: %s.\n" % (u, u_order)
-				if finances and u_order.code == 'H':
+				if finances and u_order.code == 'H' and not u.type == 'G':
 					## the unit counts for removing a rebellion
 					holding.append(u)
 				if u_order.code in ['H', 'S', 'B', 'C']:
