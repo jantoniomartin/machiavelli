@@ -7,5 +7,4 @@ private game '{{ slug }}'.{% endblocktrans %}
 {{ invitation.message }}
 {% endifnotequal %}
 
-{% trans "You can join the game now:" %} {{ current_site }}{% url
-games-joinable %}
+{% trans "You can join the game now:" %} http://{{ current_site }}{% url games-joinable %}

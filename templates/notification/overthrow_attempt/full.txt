@@ -10,7 +10,7 @@ actions in the current phase, another player will take your country.{% endblockt
 {% blocktrans %}If you lose your country, this will be shown in your profile,
 and your score will be some points lower.{% endblocktrans %}
 
-{% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}
+{% trans "Go to the game" %} http://{{ current_site }}{% url show-game game.slug %}
 
 {% blocktrans %}If you do not want to play this game, it's better that you
 let the other player to take your country. This way you won't lose more karma

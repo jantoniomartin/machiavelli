@@ -15,5 +15,5 @@ overthrow you, you will lose your country without further notice.{% endblocktran
 {% blocktrans %}If you want to keep playing in this game, you have only to
 make your actions, and you will keep your country.{% endblocktrans %}
 
-{% trans "Go to the game" %} {{ current_site }}{% url show-game game.slug %}
+{% trans "Go to the game" %} http://{{ current_site }}{% url show-game game.slug %}
 

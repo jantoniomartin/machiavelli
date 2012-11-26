@@ -5,5 +5,5 @@
 {% trans "Body" %}:
 {{ message.text }}
 
-{% trans "Read the messages" %}: {{ current_site }}{% url team_messages game.slug %}
+{% trans "Read the messages" %}: http://{{ current_site }}{% url team_messages game.slug %}
 
