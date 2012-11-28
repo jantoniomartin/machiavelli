@@ -3732,7 +3732,7 @@ class Configuration(models.Model):
 	plague = models.BooleanField(_('plague'), default=False)
 	storms = models.BooleanField(_('storms'), default=False)
 	strategic = models.BooleanField(_('strategic movement'), default=False)
-	variable_home = models.BooleanField(_('variable home country'), default=False)
+	variable_home = models.BooleanField(_('variable home country'), default=False, help_text=_('conquering will be disabled'))
 	taxation = models.BooleanField(_('taxation'), default=False,
 					help_text=_('will enable Finances and Famine'))
 	fow = models.BooleanField(_('fog of war'), default=False,

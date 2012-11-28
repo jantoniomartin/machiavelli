@@ -93,6 +93,8 @@ class ConfigurationForm(forms.ModelForm):
 		if 'taxation' in cleaned_data.keys() and cleaned_data['taxation']:
 			cleaned_data['finances'] = True
 			cleaned_data['famine'] = True
+		if 'variable_home' in cleaned_data.keys() and cleaned_data['variable_home']:
+			cleaned_data['conquering'] = False
 		return cleaned_data
 
 	class Meta:
