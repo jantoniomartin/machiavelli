@@ -2705,23 +2705,25 @@ class Player(models.Model):
 		return 'unsafe_time'
 
 	def check_revolution(self):
-		## the player didn't take his actions, so he loses karma
+		""" If a player doesn't submit his orders, he loses karma points.
+		If the game is not private, a new revolution is created, and he can be overthrown. """
 		if self.game.uses_karma:
 			self.user.get_profile().adjust_karma(-10)
-		revolution, created = Revolution.objects.get_or_create(game=self.game,
+		if not self.game.private:
+			revolution, created = Revolution.objects.get_or_create(game=self.game,
 				government=self.user, overthrow=False)
-		revolution.active = datetime.now()
-		if created:
-			logger.info("New revolution for player %s" % self)
-			if notification:
-				user = [self.user,]
-				extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-				notification.send(user, "new_revolution", extra_context,
-					on_site=True)
-		else:
-			if revolution.opposition:
-				revolution.resolve()
-		revolution.save()
+			revolution.active = datetime.now()
+			if created:
+				logger.info("New revolution for player %s" % self)
+				if notification:
+					user = [self.user,]
+					extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
+					notification.send(user, "new_revolution", extra_context,
+						on_site=True)
+			else:
+				if revolution.opposition:
+					revolution.resolve()
+			revolution.save()
 
 	def close_revolution(self):
 		""" The player made his actions, and any revolutions are closed """
