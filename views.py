@@ -1026,7 +1026,10 @@ def create_game(request, teams=False):
 			new_player.save()
 			config_form = forms.ConfigurationForm(request.POST,
 												instance=new_game.configuration)
-			config_form.save()
+			config = config_form.save(commit=False)
+			if new_game.require_home_cities:
+				config.variable_home = False
+			config.save()
 			cache.delete('sidebar_activity')
 			player_joined.send(sender=new_player)
 			messages.success(request, _("Game successfully created."))
