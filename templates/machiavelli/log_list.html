@@ -19,6 +19,8 @@
 		{% endif %}
 	</span>
 </div>
+<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+
 <div id="full_log" class="log_list">
 <ul>
 {% for event in log.object_list %}
@@ -27,6 +29,21 @@
 </ul>
 </div>
 
+<div class="log_pagination">
+	<span class="step-links">
+		{% if log.has_previous %}
+			<a href="?{{ log.previous_date }}">&lt;&lt;</a>
+		{% endif %}
+		
+		<span class="current">
+			{{ log.year }}, {{ log.season_name }}
+		</span>
+
+		{% if log.has_next %}
+			<a href="?{{ log.next_date }}">&gt;&gt;</a>
+		{% endif %}
+	</span>
+</div>
 <p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
 
 {% endblock %}
