@@ -2710,20 +2710,23 @@ class Player(models.Model):
 		if self.game.uses_karma:
 			self.user.get_profile().adjust_karma(-10)
 		if not self.game.private:
-			revolution, created = Revolution.objects.get_or_create(game=self.game,
-				government=self.user, overthrow=False)
-			revolution.active = datetime.now()
-			if created:
-				logger.info("New revolution for player %s" % self)
-				if notification:
-					user = [self.user,]
-					extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-					notification.send(user, "new_revolution", extra_context,
-						on_site=True)
-			else:
-				if revolution.opposition:
-					revolution.resolve()
-			revolution.save()
+			created = False
+			karma_to_revolution = getattr(settings, KARMA_TO_REVOLUTION, 170)
+			if self.user.get_profile().karma < karma_to_revolution:
+				revolution, created = Revolution.objects.get_or_create(game=self.game,
+					government=self.user, overthrow=False)
+				revolution.active = datetime.now()
+				if created:
+					logger.info("New revolution for player %s" % self)
+					if notification:
+						user = [self.user,]
+						extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
+						notification.send(user, "new_revolution", extra_context,
+							on_site=True)
+				else:
+					if revolution.opposition:
+						revolution.resolve()
+				revolution.save()
 
 	def close_revolution(self):
 		""" The player made his actions, and any revolutions are closed """
