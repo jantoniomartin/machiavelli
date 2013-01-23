@@ -2709,6 +2709,7 @@ class Player(models.Model):
 		If the game is not private, a new revolution is created, and he can be overthrown. """
 		if self.game.uses_karma:
 			self.user.get_profile().adjust_karma(-10)
+			logger.info("%s lost 10 karma points" % self)
 		if not self.game.private:
 			created = False
 			karma_to_revolution = getattr(settings, KARMA_TO_REVOLUTION, 170)
@@ -2727,6 +2728,8 @@ class Player(models.Model):
 					if revolution.opposition:
 						revolution.resolve()
 				revolution.save()
+			else:
+				logger.info("Karma prevents revolution for %s" % self)
 
 	def close_revolution(self):
 		""" The player made his actions, and any revolutions are closed """
