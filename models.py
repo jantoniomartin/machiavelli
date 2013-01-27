@@ -2712,7 +2712,7 @@ class Player(models.Model):
 			logger.info("%s lost 10 karma points" % self)
 		if not self.game.private:
 			created = False
-			karma_to_revolution = getattr(settings, KARMA_TO_REVOLUTION, 170)
+			karma_to_revolution = getattr(settings, "KARMA_TO_REVOLUTION", 170)
 			if self.user.get_profile().karma < karma_to_revolution:
 				revolution, created = Revolution.objects.get_or_create(game=self.game,
 					government=self.user, overthrow=False)
@@ -2726,6 +2726,7 @@ class Player(models.Model):
 							on_site=True)
 				else:
 					if revolution.opposition:
+						logger.info("Executing overthrow")
 						revolution.resolve()
 				revolution.save()
 			else:
