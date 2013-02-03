@@ -209,6 +209,7 @@ class Game(models.Model):
 	## minimum number of conquered cities, apart from home country, to win
 	extra_conquered_cities = models.PositiveIntegerField(default=0,
 		verbose_name=_("extra conquered cities"))
+	years_limit = models.PositiveIntegerField(_("years limit"), default=0)
 	fast = models.BooleanField(_("fast"), default=0)
 	uses_karma = models.BooleanField(_("uses karma"), default=True)
 	paused = models.BooleanField(_("paused"), default=False)
@@ -1759,6 +1760,11 @@ class Game(models.Model):
 		## get the players list ordered by cities, exclude assassinated players
 		players = list(self.player_set.filter(user__isnull=False, assassinated=False))
 		players.sort(cmp=lambda x,y: cmp(x.number_of_cities, y.number_of_cities), reverse=True)
+		if players[0].number_of_cities == players[1].number_of_cities:
+			return False
+		if self.years_limit > 0:
+			if self.scenario.start_year + self.years_limit >= self.year:
+				return players[0]
 		for p in players:
 			if p.number_of_cities >= self.cities_to_win:
 				if self.require_home_cities:
