@@ -2509,14 +2509,15 @@ class Player(models.Model):
 	def surrender(self):
 		self.surrendered = True
 		self.done = True
-		try:
-			rev = Revolution.objects.get(game=self.game, government=self.user)
-		except ObjectDoesNotExist:
-			rev = Revolution(game=self.game, government=self.user,
-				country = self.contender.country)
-		rev.active = datetime.now()
-		rev.voluntary = True
-		rev.save()
+		if self.game.uses_karma:
+			try:
+				rev = Revolution.objects.get(game=self.game, government=self.user)
+			except ObjectDoesNotExist:
+				rev = Revolution(game=self.game, government=self.user,
+					country = self.contender.country)
+			rev.active = datetime.now()
+			rev.voluntary = True
+			rev.save()
 		self.save()
 		signals.player_surrendered.send(sender=self)
 
