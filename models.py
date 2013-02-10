@@ -683,7 +683,7 @@ class Game(models.Model):
 		not done, if game is not in extended deadline, make extended_deadline
 		true. If game is already in extended deadline, force next turn.
 		"""
-		if not self.extended_deadline:
+		if self.uses_karma and not self.extended_deadline:
 			self.extended_deadline = True
 			self.save()
 			## create or update revolutions for lazy players
@@ -2716,7 +2716,6 @@ class Player(models.Model):
 		if self.game.uses_karma:
 			self.user.get_profile().adjust_karma(-10)
 			logger.info("%s lost 10 karma points" % self)
-		if not self.game.private:
 			created = False
 			karma_to_revolution = getattr(settings, "KARMA_TO_REVOLUTION", 170)
 			if self.user.get_profile().karma < karma_to_revolution:
