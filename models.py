@@ -1763,7 +1763,7 @@ class Game(models.Model):
 		if players[0].number_of_cities == players[1].number_of_cities:
 			return False
 		if self.years_limit > 0:
-			if self.scenario.start_year + self.years_limit >= self.year:
+			if self.year >= (self.scenario.start_year + self.years_limit - 1):
 				return players[0]
 		for p in players:
 			if p.number_of_cities >= self.cities_to_win:
