@@ -111,6 +111,9 @@ class RebellionAdmin(admin.ModelAdmin):
 class LoanAdmin(admin.ModelAdmin):
 	list_display = ('player', 'debt', 'year', 'season', )
 
+class CreditAdmin(admin.ModelAdmin):
+	list_display = ('player', 'debt', 'year', 'season', 'repaid', )
+
 class AssassinAdmin(admin.ModelAdmin):
 	pass
 
@@ -139,6 +142,7 @@ admin.site.register(machiavelli.TurnLog, TurnLogAdmin)
 admin.site.register(machiavelli.Expense, ExpenseAdmin)
 admin.site.register(machiavelli.Rebellion, RebellionAdmin)
 admin.site.register(machiavelli.Loan, LoanAdmin)
+admin.site.register(machiavelli.Credit, CreditAdmin)
 admin.site.register(machiavelli.Assassin, AssassinAdmin)
 admin.site.register(machiavelli.Assassination, AssassinationAdmin)
 admin.site.register(machiavelli.Whisper, WhisperAdmin)

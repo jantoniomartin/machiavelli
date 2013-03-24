@@ -2859,15 +2859,28 @@ class Player(models.Model):
 
 	def get_credit(self):
 		""" Returns the number of ducats that the player can borrow from the bank. """
-		if self.defaulted:
+		if self.defaulted or not self.game.configuration.lenders:
 			return 0
 		if self.game.configuration.unbalanced_loans:
-			credit = 25
+			max_credit = 25
 		else:
-			credit = self.gamearea_set.count() + self.unit_set.count()
-			if credit > 25:
-				credit = 25
-		return credit
+			max_credit = self.gamearea_set.count() + self.unit_set.count()
+			if max_credit > 25:
+				max_credit = 25
+		if self.game.version <= 2:
+			try:
+				loan = self.loan
+			except ObjectDoesNotExist:
+				return max_credit
+			else:
+				return 0
+		principal_dict = Credit.objects.filter(player=self, repaid=False).aggregate(Sum('principal'))
+		consumed = principal_dict['principal__sum']
+
+		if consumed is not None:
+			return max_credit - consumed
+		else:
+			return max_credit
 
 class TeamMessage(models.Model):
 	""" A message that any member of a team can write and read """
@@ -3971,9 +3984,24 @@ class Rebellion(models.Model):
 	def repress(self):
 		self.repressed = True
 		self.save()
-	
+
+class Credit(models.Model):
+	""" A Credit describes a quantity of money that a player has borrowed from the bank.
+	This class is meant to substitute the class Loan that was deprecated to allow multiple loans
+	per player."""
+	player = models.ForeignKey(Player)
+	principal = models.PositiveIntegerField(default=0)
+	debt = models.PositiveIntegerField(default=0)
+	season = models.PositiveIntegerField(choices=SEASONS)
+	year = models.PositiveIntegerField(default=0)
+	repaid = models.BooleanField(default=False)
+
+	def __unicode__(self):
+		return "%(player)s ows %(debt)s ducats" % {'player': self.player, 'debt': self.debt, }
+
 class Loan(models.Model):
-	""" A Loan describes a quantity of money that a player borrows from the bank, with a term """
+	""" A Loan describes a quantity of money that a player borrows from the bank, with a term
+	This class is DEPRECATED and must be removed when all the version 2 games are finished."""
 	player = models.OneToOneField(Player)
 	debt = models.PositiveIntegerField(default=0)
 	season = models.PositiveIntegerField(choices=SEASONS)

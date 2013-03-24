@@ -64,21 +64,35 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 
 <div class="action_block">
 <h2>{% trans "Loans" %}</h2>
-{% if loan %}
-<p>{% blocktrans with loan.debt as debt %}You owe {{ debt }} ducats to a banker.{% endblocktrans %}</p>
-<p>{% blocktrans with loan.get_season_display as season and loan.year as year %}Your debt must be paid before confirming your orders in the {{ season }} of {{ year }}.{% endblocktrans %}</p>
+
+{% if credits %}
+
+<p>{% blocktrans %}You have debts with a banker. You must pay each loan off before confirming your orders in the season when the term is over.{% endblocktrans %}</p>
 <p>{% blocktrans %}If you don't repay your debt in the due term, you will be assassinated and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
-{% if not done %}
-<p><a href="{% url borrow-money game.slug %}">{% trans "Repay your loan" %}</a>.</p>
+
+<table>
+<thead><tr>
+<th>{% trans "Debt" %}</th>
+<th>{% trans "Term" %}</th>
+<th>{% trans "Repay" %}</th>
+</tr></thead>
+{% for c in credits %}
+<tr>
+<td>{{ c.debt }}</td>
+<td>{{ c.get_season_display }}, {{ c.year }}</td>
+<td><a href="{% url return-credit game.slug c.id %}">{% trans "Repay" %}</a></td> 
+</tr>
+{% endfor %}
+</table>
+
 {% endif %}
-{% else %}
-{% if not done %}
-<p>{% blocktrans %}You can borrow some money from a banker or financier. Depending on the term that you choose, you will have to pay an interest. If you can't or don't repay a loan, something very bad will happen to you and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
+
+{% if not done and credit_limit > 0 %}
+<p>{% blocktrans %}You can borrow up to {{ credit_limit }} ducats from a banker or financier. Depending on the term that you choose, you will have to pay a different interest. If you can't or don't repay a loan, something very bad will happen to you and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
 <p><a href="{% url borrow-money game.slug %}">{% trans "Ask for a loan" %}</a>.</p>
 {% endif %}
-{% endif %}
-</div>
 
+</div>
 {% endif %}
 
 

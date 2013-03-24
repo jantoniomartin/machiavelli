@@ -763,12 +763,12 @@ def play_orders(request, game, player):
 	if game.configuration.assassinations:
 		context['assassinations'] = player.assassination_attempts.all()
 	if game.configuration.lenders:
-		try:
-			loan = player.loan
-		except ObjectDoesNotExist:
-			pass
+		if game.version <= 2:
+			credits = machiavelli.Loan.objects.filter(player=player)
 		else:
-			context.update({'loan': loan})
+			credits = machiavelli.Credit.objects.filter(player=player, repaid=False).order_by('year', 'season')
+		credit_limit = player.get_credit()
+		context.update({'credits': credits, 'credit_limit': credit_limit})
 	if not player.done:
 		OrderForm = forms.make_order_form(player)
 		if request.method == 'POST':
@@ -1424,12 +1424,91 @@ def taxation(request, slug):
 @login_required
 def borrow_money(request, slug):
 	game = get_object_or_404(machiavelli.Game, slug=slug)
+	### remove this block when all version 2 games are finished
+	if game.version <= 2:
+		return old_borrow_money(request, slug)
 	player = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)
 	if game.phase != machiavelli.PHORDERS or not game.configuration.lenders or player.done:
 		messages.error(request, _("You cannot borrow money in this moment."))
 		return redirect(game)
 	context = base_context(request, game, player)
-	credit = player.get_credit()
+	credit_limit = player.get_credit()
+	context.update({'credit_limit': credit_limit})
+	if credit_limit <= 0:
+		messages.error(request, _("You have already consumed all your credit."))
+		return redirect(game)
+	if request.method == 'POST':
+		form = forms.BorrowForm(request.POST)
+		if form.is_valid():
+			ducats = form.cleaned_data['ducats']
+			term = int(form.cleaned_data['term'])
+			if ducats > credit_limit:
+				messages.error(request, _("You cannot borrow so much money."))
+				return redirect("borrow-money", slug=slug)
+			credit = machiavelli.Credit(player=player, principal=ducats, season=game.season,
+										year = game.year + term)
+			if term == 1:
+				credit.debt = int(ceil(ducats * 1.2))
+			elif term == 2:
+				credit.debt = int(ceil(ducats * 1.5))
+			else:
+				messages.error(request, _("The chosen term is not valid."))
+				return redirect("borrow-money", slug=slug)
+			credit.save()
+			player.ducats = F('ducats') + ducats
+			player.save()
+			messages.success(request, _("You have got the loan."))
+			return redirect(game)
+	else:
+		form = forms.BorrowForm()
+	context.update({'form': form})	
+	return render_to_response('machiavelli/borrow_money.html',
+							context,
+							context_instance=RequestContext(request))
+
+@login_required
+def return_credit(request, slug, credit_id):
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	player = get_object_or_404(machiavelli.Player, user=request.user, game=game)
+	context = base_context(request, game, player)
+
+	## This block must be fixed when all the version 2 games are finished
+	if game.version <= 2:
+		credit = get_object_or_404(machiavelli.Loan, id=credit_id, player=player)
+	else:
+		credit = get_object_or_404(machiavelli.Credit, id=credit_id, player=player, repaid=False)
+	
+	context.update({'credit': credit})
+	if request.method == 'POST':
+		if player.ducats >= credit.debt:
+			player.ducats = F('ducats') - credit.debt
+			player.save()
+			if game.version <= 2:
+				credit.delete()
+			else:
+				credit.repaid=True
+				credit.save()
+			messages.success(request, _("You have repaid the loan."))
+		else:
+			messages.error(request, _("You don't have enough money to repay the loan."))
+		return redirect(game)
+	else:
+		form = forms.RepayForm()
+	context.update({'form': form})
+	return render_to_response('machiavelli/return_money.html',
+							context,
+							context_instance=RequestContext(request))
+
+def old_borrow_money(request, slug):
+	""" DEPRECATED: This view is deprecated and must be removed when all the version 2 games
+	are finished """
+	game = get_object_or_404(machiavelli.Game, slug=slug)
+	player = get_object_or_404(machiavelli.Player, user=request.user, game=game, surrendered=False)
+	if game.phase != machiavelli.PHORDERS or not game.configuration.lenders or player.done:
+		messages.error(request, _("You cannot borrow money in this moment."))
+		return redirect(game)
+	context = base_context(request, game, player)
+	credit_limit = player.get_credit()
 	try:
 		loan = player.loan
 	except ObjectDoesNotExist:
@@ -1439,7 +1518,7 @@ def borrow_money(request, slug):
 			if form.is_valid():
 				ducats = form.cleaned_data['ducats']
 				term = int(form.cleaned_data['term'])
-				if ducats > credit:
+				if ducats > credit_limit:
 					messages.error(request, _("You cannot borrow so much money."))
 					return redirect("borrow-money", slug=slug)
 				loan = machiavelli.Loan(player=player, season=game.season)
@@ -1460,19 +1539,9 @@ def borrow_money(request, slug):
 			form = forms.BorrowForm()
 	else:
 		## the player must repay a loan
-		context.update({'loan': loan})
-		if request.method == 'POST':
-			if player.ducats >= loan.debt:
-				player.ducats = F('ducats') - loan.debt
-				player.save()
-				loan.delete()
-				messages.success(request, _("You have repaid the loan."))
-			else:
-				messages.error(request, _("You don't have enough money to repay the loan."))
-			return redirect(game)
-		else:
-			form = forms.RepayForm()
-	context.update({'credit': credit,
+		messages.error(request, _("You have already consumed all your credit."))
+		return redirect(game)
+	context.update({'credit_limit': credit_limit,
 					'form': form,})
 
 	return render_to_response('machiavelli/borrow_money.html',
