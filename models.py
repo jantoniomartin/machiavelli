@@ -781,7 +781,7 @@ class Game(models.Model):
 			next_phase = PHORDERS
 		elif self.phase == PHORDERS:
 			if self.configuration.lenders:
-				self.check_loans()
+				self.check_credits()
 			if self.configuration.finances:
 				self.process_expenses()
 			if self.configuration.taxation:
@@ -1026,20 +1026,25 @@ class Game(models.Model):
 			if i > 0:
 				p.add_ducats(i)
 
-	def check_loans(self):
-		""" Check if any loans have exceeded their terms. If so, apply the
+	def check_credits(self):
+		""" Check if any credits have exceeded their terms. If so, apply the
 		penalties. """
-		loans = Loan.objects.filter(player__game=self)
-		for loan in loans:
-			if self.year >= loan.year and self.season >= loan.season:
-				## the loan has exceeded its term
-				if logging:
-					msg = "%s defaulted" % loan.player
-					logger.info(msg)
-				loan.player.defaulted = True
-				loan.player.save()
-				loan.player.assassinate()
-				loan.delete()
+		if self.version <= 2:
+			credits = Loan.objects.filter(player__game=self)
+		else:
+			credits = Credit.objects.filter(player__game=self, repaid=False)
+		for credit in credits:
+			if self.year >= credit.year and self.season >= credit.season:
+				## the credit has exceeded its term
+				if not credit.player.defaulted:
+					if logging:
+						msg = "%s defaulted" % credit.player
+						logger.info(msg)
+					credit.player.defaulted = True
+					credit.player.save()
+					credit.player.assassinate()
+					if self.version <= 2:
+						credit.delete()
 	
 	def process_expenses(self):
 		## undo unconfirmed expenses
@@ -2593,9 +2598,10 @@ class Player(models.Model):
 				on_site=True)
 
 	def assassinate(self):
+		if not self.assassinated:
+			signals.player_assassinated.send(sender=self)
 		self.assassinated = True
 		self.save()
-		signals.player_assassinated.send(sender=self)
 
 	def has_special_unit(self):
 		try:
