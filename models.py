@@ -36,6 +36,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.cache import cache
 from django.core.mail import mail_admins
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 import django.forms as forms
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -1995,11 +1996,13 @@ class ErrorReport(models.Model):
 
 def send_error_report(sender, instance=None, **kwargs):
 	if isinstance(instance, ErrorReport):
+		domain = Site.objects.get_current().domain
 		subject = u"New error report in '%s'" % instance.game.slug
-		message = u"%s reported a new error in the game '%s':\n\n" % (instance.user, instance.game)
-		message += unicode(instance.description)
-		message += u"\n\nThe user's email is %s\n" % instance.user.email
-		mail_admins(subject, message)
+		msg = u"%s(user) reported a new error in the game \"%s\":\n\n" % (instance.user, instance.game.title)
+		msg += unicode(instance.description)
+		msg += u"\n\nThe user's email is %s\n" % instance.user.email
+		msg += u"Go to the game: http://%s%s\n" % (domain, instance.game.get_absolute_url())
+		mail_admins(subject, msg)
 
 models.signals.post_save.connect(send_error_report, sender=ErrorReport)
 
