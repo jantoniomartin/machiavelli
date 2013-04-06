@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load ifsetting_tag %}
 {% load avatar_tags %}
 {% load machiavelli_tags %}
 
@@ -28,7 +27,7 @@
 				{% if user.is_staff %}<a href="/admin/">{% trans "Admin" %}</a> | {% endif %}
 				<a href="{% url acct_logout %}">{% trans "Logout" %}</a> |
 			{% else %}
-				<a href="{% url acct_login %}">{% trans "Login" %}</a> {% ifsetting ACCOUNT_OPEN_SIGNUP %}{% trans "or" %} <a href="{% url acct_signup %}"><b>{% trans "Sign up" %}</b></a>{% endifsetting %} |
+				<a href="{% url acct_login %}">{% trans "Login" %}</a> {% if ACCOUNT_OPEN_SIGNUP %}{% trans "or" %} <a href="{% url acct_signup %}"><b>{% trans "Sign up" %}</b></a>{% endif %} |
 			{% endif %}
 			<a href="{% url summary %}">{% trans "Home" %}</a>
 			</div>
