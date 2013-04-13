@@ -78,16 +78,18 @@
 <li>
 {% if player and game.slots == 0 %}
 	{% if time_exceeded %}
-	<span style="color: LightCoral">
+	<span id="time_remaining" style="color: red">
 	{{ game.next_phase_change|timeuntil }} 
 	</span>
 	{% else %}
-	<span style="color: Green">
+	<span id="time_remaining" style="color: Green">
 	{{ player.next_phase_change|timeuntil }}
 	</span>
 	{% endif %}
 {% else %}
-	{{ game.next_phase_change|timeuntil }}</li>
+	<span id="time_remaining"> 
+	{{ game.next_phase_change|timeuntil }}
+	</span>
 {% endif %}
 </li>
 {% if player %}

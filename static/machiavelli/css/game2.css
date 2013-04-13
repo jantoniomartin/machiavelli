@@ -54,6 +54,13 @@
 	width: 48px;
 }
 
+#time_remaining {
+	padding: 3px;
+	border: transparent 1px;
+	border-radius: 3px;
+	background: #e5e7d9
+}
+
 #game_rules {
 	font-size: 70%;
 }
