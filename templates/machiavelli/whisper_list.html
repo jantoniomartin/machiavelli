@@ -1,13 +1,13 @@
-{% extends 'machiavelli/base.html' %}
+{% extends 'machiavelli/show_game.html' %}
 
 {% load i18n %}
 {% load uni_form_tags %}
 
 {% block head_title %}{% trans "Gossip" %}: {{ game.slug }}{% endblock %}
 
-{% block body %}
-<h1>{% trans "Gossip in the game" %} "{{ game.slug }}"</h1>
-<div id="shoutbox">
+{% block actions %}
+<h2>{% trans "Gossip in the game" %} "{{ game.slug }}"</h2>
+<div id="whispers">
 <ul>
 {% for w in whisper_list %}
 {{ w.as_li|safe }}

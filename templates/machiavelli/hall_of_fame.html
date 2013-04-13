@@ -6,15 +6,15 @@
 
 {% block head_title %}{% trans "Hall of Fame" %}{% endblock %}
 
-{% block left_column %}
+{% block main_content %}
 <h1>{% trans "Hall of Fame" %}</h1>
 <p>{% blocktrans %}These are the global scores for all the users in this
 server{% endblocktrans %}</p>
 
-<table style="width: 40%">
+<table id="ranking_table">
 	<thead>
 	<tr>
-	<th colspan=2>{% trans "User" %}</th>
+	<th>{% trans "User" %}</th>
 	<th><a href="?o=weighted_score">{% trans "Ranking score" %}</a></th>
 	<th><a href="?o=total_score">{% trans "Total score" %}</a></th>
 	<th><a href="?o=finished_games">{% trans "Finished games" %}</a></th>
@@ -26,8 +26,8 @@ server{% endblocktrans %}</p>
 	</thead>
 	{% for p in profiles_list %}
 	<tr>
-	<td>{% avatar p.user %}</td>
-	<td><a href="{% url profile_detail username=p.user.username %}">{{ p }}</a></td>
+	<td class="data_c">{% avatar p.user %}
+	<a href="{% url profile_detail username=p.user.username %}">{{ p }}</a></td>
 	<td class="data_c"><a href="{% url ranking "user" p.user.username %}">{{ p.weighted_score }}</a></td>
 	<td class="data_c">
 	{% if p.total_score %}

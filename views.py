@@ -998,7 +998,7 @@ def logs_by_game(request, slug=''):
 	except (events_paginator.EmptyPage, events_paginator.InvalidPage):
 		raise Http404
 
-	context['log'] = log
+	context['season_log'] = log
 
 	return render_to_response('machiavelli/log_list.html',
 							context,
@@ -1348,7 +1348,12 @@ class TurnLogListView(LoginRequiredMixin, ListView):
 
 	def get_context_data(self, **kwargs):
 		context = super(TurnLogListView, self).get_context_data(**kwargs)
-		context['game'] = self.game
+		try:
+			player = machiavelli.Player.objects.get(user=self.request.user, game=self.game)
+		except ObjectDoesNotExist:
+			player = machiavelli.Player.objects.none()
+		base_ctx = base_context(self.request, self.game, player)
+		context.update(base_ctx)
 		return context
 
 @login_required
@@ -1630,12 +1635,12 @@ class WhisperListView(LoginRequiredMixin, ListAppendView):
 
 	def get_context_data(self, **kwargs):
 		context = super(WhisperListView, self).get_context_data(**kwargs)
-		context['game'] = self.game
 		try:
 			player = machiavelli.Player.objects.get(user=self.request.user, game=self.game)
 		except ObjectDoesNotExist:
 			player = machiavelli.Player.objects.none()
-		context['player'] = player
+		base_ctx = base_context(self.request, self.game, player)
+		context.update(base_ctx)
 		return context
 
 	def form_valid(self, form):

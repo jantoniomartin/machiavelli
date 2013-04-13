@@ -7,9 +7,6 @@
 <link rel="stylesheet" href="{{ STATIC_URL }}machiavelli/css/machiavelli.css" />
 {% endblock %}
 
-{% block body_class %}machiavelli{% endblock %}
-{% block rtab_id %}id="machiavelli_tab"{% endblock %}
-
 {% block subnav %}
 <ul>
 <li><a href="{% url home %}">{% trans "Home" %}</a></li>
@@ -28,10 +25,12 @@
 </ul>
 {% endblock %}
 
-{% block body %}
-<div id="left_column">
+{% block main_content %}
 	{% block left_column %}{% endblock %}
-</div>
+
+{% endblock %}
+
+{% block sidebar %}
 
 {% if ad_banner %}
 <div id="banner">
@@ -39,9 +38,8 @@
 </div>
 {% endif %}
 
-<div id="right_column">
-
 <div id="activity_count">
+<h2>{% trans "Activity" %}</h2>
 {% blocktrans %}<strong>{{ activity }}</strong> people playing <strong>{{ games }}</strong> games.{% endblocktrans %}
 </div>
 
@@ -68,11 +66,11 @@
 		</li>
 	{% endif %}
 </ul>
+<p style="text-align: right"><a href="{% url hall-of-fame %}">{% trans "Hall of Fame" %}</a></p>
 <p style="font-size:smaller">{% trans "Last updated:" %} {{ ranking_last_update|date:"SHORT_DATE_FORMAT" }}</p>
 </div>
 
 {% block right_column_extra %}{% endblock %}
 
-</div>
 {% endblock %}
 

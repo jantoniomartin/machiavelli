@@ -10,7 +10,7 @@
 <p>{% blocktrans %}Some of the expenses are 'bribes'. You can only bribe a unit that is adjacent to one of your controlled provinces or to one of your units. Note that bribes can be countered, and that you can pay more money to make the bribe more expensive to counter. Also, if a unit is affected by more than one bribe only the best paid is applied, and the money for the others is wasted.{% endblocktrans%}</p>
 <h3>{% trans "Available expenses" %}</h3>
 <p>{% blocktrans %}The following is a summary of all the available expenses:{% endblocktrans %}</p>
-<table style="width: 50%">
+<table>
 <thead><tr>
 <th>{% trans "Expense" %}</th>
 <th>{% trans "Cost" %}</th>
@@ -65,7 +65,7 @@
 <form action="" method="post" id="expenses_form">
 {% csrf_token %}
 <fieldset>
-{{ form }}
+{{ form.as_p }}
 </fieldset>
 <p><input type="submit" value="{% trans "Pay" %}" /></p>
 </form>

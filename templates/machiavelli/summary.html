@@ -29,16 +29,12 @@
 	<p>{% blocktrans %}You must complete your actions in the following games:{% endblocktrans %}</p>
 	{% for player in actions %}
 	<div class="game_short">
-	<h2 style="background: url('{{ MEDIA_URL }}scenarios/badges/icon-{{ player.static_name }}.png') no-repeat top right"><span>
+	<h2 style="background: url('{{ MEDIA_URL }}scenarios/badges/icon-{{ player.static_name }}.png') no-repeat left center"><span>
 	<a href="{{ player.game.get_absolute_url }}" title="{{ player.game.title }}">{{ player.game.title|truncatewords:5 }}</a>
 	</span></h2>
-	{% if player.game.started %}
-	{% endif %}
-	<p><span>{{ player.game.get_season_display }}, {{ player.game.year }} - {{ player.game.get_phase_display }}</span> |
-	<span class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</span></p>
-<ul class="section_menu">
-	<li class="time">{% blocktrans with player.game.started|timesince as time %}Started {{ time }} ago{% endblocktrans %}</li>
-	<li>{% rule_icons player.game.configuration %}</li>
+	<p>{{ player.game.get_phase_display }}</p>
+	<p class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</span></p>
+<ul>
 	<li><a href="{% url game-log player.game.slug %}">{% trans "Log" %}</a></li> 
 	<li><a href="{% url condottieri_messages_inbox player.game.slug %}">{% trans "Inbox" %}</a></li>
 	<li><a href="{% url condottieri_messages_outbox player.game.slug %}">{% trans "Outbox" %}</a></li>
@@ -194,11 +190,10 @@
 {% if user.is_authenticated %}
 
 {% if hosting_banner %}
-<div id="hosting" style="background-color: #3a3a3a; text-align: center; border: 0;">
+<div id="hosting">
 <a href="{{ hosting_url }}"><img border="0" alt="My hosting" src="{{ STATIC_URL }}/img/{{ hosting_banner }}" /></a>
 </div>
 {% endif %}
 
 {% endif %}
-</div>
 {% endblock %}

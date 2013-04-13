@@ -1,11 +1,11 @@
-{% extends 'machiavelli/base.html' %}
+{% extends 'machiavelli/show_game.html' %}
 
 {% load i18n %}
 
 {% block head_title %}{% trans "Log" %}: {{ game.slug }}{% endblock %}
 
-{% block body %}
-<h1>{% trans "Orders processing in game" %} "{{ game.slug }}"</h1>
+{% block actions %}
+<h2>{% trans "Orders processing in game" %} "{{ game.slug }}"</h2>
 <div id="game_info">
 <ul>
 <li>{% trans "Year" %}: {{ game.year }}</li>
@@ -31,7 +31,7 @@
 	</span>
 </div>
 {% for l in turnlog_list %}
-<dl>
+<dl class="turn_process">
 <dt>{% trans "Year" %}:</dt>
 <dd>{{ l.year }}</dd>
 <dt>{% trans "Season" %}:</dt>

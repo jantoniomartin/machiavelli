@@ -29,6 +29,10 @@
 	margin-left: 1em;
 }
 
+.log_list ul {
+	border: solid 1px #111;
+}
+
 .log_list li {
 	list-style-type: none;
 	min-height: 38px;
@@ -37,6 +41,10 @@
 	border-top: solid 1px #111;
 	background-position: right center;
 	background-repeat: no-repeat;
+}
+
+.log_list li:first-child {
+	border-top: none;
 }
 
 .log_list li span {

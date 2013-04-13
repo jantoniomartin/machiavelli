@@ -5,27 +5,29 @@
 
 
 {% block game_body %}
-<div class="col2">
-	<div id="map" class="viewer">
-	</div>
+<div id="map" class="viewer"></div>
+<div id="actions">
+	{% block actions %}{% endblock %}
 </div>
+{% endblock %}
 
-<div class="col3">
+
+{% block game_sidebar %}
 
 {% if game.slots == 0 %}
 <div id="countries">
-<table>
-<thead>
-	<tr>
-	<th>{% trans "Country" %}</th>
-	{% if show_users %}
-	<th>{% trans "User" %}</th>
-	{% endif %}
-	<th><img src="{{ STATIC_URL }}machiavelli/img/city-icon-16.png" title="{% trans "Cities" %}"/></th>
-	<th><img src="{{ STATIC_URL }}machiavelli/img/unit-icon-16.png" title="{% trans "Units" %}"/></th>
-	<th>{% trans "Actions" %}</th>
-</thead>
-	</tr>
+	<table>
+	<thead>
+		<tr>
+		<th>{% trans "Country" %}</th>
+		{% if show_users %}
+		<th>{% trans "User" %}</th>
+		{% endif %}
+		<th><img src="{{ STATIC_URL }}machiavelli/img/city-icon-16.png" title="{% trans "Cities" %}"/></th>
+		<th><img src="{{ STATIC_URL }}machiavelli/img/unit-icon-16.png" title="{% trans "Units" %}"/></th>
+		<th>{% trans "Actions" %}</th>
+		</tr>
+	</thead>
 	{% for p in player_list %}
 	{% if p.user %}
 	<tr class="{{ p.static_name }}">
@@ -56,34 +58,33 @@
 		<td style="text-align: center">{% if not fow %}{{ p.placed_units_count }}{% endif %}</td>
 
 		<td><!-- actions -->
-{% if player %}
-	{% ifnotequal game.phase 0 %}
-	{% ifnotequal p player %}
-	{% ifnotequal p.eliminated 1 %}
-	<div>
-	{% if not game.is_team_game and letters %}
-	<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
-	{% endif %}
-	{% if game.configuration.finances %}
-		<a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a>
-	{% endif %}
-	{% if can_excommunicate %}
-		{% ifnotequal p.is_excommunicated 1 %}
-		<a href="{% url excommunicate game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" title="{% trans "Excommunicate" %}" /></a>
+		{% if player %}
+		{% ifnotequal game.phase 0 %}
+		{% ifnotequal p player %}
+		{% ifnotequal p.eliminated 1 %}
+			<div>
+			{% if not game.is_team_game and letters %}
+				<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
+			{% endif %}
+			{% if game.configuration.finances %}
+				<a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a>
+			{% endif %}
+			{% if can_excommunicate %}
+				{% ifnotequal p.is_excommunicated 1 %}
+				<a href="{% url excommunicate game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" title="{% trans "Excommunicate" %}" /></a>
+				{% endifnotequal %}
+			{% endif %}
+			{% if can_forgive %}
+				{% ifequal p.is_excommunicated 1 %}
+				<a href="{% url forgive-excommunication game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/forgive-icon-16.png" title="{% trans "Forgive" %}" /></a>
+				{% endifequal %}
+			{% endif %}
+			</div>
 		{% endifnotequal %}
-	{% endif %}
-	{% if can_forgive %}
-		{% ifequal p.is_excommunicated 1 %}
-		<a href="{% url forgive-excommunication game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/forgive-icon-16.png" title="{% trans "Forgive" %}" /></a>
-		{% endifequal %}
-	{% endif %}
-	</div>
-	{% endifnotequal %}
-	{% endifnotequal %}
-	{% endifnotequal %}
-{% endif %}
+		{% endifnotequal %}
+		{% endifnotequal %}
+		{% endif %}
 		</td><!-- actions -->
-
 	</tr>
 	{% endif %}
 	{% endfor %}
@@ -92,7 +93,7 @@
 {% endif %}
 
 <div class="log_list">
-<h3>{% trans "Campaign log" %}</h3>
+<h2>{% trans "Campaign log" %}</h2>
 <div class="menu">
 <p><a href="{% url gamearea-list game.slug %}">{% trans "Areas list" %}</a>
 | <a href="{% url scenario_detail game.scenario.name %}">{% trans "Scenario" %}</a>
@@ -108,22 +109,11 @@
 </ul>
 </div>
 
-</div>
+<!--</div>-->
 
-<div class="clear"></div>
-
-<div id="actions">
-{% block actions %}{% endblock %}
-</div>
-<div id="mini_shoutbox">
-
-{% if player %}
-<h2>{% trans "Journal" %}</h2>
-<p>{{ excerpt|linebreaks }}</p>
-<p><a href="{% url edit-journal game.slug %}">{% trans "Edit journal" %}</a></p>
-{% endif %}
 
 {% if game.configuration.gossip %}
+<div id="whispers">
 <h2>{% trans "Gossip" %}</h2>
 <ul>
 {% for w in whispers %}
@@ -134,21 +124,33 @@
 <form action="{% url new-whisper game.slug %}" method="POST">
 {% csrf_token %}
 {{ whisper_form.text }}
+<div>
 <input type="submit" value="{% trans "Send" %}" />
+</div>
 </form>
 {% endif %}
 <p><a href="{% url whisper-list game.slug %}">{% trans "Show all" %}</a></p>
+</div>
 {% endif %}
 
 {% if player %}
+<div id="mini_journal">
+<h2>{% trans "Journal" %}</h2>
+<p>{{ excerpt|linebreaks }}</p>
+<p><a href="{% url edit-journal game.slug %}">{% trans "Edit journal" %}</a></p>
+</div>
+{% endif %}
+
+{% if player %}
+<div id="game_management">
 <h2>{% trans "Game management" %}</h2>
 <ul>
 <li><a href="{% url surrender game.slug %}">{% trans "Surrender" %}</a></li>
 <li><a href="{% url new-report game.slug %}">{% trans "Report error" %}</a></li>
 </ul>
+</div>
 {% endif %}
 
-</div>
 
 {% endblock %}
 

@@ -1,21 +1,23 @@
-{% extends 'machiavelli/base_game.html' %}
+{% extends 'machiavelli/show_game.html' %}
 
 {% load i18n %}
 
-{% block game_body %}
+{% block actions %}
+
+<h2>{% trans "Events per season" %}</h2>
 
 <div class="log_pagination">
 	<span class="step-links">
-		{% if log.has_previous %}
-			<a href="?{{ log.previous_date }}">&lt;&lt;</a>
+		{% if season_log.has_previous %}
+			<a href="?{{ season_log.previous_date }}">&lt;&lt;</a>
 		{% endif %}
 		
 		<span class="current">
-			{{ log.year }}, {{ log.season_name }}
+			{{ season_log.year }}, {{ season_log.season_name }}
 		</span>
 
-		{% if log.has_next %}
-			<a href="?{{ log.next_date }}">&gt;&gt;</a>
+		{% if season_log.has_next %}
+			<a href="?{{ season_log.next_date }}">&gt;&gt;</a>
 		{% endif %}
 	</span>
 </div>
@@ -23,7 +25,7 @@
 
 <div id="full_log" class="log_list">
 <ul>
-{% for event in log.object_list %}
+{% for event in season_log.object_list %}
 {{ event.color_output|safe }}
 {% endfor %}
 </ul>
@@ -31,16 +33,16 @@
 
 <div class="log_pagination">
 	<span class="step-links">
-		{% if log.has_previous %}
-			<a href="?{{ log.previous_date }}">&lt;&lt;</a>
+		{% if season_log.has_previous %}
+			<a href="?{{ season_log.previous_date }}">&lt;&lt;</a>
 		{% endif %}
 		
 		<span class="current">
-			{{ log.year }}, {{ log.season_name }}
+			{{ season_log.year }}, {{ season_log.season_name }}
 		</span>
 
-		{% if log.has_next %}
-			<a href="?{{ log.next_date }}">&gt;&gt;</a>
+		{% if season_log.has_next %}
+			<a href="?{{ season_log.next_date }}">&gt;&gt;</a>
 		{% endif %}
 	</span>
 </div>

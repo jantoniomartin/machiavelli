@@ -1,26 +1,19 @@
-.clear {
-	clear: both;
-}
-
-#tabhead {
+#content {
 	padding: 0;
-	border-bottom-width: 0px;
+	margin: 0;
 }
 
-#body {
-	padding: 0px;
+#game_body {
+	width: 60%;
+	margin-left: 2%;
+	float: left;
 }
 
-#subnav {
-	padding: 0px;
+#game_sidebar {
+	float: right;
+	width: 34%;
+	margin: 0 1% 1em 2%;
 }
-
-#footer {
-	padding-left: 0;
-	padding-right: 0;
-}
-
-.uniForm .focused{ background: #444; }
 
 #game_info {
 	width: 100%;
@@ -28,9 +21,9 @@
 	margin: 0 0 1em 0;
 	clear: both;
 	display: table;
-	background: #4f4f4f;
-	color: #ccc;
-	font-weight: bold;
+	background: #5e7d4d;
+	color: #fff;
+	text-shadow: 1px 1px #314128;
 }
 
 #game_info ul {
@@ -80,58 +73,59 @@
 	line-height: 48px;
 }
 
-.col1,
-.col2,
-.col3 {
-	float: left;
-	padding-left: 0.5%;
-	padding-right: 0.5%;
-	margin-left: 0;
-	margin-right: 1%;
-	height: 740px;
-	border: solid 1px #444;
-}
-
-.col1 {
-	display: none;
-	width: 12%;
-	overflow: auto;
-}
-
-.col2 {
-	width: 65%;
-	padding: 0;
-	margin-left; 0.5em
-}
-
-.col3 {
-	width: 31%;
-	overflow: auto;
-}
-
 .player {
 	margin-top: 0.5em;
 	margin-bottom: 0.5em;
 	line-height: 120%;
 	padding: 0.2em 0.5em;
 	border: solid 1px #111;
-	-moz-border-radius: 10px;
+	border-radius: 10px;
+}
+
+#content #game_sidebar h2 {
+	margin-top: 1em;
+	margin-left: 10%;
+	margin-right: 10%;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+	text-align: center;
+	background-color: transparent;
+	border-bottom: solid 1px #111;
+}
+
+.action_block {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.action_block a:hover {
+	color: #e0d1a3;
+	background-color: #7f755b;
+}
+
+.action_block h3 {
+	margin-top: 1em;
 }
 
 /*
  * Country styles
  */
 
-#countries {
-	font-size: small;
-}
-
 #countries table {
 	width: 100%;
+	table-layout: auto;
+	border: solid 1px #111;
+}
+
+#countries td {
+	padding: 0.2em;
 }
 
 #countries table th {
-	background: #4f4f4f;
+	padding-top: 0.2em;
+	padding-bottom: 0.2em;
+	background: #7d603e;
 }
 
 .france a,
@@ -159,6 +153,8 @@
 	left: 0px;
 	width: 100%;
 	height: 740px;
+	margin-bottom: 1em;
+	border: solid 1px #7d603e;
 }
 
 #letter_box ul, #log ul {
@@ -176,129 +172,6 @@
 	text-decoration: none;
 }
 
-#col .menu {
-	height: 5%;
-}
-
-#actions {
-	width: 70%;
-	float: left;
-	margin-left: 0.5em;
-}
-
-#actions form fieldset {
-	width: 90%;
-	margin-left: 5%;
-	border: solid 1px #666;
-}
-
-#actions form textarea {
-	width: 100%;
-}
-
-.action_block {
-	margin-bottom: 0.5em;
-	padding: 0 0 0.5em 0;
-	background-color: #4f4f4f;
-	border-bottom: solid 2px #191919;
-}
-.action_block a, .action_block a:visited {
-	color: #d3a152;
-}
-.action_block h1, .action_block h2 {
-	margin-top: 1em;
-	background: #9f2727;
-	padding: 0.2em 0.5em;
-}
-
-.action_block h3 {
-	margin-left: 0;
-	font-size: larger;
-}
-
-.action_block h3 a {
-	margin-left: 0;
-	font-size: larger;
-	text-decoration: none;
-}
-
-.action_block ul {
-	padding-left: 1em;
-}
-
-.action_block li {
-	line-height: 150%;
-}
-
-.action_block table {
-	margin-left: 10%;
-}
-
-.action_form table {
-	margin-left: 0;
-	width: 100%;
-	/*table-layout: fixed;*/
-}
-
-.action_form table td {
-	width: 15%;
-}
-/*.action_form select {
-	width: 98%;
-}*/
-#sent_orders {
-	padding: 0;
-}
-
-#sent_orders li {
-	list-style-type: none;
-	margin: 2px 1em;
-	padding: 0.5em;
-	border: solid 1px #444;
-}
-
-#mini_shoutbox {
-	width: 24%;
-	margin-left: 75%;
-	padding: 0 0 0.5em 0;
-	margin-top: 1em;
-	background-color: #4f4f4f;
-}
-
-#mini_shoutbox h2 {
-	background: #9f2727;
-	padding: 0.2em 0.5em;
-}
-
-#shoutbox ul li,
-#mini_shoutbox ul li,
-#latest_gossip ul li {
-	list-style-type: none;
-	padding: 0.5em;
-}
-
-#shoutbox .date,
-#mini_shoutbox .date,
-#latest_gossip .date {
-	display: block;
-	font-size: smaller;
-	color: #ccc;
-}
-
-#shoutbox .admin,
-#mini_shoutbox .admin,
-#latest_gossip .admin {
-	background-color: #c14200;
-	font-style: italic;
-}
-
-#mini_shoutbox form {
-	margin-left: 5%;
-}
-
-#mini_shoutbox textarea {
-	width: 90%;
-}
 
 #team_messages {
 	padding: 0.5em 0.5em 0.5em 2em;
@@ -310,7 +183,6 @@
 	margin-bottom: 1em;
 	padding: 0.5em 0.5em 1.5em 0.5em;
 	background: #ffd073;
-	/*text-indent: 1.5em;*/
 }
 
 #team_messages div.own_message {
@@ -324,4 +196,38 @@
 	font-size: smaller;
 }
 
+#whispers ul li {
+	margin: 0.5em;
+	padding: 5px;
+	font-size: small;
+	border: dotted 1px #7d603e;
+	background-color: #fff7e0;
+}
 
+#whispers textarea {
+	width: 90%;
+	margin-left: 5%;
+}
+
+#mini_journal p {
+	font-size: small;
+}
+
+.action_form p {
+	padding-bottom: 0.2em;
+	border-bottom: solid 1px #e0ddd3;
+}
+
+.action_form label {
+	font-weight: bold;
+}
+
+.action_form select {
+	padding: 5px;
+}
+
+.turn_process {
+	font-family: "Courier New", Courier, monospace;
+	font-size: smaller;
+	line-height: 16px;
+}
