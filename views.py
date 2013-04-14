@@ -49,6 +49,9 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
 
+## pybb
+import pybb.models as pybb
+
 ## machiavelli
 import machiavelli.models as machiavelli
 import machiavelli.forms as forms
@@ -134,6 +137,8 @@ class SummaryView(TemplateView):
 		recent_scenarios = scenarios.Scenario.objects.filter(published__gt=new_scenario_date).order_by('-published')
 		if recent_scenarios.count() > 0:
 			context.update({'new_scenario': recent_scenarios[0] })
+		latest_pybb = pybb.Topic.objects.all().order_by('-updated')
+		context.update({'latest_pybb': latest_pybb[0:5]})
 		return context
 		
 	def render_to_response(self, context, **kwargs):

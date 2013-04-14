@@ -104,14 +104,13 @@
 
 
 {% cache 600 "forum_latest" LANGUAGE_CODE %}
-<div id="forum_latest" class="section">
-{% forum_latest_thread_activity 8 as latest_activity %}
+<div id="pybb_latest" class="section">
 <h2>{% trans "Latest forum posts" %}</h2>
 <ul class="thread_list">
-{% for thread in latest_activity %}
+{% for t in latest_pybb %}
 <li>
-<a href="{{ thread.thread_latest_post.get_absolute_url }}">{{ thread.title }}</a>
-<span class="thread_info">{% blocktrans with thread.thread_latest_post.author as author and thread.latest_post_time|timesince as time %}{{ time }} ago by {{ author }}{% endblocktrans %}</span>
+<a href="{{ t.last_post.get_absolute_url }}">{{ t.name }}</a>
+<span class="thread_info">{% blocktrans with t.last_post.user as author and t.last_post.created|timesince as time %}{{ time }} ago by {{ author }}{% endblocktrans %}</span>
 </li>
 {% endfor %}
 </ul>
