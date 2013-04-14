@@ -44,12 +44,10 @@
 <li><a href="{% url games-my-active %}">{% trans "Active games" %}</a></li>
 <li><a href="{% url games-pending %}">{% trans "Pending games" %}</a></li>
 <li><a href="{% url games-my-finished %}">{% trans "Finished games" %}</a></li>
-<li><a href="{% url messages_inbox %}">{% trans "Mail" %}({{ messages_inbox_count }})</a></li>
 {% else %}
 <li><a href="{% url games-other-active %}">{% trans "Active games" %}</a></li>
 <li><a href="{% url games-all-finished %}">{% trans "Finished games" %}</a></li>
 {% endif %}
-<li><a href="{{ STATIC_URL }}machiavelli/img/{% trans "empty-map_en.jpg" %}" target="_blank">{% trans "Map" %}</a></li>
 </ul>
 {% endblock %}
 
