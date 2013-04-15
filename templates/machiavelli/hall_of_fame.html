@@ -26,7 +26,7 @@ server{% endblocktrans %}</p>
 	</thead>
 	{% for p in profiles_list %}
 	<tr>
-	<td class="data_c">{% avatar p.user %}
+	<td class="data_c avatar_name">{% avatar p.user %}
 	<a href="{% url profile_detail username=p.user.username %}">{{ p }}</a></td>
 	<td class="data_c"><a href="{% url ranking "user" p.user.username %}">{{ p.weighted_score }}</a></td>
 	<td class="data_c">
