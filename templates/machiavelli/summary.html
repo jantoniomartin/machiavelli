@@ -33,6 +33,9 @@
 	<a href="{{ player.game.get_absolute_url }}" title="{{ player.game.title }}">{{ player.game.title|truncatewords:5 }}</a>
 	</span></h2>
 	<p>{{ player.game.get_season_display }} - {{ player.game.get_phase_display }}</p>
+	<div class="turn_progress_outer">
+		<div class="turn_progress_inner" style="width: {{ player.game.completeness }}%">&nbsp;</div>
+	</div>
 	<p class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</span></p>
 <ul>
 	<li><a href="{% url game-log player.game.slug %}">{% trans "Log" %}</a></li> 

@@ -34,6 +34,9 @@
 {% blocktrans with player.game.started|timesince as time %}Started {{ time }} ago{% endblocktrans %}
 </div>
 {% endif %}
+<div class="turn_progress_outer">
+	<div class="turn_progress_inner" style="width: {{ player.game.completeness }}%">&nbsp;</div>
+</div>
 <dl>
 <dt>{% trans "Average score" %}</dt><dd>{{ player.game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ player.game.get_average_karma|karma_stars }}</dd>

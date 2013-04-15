@@ -355,6 +355,14 @@ class Game(models.Model):
 			cache.set(key, all_areas)
 		return all_areas
 
+	def get_completeness(self):
+		total = self.player_set.filter(user__isnull=False).exclude(eliminated=True)
+		done = total.filter(done=True)
+		c = done.count() * 100. / total.count()
+		return int(round(c))
+
+	completeness = property(get_completeness)
+
 	##------------------------
 	## map methods
 	##------------------------
