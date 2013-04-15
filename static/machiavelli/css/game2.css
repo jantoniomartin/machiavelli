@@ -238,3 +238,15 @@
 	font-size: smaller;
 	line-height: 16px;
 }
+
+#sent_orders {
+	padding: 1em;
+	border: 1px transparent;
+	border-radius: 5px;
+	background-color: #e5e7d9;
+}
+
+#sent_orders li {
+	margin-bottom: 0.5em;
+	list-style: circle inside;
+}
