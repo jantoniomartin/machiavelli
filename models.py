@@ -187,9 +187,9 @@ class Game(models.Model):
 	created_by = models.ForeignKey(User, editable=False,
 		verbose_name=_("created by"))
 	## whether the player of each country is visible
-	visible = models.BooleanField(_("visible"), default=0,
+	visible = models.BooleanField(_("visible"), default=False,
 		help_text=_("if checked, it will be known who controls each country"))
-	map_outdated = models.BooleanField(_("map outdated"), default=0)
+	map_outdated = models.BooleanField(_("map outdated"), default=False)
 	time_limit = models.PositiveIntegerField(_("time limit"),
 		choices=TIME_LIMITS,
 		help_text=_("time available to play a turn"))
@@ -211,10 +211,10 @@ class Game(models.Model):
 	extra_conquered_cities = models.PositiveIntegerField(default=0,
 		verbose_name=_("extra conquered cities"))
 	years_limit = models.PositiveIntegerField(_("years limit"), default=0)
-	fast = models.BooleanField(_("fast"), default=0)
+	fast = models.BooleanField(_("fast"), default=False)
 	uses_karma = models.BooleanField(_("uses karma"), default=True)
 	paused = models.BooleanField(_("paused"), default=False)
-	private = models.BooleanField(_("private"), default=0,
+	private = models.BooleanField(_("private"), default=False,
 		help_text=_("only invited users can join the game"))
 	comment = models.TextField(_("comment"), max_length=255, blank=True,
 		null=True, help_text=_("optional comment for joining users"))
@@ -3104,7 +3104,7 @@ class Unit(models.Model):
 	type = models.CharField(max_length=1, choices=UNIT_TYPES)
 	area = models.ForeignKey(GameArea)
 	player = models.ForeignKey(Player)
-	besieging = models.BooleanField(default=0)
+	besieging = models.BooleanField(default=False)
 	""" must_retreat contains the code, if any, of the area where the attack came from """
 	must_retreat = models.CharField(max_length=5, blank=True, default='')
 	placed = models.BooleanField(default=True)
