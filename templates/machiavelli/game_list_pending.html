@@ -60,6 +60,10 @@
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
 <dt>{% trans "Visible players?" %}</dt>
 <dd>{{ game.visible|yesno }}</dd>
+{% if game.is_team_game %}
+<dt>{% trans "Teams" %}</dt>
+<dd>{{ game.teams }}</dd>
+{% endif %}
 <dt>{% trans "Players" %}</dt>
 <dd>
 	<ul>
