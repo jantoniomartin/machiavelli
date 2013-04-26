@@ -30,7 +30,7 @@
 	{% ifnotequal p player %}
 	{% ifnotequal p.eliminated 1 %}
 		<div>
-		{% if not game.is_team_game and letters %}
+		{% if letters %}
 			<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
 		{% endif %}
 		{% if game.configuration.finances %}
