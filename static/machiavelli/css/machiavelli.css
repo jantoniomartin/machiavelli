@@ -18,3 +18,26 @@ tr.closed_game a{
 	color: #111;
 }
 
+span.feature {
+	display: block;
+	float: right;
+	height: 30px;
+	width: 30px;
+	padding: 0;
+	text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-shadow: none;
+}
+
+span.private {
+	background: url('../img/padlock.png') no-repeat;
+}
+
+span.team {
+	background: url('../img/team.png') no-repeat;
+}
+
+span.fast {
+	background: url('../img/hourglass.png') no-repeat;
+}

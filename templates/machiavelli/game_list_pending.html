@@ -39,10 +39,13 @@
 		({% trans "Slots" %}: {{ game.slots }})
 	</span>
 	{% if game.private %}
-	<span>{% trans "Private" %}</span>
+	<span class="feature private" title="{% trans "Private" %}">{% trans "Private" %}</span>
 	{% endif %}
 	{% if game.is_team_game %}
-	<span>{% trans "Team game" %}</span>
+	<span class="feature team" title="{% trans "Team game" %}">{% trans "Team game" %}</span>
+	{% endif %}
+	{% if game.fast %}
+	<span class="feature fast" title="{% trans "Fast game" %}">{% trans "Fast game" %}</span>
 	{% endif %}
 	</h2>
 <div class="map">
