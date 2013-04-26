@@ -329,13 +329,19 @@ class Game(models.Model):
 	def get_average_score(self):
 		""" Returns the average score of the current list of players """
 		
-		result = CondottieriProfile.objects.filter(user__player__game=self).aggregate(average_score=Avg('total_score'))
+		if self.finished:
+			result = CondottieriProfile.objects.filter(user__score__game=self).aggregate(average_score=Avg('total_score'))
+		else:
+			result = CondottieriProfile.objects.filter(user__player__game=self).aggregate(average_score=Avg('total_score'))
 		return result['average_score']
 
 	def get_average_karma(self):
 		""" Returns the average karma of the current list of players """
 		
-		result = CondottieriProfile.objects.filter(user__player__game=self).aggregate(average_karma=Avg('karma'))
+		if self.finished:
+			result = CondottieriProfile.objects.filter(user__score__game=self).aggregate(average_karma=Avg('karma'))
+		else:
+			result = CondottieriProfile.objects.filter(user__player__game=self).aggregate(average_karma=Avg('karma'))
 		return result['average_karma']
 
 	def get_all_units(self):
