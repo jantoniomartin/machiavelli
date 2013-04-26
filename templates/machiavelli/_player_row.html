@@ -1,0 +1,55 @@
+{% load i18n %}
+{% load avatar_tags %}
+
+<tr class="{{ p.static_name }}">
+	<td>
+	{{ p.contender.country }} {% if p.conqueror %}({{ p.conqueror.contender.country }}){% endif %}
+	{% if show_religions %}
+		{% if p.contender.country.religion %}
+	<img src="{{ MEDIA_URL }}scenarios/religions/{{ p.contender.country.religion.slug }}.png" title="{{ p.contender.country.religion.name }}" />
+		{% endif %}
+	{% endif %}
+	{% if p.is_excommunicated %}
+	<img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" title="{% trans "Excommunicated" %}" />
+	{% endif %}
+	{% if p.surrendered %}
+	<img src="{{ STATIC_URL }}machiavelli/img/surrender-icon-16.png" title="{% trans "Surrendered" %}" />
+	{% endif %}
+	</td>
+
+	{% if show_users %}
+	<td><a href="{% url profile_detail username=p.user.username %}" title="{{ p.user.username }}">{% avatar p.user 20 %}</a></td>
+	{% endif %}
+
+	<td style="text-align: center">{{ p.number_of_cities }}</td>
+	<td style="text-align: center">{% if not fow %}{{ p.placed_units_count }}{% endif %}</td>
+
+	<td><!-- actions -->
+	{% if player %}
+	{% ifnotequal game.phase 0 %}
+	{% ifnotequal p player %}
+	{% ifnotequal p.eliminated 1 %}
+		<div>
+		{% if not game.is_team_game and letters %}
+			<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
+		{% endif %}
+		{% if game.configuration.finances %}
+			<a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a>
+		{% endif %}
+		{% if can_excommunicate %}
+			{% ifnotequal p.is_excommunicated 1 %}
+			<a href="{% url excommunicate game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" title="{% trans "Excommunicate" %}" /></a>
+			{% endifnotequal %}
+		{% endif %}
+		{% if can_forgive %}
+			{% ifequal p.is_excommunicated 1 %}
+			<a href="{% url forgive-excommunication game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/forgive-icon-16.png" title="{% trans "Forgive" %}" /></a>
+			{% endifequal %}
+		{% endif %}
+		</div>
+	{% endifnotequal %}
+	{% endifnotequal %}
+	{% endifnotequal %}
+	{% endif %}
+	</td><!-- actions -->
+</tr>

@@ -297,6 +297,7 @@ class Game(models.Model):
 			AND condottieri_scenarios_area.has_city=1) \
 			ON machiavelli_gamearea.player_id=machiavelli_player.id \
 			WHERE machiavelli_player.game_id=%s \
+			AND machiavelli_player.user_id is not null \
 			GROUP BY machiavelli_player.id \
 			ORDER BY machiavelli_player.team_id, cities DESC, machiavelli_player.id;" % self.id)
 			result_list = []
@@ -2220,6 +2221,15 @@ class Team(models.Model):
 			return scores['cities__sum']
 
 	cities_count = property(_get_cities_count)
+
+	def _get_name(self):
+		""" Return a name to identify the team """
+		players = self.player_set.all().order_by('id')
+		if players.count() > 0:
+			return u"%s team" % players[0].contender
+		return _("Anonymous team")
+	
+	name = property(_get_name)
 
 def generate_secret_key():
 	min_size = getattr(settings, 'MIN_KEY_SIZE', 6)

@@ -312,6 +312,7 @@ def base_context(request, game, player):
 		#'map' : game.get_map_url(),
 		'player': player,
 		'player_list': game.player_list_ordered_by_cities(),
+		'teams': game.team_set.all(),
 		'show_users': game.visible,
 		'fow': game.configuration.fow,
 		'letters': game.configuration.letters,
