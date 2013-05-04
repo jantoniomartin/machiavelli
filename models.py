@@ -2037,6 +2037,9 @@ class GameArea(models.Model):
 	storm = models.BooleanField(default=False)
 	taxed = models.BooleanField(default=False)
 
+	class Meta:
+		ordering = ['game', 'board_area',]
+
 	def abbr(self):
 		return self.board_area.code
 		#return "%s (%s)" % (self.board_area.code, self.board_area.name)
