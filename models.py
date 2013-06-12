@@ -481,7 +481,15 @@ class Game(models.Model):
 		self.last_phase_change = datetime.now()
 		self.notify_players("game_started", {"game": self})
 		self.save()
-		self.make_map(fow=self.configuration.fow)
+		try:
+			self.make_map(fow=self.configuration.fow)
+		except exceptions.GraphicsError:
+			logger.error("Pausing the game %s" % self)
+			self.paused = True
+			self.save()
+			msg = "Game %s has been paused due to a graphics error." % self.slug
+			report = ErrorReport(game=self, user=self.created_by, description=msg)
+			report.save()
 
 	def player_joined(self):
 		self.slots -= 1
@@ -917,7 +925,16 @@ class Game(models.Model):
 		#self.map_changed()
 		self.extended_deadline = False
 		self.save()
-		self.make_map(fow=self.configuration.fow)
+		##TODO: Catch errors in make_map
+		try:
+			self.make_map(fow=self.configuration.fow)
+		except exceptions.GraphicsError:
+			logger.error("Pausing the game %s" % self)
+			self.paused = True
+			self.save()
+			msg = "Game %s has been paused due to a graphics error." % self.slug
+			report = ErrorReport(game=self, user=self.created_by, description=msg)
+			report.save()
 		if end_season and self.configuration.fow:
 			for dip in Diplomat.objects.filter(player__game=self):
 				dip.uncover()

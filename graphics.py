@@ -23,8 +23,13 @@ import os
 import os.path
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+
+import logging
+logger = logging.getLogger(__name__)
 
 import models as machiavelli
+from machiavelli.exceptions import GraphicsError
 
 TOKENS_DIR=os.path.join(settings.MEDIA_ROOT, settings.SCENARIOS_ROOT, 'tokens')
 
@@ -46,11 +51,19 @@ def load_unit_tokens(game):
 	for player in game.player_set.filter(user__isnull=False):
 		t = dict()
 		name = player.static_name
-		t.update({'A': Image.open("%s/A-%s.png" % (TOKENS_DIR, name))})
-		t.update({'F': Image.open("%s/F-%s.png" % (TOKENS_DIR, name))})
-		t.update({'G': Image.open("%s/G-%s.png" % (TOKENS_DIR, name))})
+		try:
+			t.update({'A': Image.open("%s/A-%s.png" % (TOKENS_DIR, name))})
+			t.update({'F': Image.open("%s/F-%s.png" % (TOKENS_DIR, name))})
+			t.update({'G': Image.open("%s/G-%s.png" % (TOKENS_DIR, name))})
+		except IOError:
+			logger.error("Missing unit token for %s" % name)
+			raise GraphicsError
 		tokens.update({name: t })
-	tokens.update({'autonomous': {'G': Image.open("%s/G-autonomous.png" % TOKENS_DIR)}})
+	try:
+		tokens.update({'autonomous': {'G': Image.open("%s/G-autonomous.png" % TOKENS_DIR)}})
+	except IOError:
+		logger.error("Missing autonomous garrison token")
+		raise GraphicsError
 	return tokens
 
 
@@ -70,9 +83,17 @@ def paste_units(board, game, watcher=None):
 	for unit in afs:
 			t = tokens[unit.player.static_name][unit.type]
 			if unit.besieging:
-				coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
+				try:
+					coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
+				except ObjectDoesNotExist:
+					logger.error("GToken object not found for area %s" % unit.area.board_area.code)
+					raise GraphicsError
 			else:
-				coords = (unit.area.board_area.aftoken.x, unit.area.board_area.aftoken.y)
+				try:
+					coords = (unit.area.board_area.aftoken.x, unit.area.board_area.aftoken.y)
+				except ObjectDoesNotExist:
+					logger.error("AFToken object not found for area %s" % unit.area.board_area.code)
+					raise GraphicsError
 				if unit.must_retreat != '':
 					coords = (coords[0] + 15, coords[1] + 15)
 			if unit.type == 'A':
@@ -95,7 +116,11 @@ def paste_units(board, game, watcher=None):
 			t = tokens[unit.player.static_name]['G']
 		else:
 			t = tokens['autonomous']['G']
-		coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
+		try:
+			coords = (unit.area.board_area.gtoken.x, unit.area.board_area.gtoken.y)
+		except ObjectDoesNotExist:
+			logger.error("GToken not found for area %s" % unit.area.board_area.code)
+			raise GraphicsError
 		board.paste(t, coords, t)
 		if unit.power > 1:
 			board.paste(ELITE_G, coords, ELITE_G)
@@ -104,7 +129,11 @@ def paste_units(board, game, watcher=None):
 	## paste diplomat icons
 	if dips:
 		for d in dips:
-			coords = (d.area.board_area.controltoken.x - 24, d.area.board_area.controltoken.y - 4)
+			try:
+				coords = (d.area.board_area.controltoken.x - 24, d.area.board_area.controltoken.y - 4)
+			except ObjectDoesNotExist:
+				logger.error("ControlToken not found for %s" % d.area.board_area.code)
+				raise GraphicsError
 			board.paste(DIPLOMAT, coords, DIPLOMAT)
 	
 def make_map(game, fow=False):
@@ -114,48 +143,108 @@ def make_map(game, fow=False):
 	"""
 	if game.finished:
 		fow = False
-	base_map = Image.open(game.scenario.setting.board)
+	try:
+		base_map = Image.open(game.scenario.setting.board)
+	except IOError:
+		logger.error("Base map not found for scenario %s" % game.scenario.slug)
+		raise GraphicsError
 	## if there are disabled areas, mark them
-	marker = Image.open("%s/disabled.png" % TOKENS_DIR)
+	try:
+		marker = Image.open("%s/disabled.png" % TOKENS_DIR)
+	except IOError:
+		logger.error("Disabled token not found")
+		raise GraphicsError
 	for a in game.get_disabled_areas():
-		base_map.paste(marker, (a.aftoken.x, a.aftoken.y), marker)
+		try:
+			base_map.paste(marker, (a.aftoken.x, a.aftoken.y), marker)
+		except ObjectDoesNotExist:
+			logger.error("AFToken not found for area %s" % a.code)
+			raise GraphicsError
 	## mark special city incomes
-	marker = Image.open("%s/chest.png" % TOKENS_DIR)
+	try:
+		marker = Image.open("%s/chest.png" % TOKENS_DIR)
+	except IOError:
+		logger.error("Chest token not found")
+		raise GraphicsError
 	for i in game.scenario.cityincome_set.all():
-		base_map.paste(marker, (i.city.gtoken.x + 32, i.city.gtoken.y), marker)
+		try:
+			base_map.paste(marker, (i.city.gtoken.x + 32, i.city.gtoken.y), marker)
+		except ObjectDoesNotExist:
+			logger.error("GToken not found for area %s" % i.city.code)
+			raise GraphicsError
 	##
 	for player in game.player_set.filter(user__isnull=False):
 		## paste control markers
 		controls = player.gamearea_set.all()
-		marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.static_name))
+		try:
+			marker = Image.open("%s/control-%s.png" % (TOKENS_DIR, player.static_name))
+		except IOError:
+			logger.error("Control token not found for player %s" % player.static_name)
+			raise GraphicsError
 		for area in controls:
-			base_map.paste(marker, (area.board_area.controltoken.x, area.board_area.controltoken.y), marker)
+			try:
+				base_map.paste(marker, (area.board_area.controltoken.x, area.board_area.controltoken.y), marker)
+			except ObjectDoesNotExist:
+				logger.error("ControlToken object not found for area %s" % area.board_area.code)
+				raise GraphicsError
 		## paste flags
 		home = player.home_country()
-		flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.static_name))
+		try:
+			flag = Image.open("%s/flag-%s.png" % (TOKENS_DIR, player.static_name))
+		except IOError:
+			logger.error("Flag token not found for player %s" % player.static_name)
+			raise GraphicsError
 		for game_area in home:
 			area = game_area.board_area
-			base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 10), flag)
+			try:
+				base_map.paste(flag, (area.controltoken.x, area.controltoken.y - 10), flag)
+			except ObjectDoesNotExist:
+				logger.error("ControlToken object not found for area %s" % area.board_area.code)
+				raise GraphicsError
 	## paste famine markers
 	if game.configuration.famine:
-		famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
+		try:
+			famine = Image.open("%s/famine-marker.png" % TOKENS_DIR)
+		except IOError:
+			logger.error("Famine token not found")
+			raise GraphicsError
 		for a in game.gamearea_set.filter(famine=True):
-			coords = (a.board_area.controltoken.x + 12, a.board_area.controltoken.y + 12)
+			try:
+				coords = (a.board_area.controltoken.x + 12, a.board_area.controltoken.y + 12)
+			except ObjectDoesNotExist:
+				logger.error("ControlToken object not found for area %s" % a.board_area.code)
+				raise GraphicsError
 			base_map.paste(famine, coords, famine)
 	## paste storm markers
 	if game.configuration.storms:
-		storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
+		try:
+			storm = Image.open("%s/storm-marker.png" % TOKENS_DIR)
+		except IOError:
+			logger.error("Storm token not found")
+			raise GraphicsError
 		for a in game.gamearea_set.filter(storm=True):
-			coords = (a.board_area.aftoken.x - 20, a.board_area.aftoken.y + 30)
+			try:
+				coords = (a.board_area.aftoken.x - 20, a.board_area.aftoken.y + 30)
+			except ObjectDoesNotExist:
+				logger.error("AFToken object not found for area %s" % a.board_area.code)
+				raise GraphicsError
 			base_map.paste(storm, coords, storm)
 	## paste rebellion markers
 	if game.configuration.finances:
-		rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
+		try:
+			rebellion_marker = Image.open("%s/rebellion-marker.png" % TOKENS_DIR)
+		except IOError:
+			logger.error("Rebellion token not found")
+			raise GraphicsError
 		for r in game.get_rebellions():
-			if r.garrisoned:
-				coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
-			else:
-				coords = (r.area.board_area.controltoken.x - 12, r.area.board_area.controltoken.y - 12)
+			try:
+				if r.garrisoned:
+					coords = (r.area.board_area.gtoken.x, r.area.board_area.gtoken.y)
+				else:
+					coords = (r.area.board_area.controltoken.x - 12, r.area.board_area.controltoken.y - 12)
+			except ObjectDoesNotExist:
+				logger.error("ControlToken object not found for area %s" % r.area.board_area.code)
+				raise GraphicsError
 			base_map.paste(rebellion_marker, coords, rebellion_marker)
 	if fow:
 		for player in game.player_set.filter(user__isnull=False):

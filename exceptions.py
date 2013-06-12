@@ -28,3 +28,5 @@ class WrongUnitCount(Error):
 
 	pass
 
+class GraphicsError(Error):
+	pass
