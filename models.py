@@ -3355,7 +3355,7 @@ class Unit(models.Model):
 			return False
 		if self.type == "A" and (not self.area.player or self.area.player != self.player):
 			return False
-		if self.type == "A" and destination.board_area.is_sea:
+		if self.type == "A" and (destination.board_area.is_sea or destination.board_area.mixed):
 			return False
 		if self.type == "F" and not (destination.board_area.is_coast or destination.board_area.is_sea):
 			return False
