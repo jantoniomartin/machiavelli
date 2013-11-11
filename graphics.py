@@ -18,7 +18,7 @@
 
 """ This module defines functions to generate the map. """
 
-import Image
+from PIL import Image
 import os
 import os.path
 
