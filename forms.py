@@ -470,6 +470,8 @@ def make_expense_form(player):
 			## if province to rebel
 			elif type == 2 or type == 3:
 				if area.player:
+					if area.player == player:
+						raise forms.ValidationError(_("You cannot promote a rebellion in one of your own areas"))
 					if type == 2 and area in area.player.controlled_home_country():
 						raise forms.ValidationError(_("This area is part of the player's home country"))
 					elif type == 3 and not area in area.player.controlled_home_country():
