@@ -900,7 +900,7 @@ def play_strategic(request, game, player):
 	units = player.strategic_units()
 	context['orders'] = machiavelli.StrategicOrder.objects.filter(unit__player=player)
 	if units.count() <= 0:
-		context.update({'unodeable': False})
+		context.update({'undoable': False})
 	if not player.done:
 		StrategicOrderForm = forms.strategic_order_form_factory(player)
 		StrategicOrderFormSet = formset_factory(StrategicOrderForm,
