@@ -2788,6 +2788,11 @@ class Player(models.Model):
 						revolution.resolve()
 				revolution.save()
 			else:
+				if notification:
+					user = [self.user,]
+					extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
+					notification.send(user, "missed_turn", extra_context,
+						on_site=True)
 				logger.info("Karma prevents revolution for %s" % self)
 
 	def close_revolution(self):

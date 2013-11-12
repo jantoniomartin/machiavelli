@@ -1,0 +1,7 @@
+{% load i18n %}
+
+{% blocktrans with game.title as slug %}You have neglected your government
+duties in game '{{ slug }}' and you have been penalized.{% endblocktrans %}
+
+{% trans "Go to the game" %} http://{{ current_site }}{% url show-game game.slug %}
+
