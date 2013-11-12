@@ -341,6 +341,10 @@ def make_reinforce_form(player, finances=False, special_units=False):
 			cleaned_data = self.cleaned_data
 			type = cleaned_data.get('type')
 			area = cleaned_data.get('area')
+			if type is None:
+				raise forms.ValidationError(_('You must select a unit type'))
+			if area is None:
+				raise forms.ValidationError(_('You must select an area'))
 			if not type in area.possible_reinforcements():
 				raise forms.ValidationError(_('This unit cannot be placed in this area'))
 			return cleaned_data
