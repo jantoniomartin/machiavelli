@@ -427,6 +427,11 @@ def make_expense_form(player):
 			ducats = cleaned_data.get('ducats')
 			area = cleaned_data.get('area')
 			unit = cleaned_data.get('unit')
+
+			try:
+				ducats = int(ducats)
+			except:
+				raise forms.ValidationError(_("Ducats paid are not valid"))
 	
 			if type in (0,1,2,3, 10, 11):
 				if not isinstance(area, machiavelli.GameArea):
