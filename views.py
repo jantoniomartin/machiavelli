@@ -663,12 +663,11 @@ def play_finance_reinforcements(request, game, player):
 	else:
 		step = player.step
 		if game.configuration.lenders:
-			try:
-				loan = player.loan
-			except ObjectDoesNotExist:
-				pass
+			if game.version <= 2:
+				credits = machiavelli.Loan.objects.filter(player=player)
 			else:
-				context.update({'loan': loan})
+				credits = machiavelli.Credit.objects.filter(player=player, repaid=False).order_by('year', 'season')
+			context.update({'credits': credits,})
 		if game.configuration.special_units:
 			context.update({'special_units': True})
 		if step == 0:
