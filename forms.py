@@ -52,8 +52,7 @@ class GameForm(GameBaseForm):
 				'time_limit',
 				'cities_to_win',
 				'visible',
-				'private',
-				'comment',)
+				'private',)
 
 TEAM_SIZES=(
 	(2, 2),
@@ -71,8 +70,7 @@ class TeamGameForm(GameBaseForm):
 				'teams',
 				'time_limit',
 				'visible',
-				'private',
-				'comment',)
+				'private',)
 
 	def clean(self):
 		cleaned_data = super(TeamGameForm, self).clean()		
