@@ -80,6 +80,8 @@ if "notification" in settings.INSTALLED_APPS:
 else:
 	notification = None
 
+SUMMARY_FORUM_THREADS = getattr(settings, 'SUMMARY_FORUM_THREADS', 5)
+
 reverse_lazy = lambda name=None, *args : lazy(reverse, str)(name, args=args)
 
 class LoginRequiredMixin(object):
@@ -138,7 +140,7 @@ class SummaryView(TemplateView):
 		if recent_scenarios.count() > 0:
 			context.update({'new_scenario': recent_scenarios[0] })
 		latest_pybb = pybb.Topic.objects.all().order_by('-updated')
-		context.update({'latest_pybb': latest_pybb[0:5]})
+		context.update({'latest_pybb': latest_pybb[0:SUMMARY_FORUM_THREADS]})
 		return context
 		
 	def render_to_response(self, context, **kwargs):
