@@ -89,6 +89,7 @@ unit depends on its class. Regular units cost 3 ducats, and special units cost m
 {% endif %}
 </div>
 
+{% if game.configuration.lenders and not player.defaulted %}
 {% if credits %}
 <div class="action_block">
 <h2>{% trans "Loans" %}</h2>
@@ -111,6 +112,7 @@ unit depends on its class. Regular units cost 3 ducats, and special units cost m
 {% endfor %}
 </table>
 </div>
+{% endif %}
 {% endif %}
 
 {% endblock %}

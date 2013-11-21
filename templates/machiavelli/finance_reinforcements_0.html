@@ -29,6 +29,7 @@ select. The units not selected won't be paid and will be disbanded.</p>{% endblo
 {% endif %}
 </div>
 
+{% if game.configuration.lenders and not player.defaulted %}
 {% if credits %}
 <div class="action_block">
 <h2>{% trans "Loans" %}</h2>
@@ -51,6 +52,7 @@ select. The units not selected won't be paid and will be disbanded.</p>{% endblo
 {% endfor %}
 </table>
 </div>
+{% endif %}
 {% endif %}
 
 {% endblock %}
