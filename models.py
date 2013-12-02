@@ -3347,7 +3347,7 @@ class Unit(models.Model):
 		occupied_ids = game_areas.filter(unit__type__in=['A','F']).values_list('id', flat=True)
 		land_filter = Q(player=self.player) & ~Q(id__in=occupied_ids)
 		if self.type == "A":
-			sea_filter = Q(board_area__is_sea=True) & Q(unit__type='F') & Q(unit__player=self.player)
+			sea_filter = (Q(board_area__is_sea=True) | Q(board_area__mixed=True)) & Q(unit__type='F') & Q(unit__player=self.player)
 		elif self.type == "F":
 			land_filter = land_filter & Q(board_area__is_coast=True)
 			sea_filter = Q(board_area__is_sea=True) & Q(unit__isnull=True) & Q(board_area__borders__gamearea__player=self.player)
