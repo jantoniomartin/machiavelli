@@ -90,3 +90,7 @@ class PlayerQuerySet(models.query.QuerySet):
 			p = p.filter(user=user)
 		return p
 
+class RevolutionQuerySet(models.query.QuerySet):
+	"""A lazy database lookup for a set of revolutions"""
+	def open(self):
+		return self.exclude(overthrow=True)

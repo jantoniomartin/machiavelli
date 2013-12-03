@@ -62,7 +62,7 @@ from machiavelli.graphics import make_map
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.exceptions as exceptions
-from machiavelli.query import GameQuerySet, GameCommentQuerySet, PlayerQuerySet
+import machiavelli.query as query
 import slugify
 
 ## condottieri_scenarios
@@ -217,7 +217,7 @@ class Game(models.Model):
 	""" if teams < 2, there will be no teams """
 	teams = models.PositiveIntegerField(_("teams"), default=0)
 
-	objects = PassThroughManager.for_queryset_class(GameQuerySet)()
+	objects = PassThroughManager.for_queryset_class(query.GameQuerySet)()
 
 	class Meta:
 		verbose_name = _("game")
@@ -1961,7 +1961,7 @@ class GameComment(models.Model):
 		editable=False)
 	is_public = models.BooleanField(_('is public'), default=True)
 
-	objects = PassThroughManager.for_queryset_class(GameCommentQuerySet)()
+	objects = PassThroughManager.for_queryset_class(query.GameCommentQuerySet)()
 
 	class Meta:
 		verbose_name = _("Game comment")
@@ -2275,7 +2275,7 @@ class Player(models.Model):
 	team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"))
 	secret_key = models.CharField(_("secret key"), max_length=20, default="", editable=False)
 
-	objects = PassThroughManager.for_queryset_class(PlayerQuerySet)()
+	objects = PassThroughManager.for_queryset_class(query.PlayerQuerySet)()
 	
 	## the 'deadline' is not persistent, and is used to order a user's players by the time
 	## that they have to play
@@ -2965,6 +2965,8 @@ class Revolution(models.Model):
 	country = models.ForeignKey(Country)
 	voluntary = models.BooleanField(default=False)
 
+	objects = PassThroughManager.for_queryset_class(query.RevolutionQuerySet)()
+	
 	class Meta:
 		verbose_name = _("Revolution")
 		verbose_name_plural = _("Revolutions")
@@ -3033,23 +3035,22 @@ signals.overthrow_attempted.connect(notify_overthrow_attempt)
 class UnitManager(models.Manager):
 	def get_with_strength(self, game, **kwargs):
 		u = self.get_query_set().get(**kwargs)
-		query = Q(unit__player__game=game,
+		qry = Q(unit__player__game=game,
 				  code__exact='S',
 				  subunit=u)
 		u_order = u.get_order()
 		if not u_order:
-			query &= Q(subcode__exact='H')
+			qry &= Q(subcode__exact='H')
 		else:
 			if u_order.code in ('', 'H', 'S', 'C', 'B'): #unit is holding
-				query &= Q(subcode__exact='H')
+				qry &= Q(subcode__exact='H')
 			elif u_order.code == '=':
-				query &= Q(subcode__exact='=',
+				qry &= Q(subcode__exact='=',
 						   subtype=u_order.type)
 			elif u_order.code == '-':
-				query &= Q(subcode__exact='-',
+				qry &= Q(subcode__exact='-',
 						   subdestination=u_order.destination)
-		#support = Order.objects.filter(query).count()
-		support_sum = Order.objects.filter(query).aggregate(Sum('unit__power'))
+		support_sum = Order.objects.filter(qry).aggregate(Sum('unit__power'))
 		if support_sum['unit__power__sum'] is None:
 			support = 0
 		else:
