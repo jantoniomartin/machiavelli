@@ -42,6 +42,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.defaultfilters import capfirst, timesince, force_escape
 
+from model_utils.managers import PassThroughManager
+
 if "notification" in settings.INSTALLED_APPS:
 	from notification import models as notification
 else:
@@ -60,6 +62,7 @@ from machiavelli.graphics import make_map
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.exceptions as exceptions
+from machiavelli.query import GameQuerySet
 import slugify
 
 ## condottieri_scenarios
@@ -143,19 +146,6 @@ class Invasion(object):
 		self.area = area
 		self.conversion = conv
 
-class GameManager(models.Manager):
-	def joinable_by_user(self, user):
-		if user.is_authenticated():
-			return self.filter(slots__gt=0).exclude(player__user=user)
-		else:
-			return self.filter(slots__gt=0)
-	
-	def pending_for_user(self, user):
-		return self.filter(started__isnull=True, player__user=user)	
-
-	def finished(self):
-		return self.filter(finished__isnull=False).order_by('-finished')
-
 def get_default_version():
 	try:
 		v = int(settings.RULES_VERSION)
@@ -227,7 +217,7 @@ class Game(models.Model):
 	""" if teams < 2, there will be no teams """
 	teams = models.PositiveIntegerField(_("teams"), default=0)
 
-	objects = GameManager()
+	objects = PassThroughManager.for_queryset_class(GameQuerySet)()
 
 	class Meta:
 		verbose_name = _("game")
