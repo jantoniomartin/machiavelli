@@ -50,7 +50,10 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
 
 ## pybb
-import pybb.models as pybb
+if 'pybb' in settings.INSTALLED_APPS:
+	import pybb.models as pybb
+else:
+	pybb = None
 
 ## machiavelli
 import machiavelli.models as machiavelli
@@ -109,38 +112,51 @@ class SummaryView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super(SummaryView, self).get_context_data(**kwargs)
-		context['comments'] = machiavelli.GameComment.objects.public().order_by('-id')[:3]
-		joinable = machiavelli.Game.objects.filter(slots__gt=0, private=False)
-		week = timedelta(0, 7*24*60*60)
-		threshold = datetime.now() - week
-		promoted = joinable.filter(created__gt=threshold)
-		promoted_game = None
+		context['comments'] = machiavelli.GameComment.objects.public(). \
+			order_by('-id')[:3]
 		if self.request.user.is_authenticated():
-			joinable = joinable.exclude(player__user=self.request.user)
-			promoted = promoted.exclude(player__user=self.request.user)
-			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, done=False, surrendered=False)
+			joinable = machiavelli.Game.objects.joinable(self.request.user)
+			promoted_game = machiavelli.Game.objects.get_promoted(
+				self.request.user)
+			"""List of games that require the user's attention"""
+			my_players = machiavelli.Player.objects.waited(
+				user=self.request.user
+			)
 			player_list = []
 			for p in my_players:
 				p.deadline = p.next_phase_change()
 				player_list.append(p)
-			player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
+			player_list.sort(
+				cmp=lambda x,y: cmp(x.deadline, y.deadline), 
+				reverse=False
+			)
 			context.update({ 'actions': player_list })
-			## show unseen notices
+			"""Unseen notices"""
 			if notification:
-				context['new_notices'] = notification.Notice.objects.notices_for(self.request.user, unseen=True, on_site=True)[:20]
+				context['new_notices'] = notification.Notice.objects. \
+				notices_for(self.request.user, unseen=True, on_site=True)[:20]
+		else:
+			joinable = machiavelli.Game.objects.joinable()
+			promoted_game = machiavelli.Game.objects.get_promoted()
 		context['joinable_count'] = joinable.count()
-		if promoted.count() > 0:
-			promoted_game = promoted.order_by('slots').select_related('scenario', 'configuration', 'player__user')[0]
 		if promoted_game is not None:
 			num_comments = promoted_game.gamecomment_set.count()
-			context.update( {'promoted_game': promoted_game,
-						'num_comments': num_comments} )
+			context.update({
+				'promoted_game': promoted_game,
+				'num_comments': num_comments
+			})
+		##TODO: Refactor this in condottieri_scenarios
+		week = timedelta(seconds=60*60*24*7)
 		new_scenario_date = datetime.now() - 4 * week # one month ago
 		recent_scenarios = scenarios.Scenario.objects.filter(published__gt=new_scenario_date).order_by('-published')
 		if recent_scenarios.count() > 0:
 			context.update({'new_scenario': recent_scenarios[0] })
-		latest_pybb = pybb.Topic.objects.all().order_by('-updated')
-		context.update({'latest_pybb': latest_pybb[0:SUMMARY_FORUM_THREADS]})
+		"""Latest forum threads"""
+		if pybb:
+			latest_pybb = pybb.Topic.objects.all().order_by('-updated')
+			context.update({
+				'latest_pybb': latest_pybb[0:SUMMARY_FORUM_THREADS],
+			})
 		return context
 		
 	def render_to_response(self, context, **kwargs):
