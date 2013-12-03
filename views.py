@@ -300,7 +300,10 @@ class GameBaseView(DetailView):
 	def get_player(self):
 		game = self.get_object()
 		try:
-			player = machiavelli.Player.objects.get(game=game, user=self.request.user)
+			player = machiavelli.Player.objects.get(
+				game=game,
+				user=self.request.user
+			)
 		except ObjectDoesNotExist:
 			player = machiavelli.Player.objects.none()
 
@@ -319,6 +322,7 @@ def get_log_qs(game, player):
 		cache_key = "game-%s_log" % game.id
 	log = cache.get(cache_key)
 	if not log:
+		##TODO: move this to a condottieri_events manager
 		log = game.baseevent_set.exclude(season__exact=game.season, phase__exact=game.phase,
 			year__exact=game.year)
 		if game.configuration.fow:
@@ -350,7 +354,7 @@ def base_context(request, game, player):
 		'game': game,
 		#'map' : game.get_map_url(),
 		'player': player,
-		'player_list': game.player_list_ordered_by_cities(),
+		'player_list': game.player_set.by_cities(),
 		'teams': game.team_set.all(),
 		'show_users': game.visible,
 		'fow': game.configuration.fow,
@@ -404,27 +408,6 @@ def base_context(request, game, player):
 	if game.scenario.setting.configuration.religious_war:
 		context.update({'show_religions': True })
 	return context
-
-#@never_cache
-#def js_play_game(request, slug=''):
-#	game = get_object_or_404(Game, slug=slug)
-#	try:
-#		player = Player.objects.get(game=game, user=request.user)
-#	except:
-#		player = Player.objects.none()
-#	units = Unit.objects.filter(player__game=game)
-#	player_list = game.player_list_ordered_by_cities()
-#	context = {
-#		'game': game,
-#		'player': player,
-#		'map': 'base-map.png',
-#		'units': units,
-#		'player_list': player_list,
-#	}
-#	return render_to_response('machiavelli/js_game.html',
-#						context,
-#						context_instance=RequestContext(request))
-#
 
 def gamearea_list(request, slug=''):
 	game = get_object_or_404(machiavelli.Game, slug=slug)

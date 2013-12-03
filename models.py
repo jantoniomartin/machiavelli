@@ -258,32 +258,6 @@ class Game(models.Model):
 		""" Deletes the player list from the cache """
 		key = "game-%s_player-list" % self.pk
 		cache.delete(key)
-	
-	def player_list_ordered_by_cities(self):
-		##TODO: condottieri_scenarios should not appear in the SQL query. Fix it.
-		key = "game-%s_player-list" % self.pk
-		result_list = cache.get(key)
-		if 1: #result_list is None:
-			from django.db import connection
-			cursor = connection.cursor()
-			cursor.execute("SELECT machiavelli_player.*, COUNT(machiavelli_gamearea.id) \
-			AS cities \
-			FROM machiavelli_player \
-			LEFT JOIN (machiavelli_gamearea \
-			INNER JOIN condottieri_scenarios_area \
-			ON machiavelli_gamearea.board_area_id=condottieri_scenarios_area.id \
-			AND condottieri_scenarios_area.has_city=1) \
-			ON machiavelli_gamearea.player_id=machiavelli_player.id \
-			WHERE machiavelli_player.game_id=%s \
-			AND machiavelli_player.user_id is not null \
-			GROUP BY machiavelli_player.id \
-			ORDER BY machiavelli_player.team_id, cities DESC, machiavelli_player.id;" % self.id)
-			result_list = []
-			print result_list
-			for row in cursor.fetchall():
-				result_list.append(Player.objects.get(id=row[0]))
-			cache.set(key, result_list)
-		return result_list
 
 	def _get_winners_qs(self):
 		""" Returns a queryset of the highest score(s) in the game """

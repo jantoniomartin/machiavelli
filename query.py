@@ -89,6 +89,21 @@ class PlayerQuerySet(models.query.QuerySet):
 		if user:
 			p = p.filter(user=user)
 		return p
+	
+	def by_cities(self):	
+		qs = self.exclude(user__isnull=True). \
+			order_by('team_id').extra(
+			select={
+				'cities': 'SELECT COUNT(*) FROM machiavelli_gamearea \
+				INNER JOIN condottieri_scenarios_area \
+				ON machiavelli_gamearea.board_area_id=\
+				condottieri_scenarios_area.id \
+				AND condottieri_scenarios_area.has_city=1 \
+				WHERE machiavelli_gamearea.player_id=machiavelli_player.id'
+			},
+			order_by = ['-cities']
+			)
+		return qs
 
 class RevolutionQuerySet(models.query.QuerySet):
 	"""A lazy database lookup for a set of revolutions"""
