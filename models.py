@@ -62,7 +62,7 @@ from machiavelli.graphics import make_map
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.exceptions as exceptions
-from machiavelli.query import GameQuerySet, GameCommentQuerySet
+from machiavelli.query import GameQuerySet, GameCommentQuerySet, PlayerQuerySet
 import slugify
 
 ## condottieri_scenarios
@@ -2275,6 +2275,8 @@ class Player(models.Model):
 	team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"))
 	secret_key = models.CharField(_("secret key"), max_length=20, default="", editable=False)
 
+	objects = PassThroughManager.for_queryset_class(PlayerQuerySet)()
+	
 	## the 'deadline' is not persistent, and is used to order a user's players by the time
 	## that they have to play
 	def __init__(self, *args, **kwargs):
