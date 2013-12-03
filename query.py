@@ -23,8 +23,10 @@ class GameQuerySet(models.query.QuerySet):
 			qs = qs.filter(player__user=user)
 		return qs
 
-	def finished(self):
-		return self.filter(finished__isnull=False)
+	def finished(self, user=None):
+		g = self.filter(finished__isnull=False)
+		if user:
+			g = g.filter(score__user=user)
 
 	def private(self):
 		return self.filter(private=True)
@@ -65,7 +67,7 @@ class GameCommentQuerySet(models.query.QuerySet):
 
 class PlayerQuerySet(models.query.QuerySet):
 	"""A lazy database lookup for a set of players"""
-	def waited(self, user):
+	def waited(self, user=None):
 		"""Return a queryset of players that must confirm their actions
 		"""
 		p = self.filter(
@@ -77,7 +79,7 @@ class PlayerQuerySet(models.query.QuerySet):
 			p = p.filter(user=user)
 		return p
 	
-	def active(self, user):
+	def active(self, user=None):
 		"""Return a queryset of players that are active in games"""
 		p = self.filter(
 			game__started__isnull=False,

@@ -202,10 +202,12 @@ class OtherActiveGamesList(GameListView):
 		cache_key = "other_active_games-%s" % user_id
 		games = cache.get(cache_key)
 		if not games:
-			if not user_id is None:
-				games = machiavelli.LiveGame.objects.exclude(player__user=self.request.user)
-			else:
+			if user_id is None:
 				games = machiavelli.LiveGame.objects.all()
+			else:
+				games = machiavelli.LiveGame.objects.exclude(
+					player__user=self.request.user
+				)
 			cache.set(cache_key, games)
 		return games
 
@@ -216,7 +218,8 @@ class AllFinishedGamesList(GameListView):
 		cache_key = "finished_games"
 		games = cache.get(cache_key)
 		if not games:
-			games = machiavelli.Game.objects.finished().order_by('-finished').annotate(comments_count=Count('gamecomment'))
+			games = machiavelli.Game.objects.finished().order_by('-finished'). \
+				annotate(comments_count=Count('gamecomment'))
 			cache.set(cache_key, games)
 		return games
 
@@ -227,7 +230,9 @@ class MyFinishedGamesList(GameListView):
 		cache_key = "finished_games-%s" % self.request.user.id
 		games = cache.get(cache_key)
 		if not games:
-			games = machiavelli.Game.objects.finished().filter(score__user=self.request.user).order_by('-finished').annotate(comments_count=Count('gamecomment'))
+			games = machiavelli.Game.objects.finished(user=self.request.user). \
+				order_by('-finished'). \
+				annotate(comments_count=Count('gamecomment'))
 			cache.set(cache_key, games)
 		return games
 	
