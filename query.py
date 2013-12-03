@@ -43,7 +43,37 @@ class GameQuerySet(models.query.QuerySet):
 			created__lt=old_date
 		)
 
+	def get_promoted(self, user=None):
+		"""Return a Game that is about to start"""
+		s = getattr(settings, 'GAME_PROMOTION', 60*60*24*7)
+		after = datetime.now() - timedelta(seconds=s)
+		g = self.filter(
+			slots__gt=0,
+			private=False,
+			created__gt=after).order_by('slots')
+		if user:
+			g = g.exclude(player__user=user)
+		try:
+			promoted = g[0]
+		except IndexError:
+			return self.none()
+		
 class GameCommentQuerySet(models.query.QuerySet):
 	"""A lazy database lookup for a set of game comments"""
 	def public(self):
 		return self.filter(is_public=True)
+
+class PlayerQuerySet(models.query.QuerySet):
+	"""A lazy database lookup for a set of players"""
+	def waited(self, user):
+		"""Return a queryset of players that must confirm their actions
+		"""
+		p = self.filter(
+			game__started__isnull=False,
+			done = False,
+			surrendered = False
+		)
+		if user:
+			p = p.filter(user=user)
+		return p
+
