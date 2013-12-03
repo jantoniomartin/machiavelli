@@ -62,7 +62,7 @@ from machiavelli.graphics import make_map
 import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.exceptions as exceptions
-from machiavelli.query import GameQuerySet
+from machiavelli.query import GameQuerySet, GameCommentQuerySet
 import slugify
 
 ## condottieri_scenarios
@@ -1952,10 +1952,6 @@ class Game(models.Model):
 			else:
 				notification.send(users, label, extra_context, on_site)
 
-class GameCommentManager(models.Manager):
-	def public(self):
-		return self.get_query_set().filter(is_public=True)
-
 class GameComment(models.Model):
 	game = models.ForeignKey(Game, editable=False)
 	user = models.ForeignKey(User, editable=False)
@@ -1965,7 +1961,7 @@ class GameComment(models.Model):
 		editable=False)
 	is_public = models.BooleanField(_('is public'), default=True)
 
-	objects = GameCommentManager()
+	objects = PassThroughManager.for_queryset_class(GameCommentQuerySet)()
 
 	class Meta:
 		verbose_name = _("Game comment")

@@ -43,3 +43,7 @@ class GameQuerySet(models.query.QuerySet):
 			created__lt=old_date
 		)
 
+class GameCommentQuerySet(models.query.QuerySet):
+	"""A lazy database lookup for a set of game comments"""
+	def public(self):
+		return self.filter(is_public=True)
