@@ -173,14 +173,22 @@ class MyActiveGamesList(GameListView):
 
 	def get_queryset(self):
 		if self.request.user.is_authenticated():
-			my_players = machiavelli.Player.objects.filter(user=self.request.user, game__started__isnull=False, game__finished__isnull=True, surrendered=False).select_related("contender", "game__scenario", "game__configuration")
+			my_players = machiavelli.Player.objects.active(
+				user=self.request.user
+			).select_related(
+				"contender",
+				"game__scenario",
+				"game__configuration")
 		else:
 			my_players = machiavelli.Player.objects.none()
 		player_list = []
 		for p in my_players:
 			p.deadline = p.next_phase_change()
 			player_list.append(p)
-		player_list.sort(cmp=lambda x,y: cmp(x.deadline, y.deadline), reverse=False)
+		player_list.sort(
+			cmp=lambda x,y: cmp(x.deadline, y.deadline),
+			reverse=False
+		)
 		return player_list
 
 class OtherActiveGamesList(GameListView):

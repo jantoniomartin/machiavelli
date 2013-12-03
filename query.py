@@ -76,4 +76,15 @@ class PlayerQuerySet(models.query.QuerySet):
 		if user:
 			p = p.filter(user=user)
 		return p
+	
+	def active(self, user):
+		"""Return a queryset of players that are active in games"""
+		p = self.filter(
+			game__started__isnull=False,
+			game__finished__isnull=True,
+			surrendered=False
+		)
+		if user:
+			p = p.filter(user=user)
+		return p
 
