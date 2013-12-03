@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+
+from django.conf import settings
 from django.db import models
 
 class GameQuerySet(models.query.QuerySet):
@@ -9,7 +12,7 @@ class GameQuerySet(models.query.QuerySet):
 		return qs
 
 	def pending(self, user=None):
-		qs = self.filter(slots=0, started__isnull=True)
+		qs = self.filter(started__isnull=True)
 		if user:
 			qs = qs.filter(player__user=user)
 		return qs
@@ -27,4 +30,16 @@ class GameQuerySet(models.query.QuerySet):
 		return self.filter(private=True)
 
 	def by_teams(self):
-		return self.filter(teams__gt=0) 
+		return self.filter(teams__gt=0)
+	
+	def expired(self):
+		"""Return a queryset of games that have not started and are too
+		old."""
+		s = getattr(settings, 'GAME_EXPIRATION', 60*60*24*30) 
+		old_date = datetime.now() - timedelta(seconds=s)
+		return self.filter(
+			started__isnull=True,
+			finished__isnull=True,
+			created__lt=old_date
+		)
+
