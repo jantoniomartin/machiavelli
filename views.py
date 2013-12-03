@@ -248,7 +248,8 @@ class JoinableGamesList(GameListView):
 	def get_queryset(self):
 		if self.request.user.is_authenticated():
 			return machiavelli.Game.objects.joinable(
-				self.request.user).annotate(comments_count=Count('gamecomment'))
+				self.request.user
+			).annotate(comments_count=Count('gamecomment'))
 		else:
 			return machiavelli.Game.objects.joinable().annotate(
 				comments_count=Count('gamecomment'))
@@ -259,14 +260,16 @@ class JoinableGamesList(GameListView):
 		return context
 
 class PendingGamesList(LoginRequiredMixin, GameListView):
-	""" Gets a paginated list of all the games of the player that have not yet started """
+	"""Get a paginated list of all the games of the player that have not
+	yet started """
 	template_name_suffix = '_list_pending'
 
 	def get_queryset(self):
 		cache_key = "pending_games-%s" % self.request.user.id
 		games = cache.get(cache_key)
 		if not games:
-			games = machiavelli.Game.objects.pending(self.request.user).annotate(comments_count=Count('gamecomment'))
+			games = machiavelli.Game.objects.pending(self.request.user). \
+				annotate(comments_count=Count('gamecomment'))
 			cache.set(cache_key, games, 10*60)
 		return games
 
@@ -288,7 +291,7 @@ class RevolutionList(LoginRequiredMixin, ListView):
 			**kwargs)
 
 	def get_queryset(self):
-		return machiavelli.Revolution.objects.exclude(overthrow=True).order_by("-active")
+		return machiavelli.Revolution.objects.open().order_by("-active")
 
 class GameBaseView(DetailView):
 	context_object_name = 'game'
