@@ -352,7 +352,6 @@ def base_context(request, game, player):
 	context = {
 		'user': request.user,
 		'game': game,
-		#'map' : game.get_map_url(),
 		'player': player,
 		'player_list': game.player_set.by_cities(),
 		'teams': game.team_set.all(),
@@ -361,8 +360,7 @@ def base_context(request, game, player):
 		'letters': game.configuration.letters,
 		}
 	if game.slots > 0:
-		context['player_list'] = game.player_set.filter(user__isnull=False)
-	#log = game.baseevent_set.all()
+		context['player_list'] = game.player_set.human()
 	if player:
 		context['map'] = game.get_map_url(player)
 	else:
@@ -376,15 +374,19 @@ def base_context(request, game, player):
 		context['can_excommunicate'] = player.can_excommunicate()
 		context['can_forgive'] = player.can_forgive()
 		try:
-			journal = machiavelli.Journal.objects.get(user=request.user, game=game)
+			journal = machiavelli.Journal.objects.get(
+				user=request.user,
+				game=game
+			)
 		except ObjectDoesNotExist:
 			journal = machiavelli.Journal()
 		context.update({'excerpt': journal.excerpt})
 		if game.slots == 0:
 			context['time_exceeded'] = player.time_exceeded()
-		if player.done and not player.in_last_seconds() and not player.eliminated:
+		if player.done \
+		and not player.in_last_seconds() \
+		and not player.eliminated:
 			context.update({'undoable': True,})
-	#log = log.exclude(season__exact=game.season, phase__exact=game.phase)
 	log = get_log_qs(game, player)
 	if len(log) > 0:
 		last_year = log[0].year

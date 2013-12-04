@@ -67,18 +67,6 @@ class GameCommentQuerySet(models.query.QuerySet):
 
 class PlayerQuerySet(models.query.QuerySet):
 	"""A lazy database lookup for a set of players"""
-	def waited(self, user=None):
-		"""Return a queryset of players that must confirm their actions
-		"""
-		p = self.filter(
-			game__started__isnull=False,
-			done = False,
-			surrendered = False
-		)
-		if user:
-			p = p.filter(user=user)
-		return p
-	
 	def active(self, user=None):
 		"""Return a queryset of players that are active in games"""
 		p = self.filter(
@@ -104,6 +92,22 @@ class PlayerQuerySet(models.query.QuerySet):
 			order_by = ['-cities']
 			)
 		return qs
+	
+	def human(self):
+		return self.exclude(user__isnull=True)
+
+	def waited(self, user=None):
+		"""Return a queryset of players that must confirm their actions
+		"""
+		p = self.filter(
+			game__started__isnull=False,
+			done = False,
+			surrendered = False
+		)
+		if user:
+			p = p.filter(user=user)
+		return p
+	
 
 class RevolutionQuerySet(models.query.QuerySet):
 	"""A lazy database lookup for a set of revolutions"""
