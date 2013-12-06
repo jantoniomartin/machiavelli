@@ -28,6 +28,13 @@ class GameBaseForm(forms.ModelForm):
 		super(GameBaseForm, self).__init__(**kwargs)
 		self.instance.created_by = user
 
+	def save(self, commit=True):
+		instance = super(GameBaseForm, self).save(commit=False)
+		instance.slots = instance.scenario.number_of_players - 1
+		if commit:
+			instance.save()
+		return instance
+
 	def clean(self):
 		cleaned_data = super(GameBaseForm, self).clean()
 		fast = private = False

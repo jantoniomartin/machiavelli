@@ -1116,6 +1116,16 @@ class PlayInactiveGame(GamePlayView, FormMixin):
 	template_name = 'machiavelli/game_inactive.html'
 	form_class = forms.GameCommentForm
 	
+	def render_to_response(self, context, **kwargs):
+		return super(PlayInactiveGame, self).render_to_response(
+			RequestContext(
+				self.request,
+				context,
+				processors=[activity, sidebar_ranking,]
+			),
+			**kwargs
+		)
+
 	def get_game(self, request, *args, **kwargs):
 		if not self.game:
 			self.game = get_game_or_404(slug=kwargs['slug'])
@@ -1481,28 +1491,55 @@ def logs_by_game(request, slug=''):
 							context,
 							context_instance=RequestContext(request))
 
-@login_required
-def create_game(request, teams=False):
-	context = {}
-	context.update( {'user': request.user,})
-	if teams:
-		form_cls = forms.TeamGameForm
-		context['teams'] = True
-	else:
-		form_cls = forms.GameForm
-	if request.method == 'POST':
-		game_form = form_cls(request.user, data=request.POST)
+class CreateGameView(LoginRequiredMixin, TemplateView):
+	template_name = 'machiavelli/game_form.html'
+
+	def render_to_response(self, context, **kwargs):
+		return super(CreateGameView, self).render_to_response(
+			RequestContext(
+				self.request,
+				context,
+				processors=[activity, sidebar_ranking,]
+			),
+			**kwargs
+		)
+
+	def get_context_data(self, **kwargs):
+		ctx = super(CreateGameView, self).get_context_data(**kwargs)
+		ctx.update({
+			'scenarios': scenarios.Scenario.objects.filter(enabled=True),
+		})
+		ctx.update(kwargs)
+		return ctx
+
+	def get_form_class(self):
+		return forms.GameForm
+
+	def get(self, request, *args, **kwargs):
+		form_class = self.get_form_class()
+		game_form = form_class(request.user)
+		config_form = forms.ConfigurationForm()
+		return self.render_to_response(
+			self.get_context_data(
+				game_form=game_form,
+				config_form=config_form
+			)
+		)
+
+	def post(self, request, *args, **kwargs):
+		form_class = self.get_form_class()
+		game_form = form_class(request.user, data=request.POST)
 		config_form = forms.ConfigurationForm(request.POST)
 		if game_form.is_valid():
-			new_game = game_form.save(commit=False)
-			new_game.slots = new_game.scenario.number_of_players - 1
-			new_game.save()
+			new_game = game_form.save()
 			new_player = machiavelli.Player()
 			new_player.user = request.user
 			new_player.game = new_game
 			new_player.save()
-			config_form = forms.ConfigurationForm(request.POST,
-												instance=new_game.configuration)
+			config_form = forms.ConfigurationForm(
+				request.POST,
+				instance=new_game.configuration
+			)
 			config = config_form.save(commit=False)
 			if new_game.require_home_cities:
 				config.variable_home = False
@@ -1514,16 +1551,21 @@ def create_game(request, teams=False):
 				return redirect('invite-users', slug=new_game.slug)
 			else:
 				return redirect(new_game)
-	else:
-		game_form = form_cls(request.user)
-		config_form = forms.ConfigurationForm()
-	context['scenarios'] = scenarios.Scenario.objects.filter(enabled=True)
-	context['game_form'] = game_form
-	context['config_form'] = config_form
-	return render_to_response('machiavelli/game_form.html',
-							context,
-							context_instance=RequestContext(request,
-							processors=[activity, sidebar_ranking,]))
+		return self.render_to_response(
+			self.get_context_data(
+				game_form=game_form,
+				config_form=config_form
+			)
+		)
+
+class CreateTeamGameView(CreateGameView):
+	def get_form_class(self):
+		return forms.TeamGameForm
+
+	def get_context_data(self, **kwargs):
+		ctx = super(CreateTeamGameView, self).get_context_data(**kwargs)
+		ctx.update({'teams': True})
+		return ctx
 
 @login_required
 def invite_users(request, slug=''):
