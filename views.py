@@ -28,9 +28,8 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
 from django.db.models import Q, F, Sum, Count
 from django.core.cache import cache
 from django.views.decorators.cache import never_cache
@@ -45,9 +44,8 @@ from django.contrib import messages
 
 ## generic views
 from django.views.generic.base import View, TemplateView
-from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, FormMixin
+from django.views.generic.edit import FormMixin
 
 ## pybb
 if 'pybb' in settings.INSTALLED_APPS:
@@ -65,15 +63,11 @@ from machiavelli.listappend import ListAppendView
 ## condottieri_scenarios
 import condottieri_scenarios.models as scenarios
 
-## condottieri_common
-from condottieri_common.models import Server
-
 ## condottieri_profiles
 from condottieri_profiles.models import CondottieriProfile
 from condottieri_profiles.context_processors import sidebar_ranking
 
 ## condottieri_events
-from condottieri_events.models import BaseEvent
 import condottieri_events.paginator as events_paginator
 
 import logging
