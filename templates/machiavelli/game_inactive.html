@@ -25,7 +25,7 @@
 
 {% block left_column %}
 <h1>{{ game.title }}</h1>
-{% if started %}
+{% if game.started %}
 	{% if game.paused %}
 	<p>{% trans "This game is paused for maintenance. It will be resumed soon." %}</p>
 	{% endif %}
@@ -33,14 +33,14 @@
 	{% if game.slots > 0 %}
 	<p>{% blocktrans %}This game has not started, because is has not yet enough players.{% endblocktrans %}</p>
 	{% endif %}
-	{% if game.slots == 0 and not finished %}
+	{% if game.slots == 0 and not game.finished %}
 	<p>{% trans "This game will start in a few minutes." %}</p>
 	{% endif %}
 {% endif %}
 
 <div itemscope itemtype="http://schema.org/Thing" class="game_info {% if game.fast %}fast{% endif %}">
 <h2><span itemprop="name"><a href="{{ game.get_absolute_url }}">{{ game.title }}</a></span>
-{% if not started %}
+{% if not game.started %}
 	<span>
 		({% trans "Slots" %}: {{ game.slots }})
 	</span>
@@ -57,7 +57,7 @@
 <img itemprop="image" src="{{ game.thumbnail_url }}" />
 </div>
 
-{% if finished %}
+{% if game.finished %}
 <div class="time">
 {% blocktrans with game.finished|date:"SHORT_DATE_FORMAT" as finished and game.finished|timeuntil:game.started as time %}
 Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
@@ -66,7 +66,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 
 <dl>
 
-{% if not started and not finished %}
+{% if not game.started and not game.finished %}
 <dt>{% trans "Average score" %}</dt><dd>{{ game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ game.get_average_karma|karma_stars }}</dd>
 {% endif %}
@@ -76,7 +76,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 <dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
 
-{% if not started %}
+{% if not game.started %}
 
 <dt>{% trans "Visible players?" %}</dt>
 <dd>{{ game.visible|yesno }}</dd>
@@ -105,14 +105,14 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 </dl>
 <ul class="section_menu">
 	<li>{% rule_icons game.configuration %}</li>
-	{% if game.private and not started and not finished %}
+	{% if game.private and not game.started and not game.finished %}
 		{% ifequal game.created_by user %}
 			<li><a href="{% url invite-users game.slug %}">{% trans "Invitations" %}</a></li>
 			<li><a href="{% url make-public game.slug %}">{% trans "Make public" %}</a></li>
 		{% endifequal %}
 	{% endif %}
 	
-{% if not started and not finished %}
+{% if not game.started and not game.finished %}
 	{% if joinable %}
 	<li><a href="{% url join-game game.slug %}">{% trans "Join game" %}</a></li>
 	{% else %}
@@ -123,7 +123,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 </ul>
 </div>
 
-{% if finished %}
+{% if game.finished %}
 
 <h2>{% trans "Results of game" %} "{{ game.title }}"</h2>
 
@@ -225,7 +225,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 {% if user.is_authenticated %}
 <form action="" method="POST" class="uniForm">
 {% csrf_token %}
-{{ comment_form|as_uni_form }}
+{{ form|as_uni_form }}
 <input type="submit" value="{% trans "Send" %}" />
 </form>
 {% endif %}

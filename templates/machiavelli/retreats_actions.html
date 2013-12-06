@@ -9,7 +9,7 @@
 <p>{% blocktrans %}At least one player has not yet retreated his units. You have to wait until all
 players have done it or the time limit is reached.{% endblocktrans %}</p>
 
-{% if undoable %}
+{% if player.undoable %}
 <p>{% blocktrans %}If you wish, you can undo your retreats. To do so, push the following button. Remember that you will need to make them again.{% endblocktrans %}</p>
 <form method="POST" action="{% url undo-actions game.slug %}">
 {% csrf_token %}

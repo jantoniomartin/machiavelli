@@ -50,7 +50,7 @@ restrictions are applied:{% endblocktrans %}</p>
 
 {% endif %}
 
-{% if undoable %}
+{% if player.undoable %}
 <p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again, even if you don't want to make any movements.{% endblocktrans %}</p>
 <form method="POST" action="{% url undo-actions game.slug %}">
 {% csrf_token %}

@@ -112,15 +112,15 @@
 </li>
 {% endif %}
 
-{% if ducats %}
-<li id="ducats" title="{% trans "Treasury" %}">{{ ducats }}</li>
+{% if player %}
+<li id="ducats" title="{% trans "Treasury" %}">{{ player.ducats }}</li>
 {% endif %}
 
 {% if player %}
 {% if game.is_team_game %}
 <li><a href="{% url team_messages game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
 {% else %}
-	{% if letters %}
+	{% if game.configuration.letters %}
 	<li class="mailbox_button">
 		{% if player.unread_count > 0 %}
 		<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>

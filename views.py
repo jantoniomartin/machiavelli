@@ -44,10 +44,10 @@ from django.utils import simplejson
 from django.contrib import messages
 
 ## generic views
-from django.views.generic.base import TemplateView
+from django.views.generic.base import View, TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormMixin
 
 ## pybb
 if 'pybb' in settings.INSTALLED_APPS:
@@ -73,6 +73,7 @@ from condottieri_profiles.models import CondottieriProfile
 from condottieri_profiles.context_processors import sidebar_ranking
 
 ## condottieri_events
+from condottieri_events.models import BaseEvent
 import condottieri_events.paginator as events_paginator
 
 import logging
@@ -299,27 +300,1015 @@ class RevolutionList(LoginRequiredMixin, ListView):
 	def get_queryset(self):
 		return machiavelli.Revolution.objects.open().order_by("-active")
 
-class GameBaseView(DetailView):
-	context_object_name = 'game'
-	model = machiavelli.Game
+class GamePlayView(TemplateView):
+	game = None
+	player = None
 
-	def get_player(self):
-		game = self.get_object()
+	def get_game(self, request, *args, **kwargs):
+		if not self.game:
+			self.game = get_game_or_404(
+				slug=kwargs['slug'],
+				started__isnull=False,
+				finished__isnull=True)
+		return self.game
+
+	def get_player(self, request, *args, **kwargs):
+		if not self.player:
+			try:
+				self.player = self.game.player_set.get(
+					user=request.user,
+					eliminated=False,
+					surrendered=False)
+			except ObjectDoesNotExist:
+				self.player = machiavelli.Player.objects.none()
+
+	def dispatch(self, request, *args, **kwargs):
+		self.get_game(request, *args, **kwargs)
+		self.get_player(request, *args, **kwargs)
+		return super(GamePlayView, self).dispatch(request, *args, **kwargs)
+	
+	def get(self, request, *args, **kwargs):
 		try:
-			player = machiavelli.Player.objects.get(
-				game=game,
-				user=self.request.user
-			)
-		except ObjectDoesNotExist:
-			player = machiavelli.Player.objects.none()
+			form_class = self.get_form_class()
+		except AttributeError:
+			form = None
+		else:
+			form = self.get_form(form_class)
+		return self.render_to_response(self.get_context_data(form=form))
+    
+	def post(self, request, *args, **kwargs):
+		form_class = self.get_form_class()
+		form = self.get_form(form_class)
+		if form.is_valid():
+			return self.form_valid(form)
+		else:
+			return self.form_invalid(form)
 
 	def get_context_data(self, **kwargs):
-		context = super(GameBaseView, self).get_context_data(**kwargs)
-		game = self.get_object()
-		player = self.get_player()
-		context.update(base_context(self.request, game, player))
+		ctx = super(GamePlayView, self).get_context_data(**kwargs)
+		ctx.update(get_game_context(self.request, self.game, self.player))
+		ctx.update(**kwargs)
+		return ctx
+
+class AssassinationView(GamePlayView, FormMixin):
+	template_name = 'machiavelli/assassination.html'
+
+	def get_context_data(self, **kwargs):
+		ctx = super(AssassinationView, self).get_context_data(**kwargs)
+		if self.game.phase != machiavelli.PHORDERS \
+			or not self.game.configuration.assassinations \
+			or self.player is None \
+			or self.player.done:
+			messages.error(
+				self.request,
+				_("You cannot buy an assassination in this moment.")
+			)
+			return redirect(self.game)
+		return ctx
+
+	def get_form_class(self):
+		return forms.make_assassination_form(self.player)
+
+	def form_valid(self, form):
+		ducats = int(form.cleaned_data['ducats'])
+		country = form.cleaned_data['target']
+		target = machiavelli.Player.objects.get(
+			game=self.game,
+			contender__country=country
+		)
+		if ducats > self.player.ducats:
+			messages.error(
+				self.request,
+				_("You don't have enough ducats for the assassination.")
+			)
+			return redirect(self.game)
+		if target.eliminated:
+			messages.error(
+				self.request,
+				_("You cannot kill an eliminated player.")
+			)
+			return redirect(self.game)
+		if target == self.player:
+			messages.error(self.request, _("You cannot kill yourself."))
+			return redirect(self.game)
+		assassins = self.player.assassin_set.filter(target=country)
+		if assassins.count() == 0:
+			messages.error(
+				self.request,
+				_("You don't have any assassins to kill this leader.")
+			)
+			return redirect(self.game)
+		else:
+			assassin = assassins[0]
+			assassination = machiavelli.Assassination(
+				killer=self.player,
+				target=target,
+				ducats=ducats
+			)
+			assassination.save()
+			assassin.delete()
+			self.player.ducats = F('ducats') - ducats
+			self.player.save()
+			messages.success(
+				self.request,
+				_("The assassination attempt has been saved.")
+			)
+		return redirect(self.game)
+
+class BorrowMoneyView(GamePlayView, FormMixin):
+	template_name = 'machiavelli/borrow_money.html'
+	form_class = forms.BorrowForm
+
+	def get_context_data(self, **kwargs):
+		ctx = super(BorrowMoneyView, self).get_context_data(**kwargs)
+		if self.game.phase != machiavelli.PHORDERS \
+			or not self.game.configuration.lenders \
+			or self.player is None \
+			or self.player.done:
+			messages.error(
+				self.request,
+				_("You cannot borrow money in this moment.")
+			)
+			return redirect(self.game)
+		credit_limit = self.player.get_credit()
+		if credit_limit <= 0:
+			messages.error(
+				self.request,
+				_("You have already consumed all your credit.")
+			)
+			return redirect(self.game)
+		ctx.update({'credit_limit': credit_limit})
+		return ctx
+
+	def form_valid(self, form):
+		ducats = form.cleaned_data['ducats']
+		term = int(form.cleaned_data['term'])
+		if ducats > self.player.get_credit():
+			messages.error(
+				self.request,
+				_("You cannot borrow so much money.")
+			)
+			return HttpResponseRedirect(self.request.path)
+		credit = machiavelli.Credit(
+			player = self.player,
+			principal = ducats,
+			season = self.game.season,
+			year = self.game.year + term
+		)
+		if term == 1:
+			credit.debt = int(ceil(ducats * 1.2))
+		elif term == 2:
+			credit.debt = int(ceil(ducats * 1.5))
+		else:
+			messages.error(self.request, _("The chosen term is not valid."))
+			return HttpResponseRedirect(self.request.path)
+		credit.save()
+		self.player.ducats = F('ducats') + ducats
+		self.player.save()
+		messages.success(self.request, _("You have got the loan."))
+		return redirect(self.game)
+
+class ConfirmOrdersView(GamePlayView):
+	def post(self, request, *args, **kwargs):
+		if self.player:
+			msg = u"Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (
+				self.player.id,
+				self.player.static_name,
+				self.player.user.username,
+				self.game.id,
+				self.game.slug
+			) 
+			sent_orders = self.player.order_set.all()
+			for order in sent_orders:
+				msg += u"%s => " % order.format()
+				if order.is_possible():
+					order.confirm()
+					msg += u"OK\n"
+				else:
+					msg += u"Invalid\n"
+			## confirm expenses
+			self.player.expense_set.all().update(confirmed=True)
+			logger.info(msg)
+			self.player.end_phase()
+			messages.success(request, _("You have successfully confirmed your actions."))
+		return redirect(self.game)
+
+class DeleteOrderView(GamePlayView):
+	def get(self, request, *args, **kwargs):
+		order = get_object_or_404(
+			machiavelli.Order,
+			id=self.kwargs['order_id'],
+			player=self.player,
+			confirmed=False
+		)
+		response_dict = {
+			'bad': 'false',
+			'order_id': order.id
+		}
+		try:
+			order.delete()
+		except:
+			response_dict.update({'bad': 'true'})
+		if request.is_ajax():
+			response_json = simplejson.dumps(response_dict, ensure_ascii=False)
+			return HttpResponse(response_json, mimetype='application/javascript')		
+		return redirect(self.game)
+
+class EditJournalView(GamePlayView):
+	template_name = 'machiavelli/edit_journal.html'
+
+	def get_journal(self, request):
+		try:
+			journal = machiavelli.Journal.objects.get(user=request.user, game=self.game)
+		except ObjectDoesNotExist:
+			tip = _("What you write above these symbols\n\n%%\n\nwill be shown in the sidebar")
+			journal = machiavelli.Journal(content=tip)
+		return journal
+
+	def get(self, request, *args, **kwargs):
+		if not self.player:
+			raise Http404
+		journal = self.get_journal(request)
+		form = forms.JournalForm(request.user, self.game, instance=journal)
+		return self.render_to_response(self.get_context_data(form=form, journal=journal))
+	
+	def post(self, request, *args, **kwargs):
+		if not self.player:
+			raise Http404
+		journal = self.get_journal(request)
+		form = forms.JournalForm(request.user, self.game, instance=journal, data=request.POST)
+		if form.is_valid():
+			journal = form.save()
+			messages.success(request, _("Your journal has been updated."))
+			return redirect(self.game)
+		else:
+			messages.error(request, _("Your journal could not be saved."))
+		return self.render_to_response(self.get_context_data(form=form, journal=journal))
+
+class ErrorReportCreateView(GamePlayView, FormMixin):
+	template_name = 'machiavelli/error_report_form.html'
+	form_class = forms.ErrorReportForm
+
+	def form_valid(self, form):
+		if self.player:
+			form.save(self.request.user, self.game)
+			messages.success(
+				self.request,
+				_("Your error report has been saved")
+			)
+			return redirect(self.game)
+
+class ExcommunicationView(GamePlayView):
+	action = ""
+
+	def get(self, request, *args, **kwargs):
+		if not self.player:
+			raise Http404
+		victim = get_player_or_404(
+			game = self.game,
+			id = self.kwargs['player_id'],
+			eliminated=False,
+			surrendered=False,
+			may_excommunicate=False
+		)
+		if self.game.phase == 0 \
+			or not self.game.configuration.excommunication \
+			or not self.player \
+			or not self.player.may_excommunicate:
+			messages.error(
+				self.request,
+				_("You cannot excommunicate in this game.")
+			)
+			return redirect(self.game)
+		if self.action == 'punish':
+			if not self.player.can_excommunicate():
+				messages.error(
+					self.request,
+					_("You cannot excommunicate in the current season.")
+				)
+				return redirect(self.game)
+			if victim.is_excommunicated:
+				messages.error(
+					self.request,
+					_("This country is already excommunicated.")
+				)
+				return redirect(self.game)
+			victim.set_excommunication(by_pope=True)
+			self.player.has_sentenced = True
+			self.player.save()
+			messages.success(
+				self.request,
+				_("The country has been excommunicated.")
+			)
+		elif self.action == 'forgive':
+			if not self.player.can_forgive():
+				messages.error(
+					self.request,
+				_("You cannot forgive excommunications in the current season.")
+				)
+				return redirect(self.game)
+			if not victim.is_excommunicated:
+				messages.error(
+					self.request,
+					_("You cannot forgive this country.")
+				)
+				return redirect(self.game)
+			victim.unset_excommunication()
+			self.player.has_sentenced = True
+			self.player.save()
+			messages.success(self.request, _("The country has been forgiven."))
+		return redirect(self.game)
+
+class ExpenseCreateView(GamePlayView, FormMixin):
+	template_name = 'machiavelli/expenses_actions.html'
+
+	def get_form_class(self):
+		return forms.make_expense_form(self.player)
+
+	def get_form(self, form_class):
+		return form_class(self.player, **self.get_form_kwargs())
+
+	def form_valid(self, form):
+		if self.player:
+			expense = form.save()
+			self.player.ducats = F('ducats') - expense.ducats
+			self.player.save()
+			messages.success(self.request, _("Expense successfully saved."))
+		return HttpResponseRedirect(self.request.path)
+
+	def get_context_data(self, **kwargs):
+		if not self.player:
+			raise Http404
+		ctx = super(ExpenseCreateView, self).get_context_data(**kwargs)
+		ctx.update({'current_expenses': self.player.expense_set.all()})
+		return ctx
+
+class ExpenseDeleteView(GamePlayView):
+	def get(self, request, *args, **kwargs):
+		if self.player:
+			expense = get_object_or_404(
+				machiavelli.Expense,
+				id=self.kwargs['expense_id'],
+				player=self.player
+			)
+			try:
+				expense.undo()
+			except:
+				messages.error(self.request, _("Expense could not be undone."))
+			else:
+				messages.success(
+					self.request,
+					_("Expense successfully undone.")
+				)
+		url = reverse('expenses', kwargs={'slug': self.kwargs['slug']})
+		return HttpResponseRedirect(url)
+
+class GiveMoneyView(GamePlayView, FormMixin):
+	template_name = 'machiavelli/give_money.html'
+	form_class = forms.LendForm
+
+	def get_borrower(self, player_id):
+		return get_player_or_404(id=player_id, game=self.game)
+
+	def get_context_data(self, **kwargs):
+		if not self.player:
+			raise Http404
+		ctx = super(GiveMoneyView, self).get_context_data(**kwargs)
+		ctx.update({'borrower': self.get_borrower(self.kwargs['player_id']),})
+		return ctx
+
+	def form_valid(self, form):
+		if self.player:
+			borrower = self.get_borrower(self.kwargs['player_id'])
+			ducats = form.cleaned_data['ducats']
+			if ducats > self.player.ducats:
+				messages.error(
+					self.request,
+					_("You cannot give more money than you have")
+				)
+				return HttpResponseRedirect(self.request.path)
+			self.player.ducats = F('ducats') - ducats
+			borrower.ducats = F('ducats') + ducats
+			self.player.save()
+			borrower.save()
+			messages.success(
+				self.request,
+				_("The money has been successfully sent.")
+			)
+			if notification:
+				extra_context = {
+					'game': self.game,
+					'ducats': ducats,
+					'country': self.player.contender.country,
+					'STATIC_URL': settings.STATIC_URL
+				}
+				if self.game.fast:
+					notification.send_now(
+						[borrower.user,],
+						"received_ducats", 
+						extra_context
+					)
+				else:
+					notification.send(
+						[borrower.user,],
+						"received_ducats",
+						extra_context
+				)
+		return redirect(self.game)
+
+class PlayReinforcements(GamePlayView):
+	template_name = 'machiavelli/reinforcements_actions.html'
+
+	def get_units_to_place(self):
+		return self.player.units_to_place()
+
+	def get_reinforce_formset_class(self):
+		ReinforceForm = forms.make_reinforce_form(self.player)
+		return formset_factory(
+			ReinforceForm,
+			formset=forms.BaseReinforceFormSet,
+			extra=self.get_units_to_place()
+		)
+
+	def get_disband_form_class(self):
+		return forms.make_disband_form(self.player)
+
+	def get(self, request, *args, **kwargs):
+		if self.player:
+			units_to_place = self.get_units_to_place()
+			if units_to_place > 0:
+				reinforce_formset_class = self.get_reinforce_formset_class()
+				reinforce_form = reinforce_formset_class()
+				return self.render_to_response(
+					self.get_context_data(reinforce_form=reinforce_form)
+				)
+			elif units_to_place < 0:
+				form_class = self.get_disband_form_class()
+				disband_form = form_class()
+				return self.render_to_response(
+					self.get_context_data(disband_form=disband_form)
+				)
+		return self.render_to_response(self.get_context_data())
+
+	def post(self, request, *args, **kwargs):
+		if not self.player or self.player.done:
+			raise Http404
+		units_to_place = self.get_units_to_place()
+		if units_to_place > 0:
+			reinforce_formset_class = self.get_reinforce_formset_class()
+			reinforce_form = reinforce_formset_class(request.POST)
+			if reinforce_form.is_valid():
+				for f in reinforce_form.forms:
+					new_unit = machiavelli.Unit(
+						type=f.cleaned_data['type'],
+						area=f.cleaned_data['area'],
+						player=self.player,
+						placed=False
+					)
+					new_unit.save()
+				self.player.end_phase()
+				messages.success(request, _("You have successfully made your reinforcements."))
+				return HttpResponseRedirect(request.path)
+			else:
+				messages.error(request, _("There was an error in your reinforcements."))
+				return redirect(self.game)
+		elif units_to_place < 0:
+			form_class = self.get_disband_form_class()
+			disband_form = form_class(request.POST)
+			if disband_form.is_valid():
+				if len(disband_form.cleaned_data['units']) == -units_to_place:
+					for u in disband_form.cleaned_data['units']:
+						u.paid = False
+						u.save()
+					self.player.end_phase()
+					messages.success(
+						request,
+						_("You have successfully made your reinforcements.")
+					)
+					return HttpResponseRedirect(request.path)
+				else:
+					messages.error(
+						request,
+						_("You must disband exactly %s units.") % -units_to_place
+					)
+					return redirect(self.game)
+			else:
+				messages.error(request, _("There was an error in your reinforcements."))
+				return redirect(self.game)
+		else:
+			raise Http404
+
+	def get_context_data(self, **kwargs):
+		ctx = super(PlayReinforcements, self).get_context_data(**kwargs)
+		if not self.player:
+			return ctx
+		units_to_place = self.get_units_to_place()
+		if self.player.done:
+			ctx.update({
+				'to_place': self.player.unit_set.filter(placed=False),
+				'to_disband': self.player.unit_set.filter(placed=True, paid=False),
+				'to_keep': self.player.unit_set.filter(placed=True, paid=True),
+			})
+			if units_to_place == 0:
+				ctx.update({'undoable': False})
+		else:
+			ctx.update({
+				'cities_qty': self.player.number_of_cities,
+				'cur_units': self.player.unit_set.all().count(),
+			})
+			if units_to_place > 0:
+				## place units
+				ctx.update({'units_to_place': units_to_place})
+			elif units_to_place < 0:
+				## remove units
+				ctx.update({'units_to_disband': -units_to_place})
+		return ctx
+
+class PlayFinanceReinforcements(GamePlayView):
+	def get_template_names(self):
+		if self.player.done:
+			return ['machiavelli/reinforcements_actions.html',]
+		else:
+			return ['machiavelli/finance_reinforcements_%s.html' % self.player.step,]
+
+	def get_max_units(self):
+		can_buy = self.player.ducats / 3
+		can_place = self.player.get_areas_for_new_units(finances=True).count()
+		return min(can_buy, can_place)
+
+	def get_unit_payment_form_class(self):
+		return forms.make_unit_payment_form(self.player)
+
+	def get_reinforce_formset_class(self):
+		max_units = self.get_max_units()
+		if max_units > 0:
+			ReinforceForm = forms.make_reinforce_form(
+				self.player,
+				finances=True,
+				special_units=self.game.configuration.special_units
+			)
+			return formset_factory(
+				ReinforceForm,
+				formset=forms.BaseReinforceFormSet,
+				extra=max_units
+			)
+		else:
+			return None
+
+	def get(self, request, *args, **kwargs):
+		if self.player:
+			if self.player.step == 0:
+				form_class = self.get_unit_payment_form_class()
+				form = form_class()
+				return self.render_to_response(self.get_context_data(form=form))
+			elif self.player.step == 1:
+				formset_class = self.get_reinforce_formset_class()
+				if formset_class:
+					formset = formset_class()
+					return self.render_to_response(self.get_context_data(formset=formset))
+		return self.render_to_response(self.get_context_data())
+
+	def post(self, request, *args, **kwargs):
+		if not self.player or self.player.done:
+			raise Http404
+		if self.player.step == 0:
+			form_class = self.get_unit_payment_form_class()
+			form = form_class(request.POST)
+			if form.is_valid():
+				cost = 0
+				for u in form.cleaned_data['units']:
+					cost += u.cost
+				if cost <= self.player.ducats:
+					for u in form.cleaned_data['units']:
+						u.paid = True
+						u.save()
+					self.player.ducats = self.player.ducats - cost
+					self.player.step = 1
+					self.player.save()
+					messages.success(request, _("You have successfully paid your units."))
+					return HttpResponseRedirect(request.path)
+				else:
+					messages.error(
+						request,
+						_("You don't have enough money to pay so many units.")
+					)
+			else:
+				return self.render_to_response(self.get_context_data(form=form))
+		elif self.player.step == 1:
+			formset_class = self.get_reinforce_formset_class()
+			if formset_class:
+				formset = formset_class(request.POST)
+				if formset.is_valid():
+					total_cost = 0
+					new_units = []
+					for f in formset.forms:
+						if 'area' in f.cleaned_data:
+							new_unit = machiavelli.Unit(
+								type=f.cleaned_data['type'],
+								area=f.cleaned_data['area'],
+								player=self.player,
+								placed=False
+							)
+							if 'unit_class' in f.cleaned_data:
+								if not f.cleaned_data['unit_class'] is None:
+									unit_class = f.cleaned_data['unit_class']
+									## it's a special unit
+									new_unit.cost = unit_class.cost
+									new_unit.power = unit_class.power
+									new_unit.loyalty = unit_class.loyalty
+							new_units.append(new_unit)
+							total_cost += new_unit.cost
+					if total_cost > self.player.ducats:
+						messages.error(
+							request,
+							_("You don't have enough ducats to buy these units.")
+						)
+					else:
+						for u in new_units:
+							u.save()
+						self.player.ducats = self.player.ducats - total_cost
+						self.player.save()
+						messages.success(
+							request,
+							_("You have successfully made your reinforcements.")
+						)
+						self.player.end_phase()
+					return HttpResponseRedirect(request.path)
+				else:
+					return self.render_to_response(self.get_context_data(formset=formset))
+			else:
+				self.player.end_phase()
+		return redirect(self.game)
+
+	def get_context_data(self, **kwargs):
+		ctx = super(PlayFinanceReinforcements, self).get_context_data(**kwargs)
+		if not self.player:
+			return ctx
+		if self.player.done:
+			ctx.update({
+				'to_place': self.player.unit_set.filter(placed=False),
+				'to_disband': self.player.unit_set.filter(placed=True, paid=False),
+				'to_keep': self.player.unit_set.filter(placed=True, paid=True),
+			})
+		else:
+			if self.game.configuration.lenders:
+				ctx.update({
+					'credits': self.player.credit_set.filter(repaid=False) \
+						.order_by('year', 'season'),
+				})
+			if self.game.configuration.special_units:
+				ctx.update({'special_units': True})
+			if self.player.step == 1:
+				ctx.update({'max_units': self.get_max_units(),})
+		return ctx
+
+class PlayOrders(GamePlayView):
+	template_name = 'machiavelli/orders_actions.html'
+	
+	def get_form_class(self):
+		return forms.make_order_form(self.player)
+
+	def get_context_data(self, **kwargs):
+		ctx = super(PlayOrders, self).get_context_data(**kwargs)
+		if not self.player:
+			return ctx
+		ctx.update({'sent_orders': self.player.order_set.all()})
+		if self.game.configuration.finances:
+			ctx.update({'current_expenses': self.player.expense_set.all()})
+		if self.game.configuration.assassinations:
+			ctx.update({'assassinations': self.player.assassination_attempts.all()})
+		if self.game.configuration.lenders:
+			ctx.update({
+				'credits': self.player.credit_set.filter(repaid=False). \
+					order_by('year', 'season'),
+				'credit_limit': self.player.get_credit(),
+			})
+		return ctx
+
+	def get(self, request, *args, **kwargs):
+		if self.player:
+			if not self.player.done:
+				form_class = self.get_form_class()
+				order_form = form_class(self.player)
+				return self.render_to_response(self.get_context_data(order_form=order_form))
+		return self.render_to_response(self.get_context_data())
+
+	def post(self, request, *args, **kwargs):
+		if not self.player or self.player.done:
+			raise Http404
+		if not self.player.done:
+			form_class = self.get_form_class()
+			order_form = form_class(self.player, data=request.POST)
+			if request.is_ajax():
+				## validate the form
+				clean = order_form.is_valid()
+				response_dict = {'bad': 'false'}
+				if not clean:
+					response_dict.update({'bad': 'true'})
+					d = {}
+					for e in order_form.errors.iteritems():
+						d.update({e[0] : unicode(e[1])})
+					response_dict.update({'errs': d})
+				else:
+					new_order = order_form.save()
+					response_dict.update({
+						'pk': new_order.pk ,
+						'new_order': new_order.explain()
+					})
+				response_json = simplejson.dumps(response_dict, ensure_ascii=False)
+				return HttpResponse(response_json, mimetype='application/javascript')
+			## not ajax
+			else:
+				if order_form.is_valid():
+					new_order = order_form.save()
+				return HttpResponseRedirect(request.path)
+		raise Http404
+
+class PlayStrategic(GamePlayView, FormMixin):
+	template_name = 'machiavelli/strategic_actions.html'
+	
+	def get_formset_class(self):
+		StrategicOrderForm = forms.strategic_order_form_factory(self.player)
+		return formset_factory(
+			StrategicOrderForm,
+			formset=forms.BaseStrategicOrderFormSet,
+			extra=2
+		)
+
+	def get(self, request, *args, **kwargs):
+		if self.player and not self.player.done:
+			formset_class = self.get_formset_class()
+			formset = formset_class()
+			return self.render_to_response(self.get_context_data(formset=formset))
+		return self.render_to_response(self.get_context_data())
+	
+	def post(self, request, *args, **kwargs):
+		if not self.player or self.player.done:
+			raise Http404
+		formset_class = self.get_formset_class()
+		formset = formset_class(request.POST)
+		if formset.is_valid():
+			for form in formset.forms:
+				if 'unit' in form.cleaned_data:
+					form.save()
+			self.player.end_phase()
+			messages.success(request, _("You have successfully sent your strategic movements."))
+			return HttpResponseRedirect(request.path)
+		return self.render_to_response(self.get_context_data(formset=formset))
+	
+	def get_context_data(self, **kwargs):
+		ctx = super(PlayStrategic, self).get_context_data(**kwargs)
+		if not self.player:
+			return ctx
+		ctx.update({
+			'orders': machiavelli.StrategicOrder.objects.filter(unit__player=self.player),
+		})
+		if self.player.strategic_units().count() <= 0:
+			ctx.update({'undoable': False})
+		return ctx
+
+class PlayRetreats(GamePlayView, FormMixin):
+	template_name = 'machiavelli/retreats_actions.html'
+
+	def get_units(self):
+		return self.player.unit_set.exclude(must_retreat__exact='')
+
+	def get_context_data(self, **kwargs):
+		ctx = super(PlayRetreats, self).get_context_data(**kwargs)
+		if not self.player:
+			return ctx
+		return ctx
 		
-		return context
+	def get(self, request, *args, **kwargs):
+		if self.player and not self.player.done:
+			retreat_forms = []
+			units = self.get_units()
+			for u in units:
+				RetreatForm = forms.make_retreat_form(u)
+				retreat_forms.append(RetreatForm(prefix=u.id))
+			if len(retreat_forms) > 0:
+				return self.render_to_response(
+					self.get_context_data(retreat_forms=retreat_forms)
+				)
+		return self.render_to_response(self.get_context_data())
+
+	def post(self, request, *args, **kwargs):
+		if not self.player or self.player.done:
+			raise Http404
+		retreat_forms = []
+		units = self.get_units()
+		data = request.POST
+		for u in units:
+			unitid_key = "%s-unitid" % u.id
+			area_key = "%s-area" % u.id
+			unit_data = {unitid_key: data[unitid_key], area_key: data[area_key]}
+			RetreatForm = forms.make_retreat_form(u)
+			retreat_forms.append(RetreatForm(data, prefix=u.id))
+		for f in retreat_forms:
+			if f.is_valid():
+				unitid = f.cleaned_data['unitid']
+				area= f.cleaned_data['area']
+				unit = machiavelli.Unit.objects.get(id=unitid)
+				if isinstance(area, machiavelli.GameArea):
+					retreat = machiavelli.RetreatOrder(unit=unit, area=area)
+				else:
+					retreat = machiavelli.RetreatOrder(unit=unit)
+				retreat.save()
+		self.player.end_phase()
+		messages.success(request, _("You have successfully retreated your units."))
+		return HttpResponseRedirect(request.path)
+
+class PlayInactiveGame(GamePlayView, FormMixin):
+	template_name = 'machiavelli/game_inactive.html'
+	form_class = forms.GameCommentForm
+	
+	def get_game(self, request, *args, **kwargs):
+		if not self.game:
+			self.game = get_game_or_404(slug=kwargs['slug'])
+		return self.game
+
+	def get_context_data(self, **kwargs):
+		ctx = {'game': self.game}
+		started = self.game.started is not None
+		finished = self.game.finished is not None 
+		joinable = self.game not in machiavelli.Game.objects.joinable(self.request.user)
+		## if the game is finished, get the scores
+		if finished:
+			cache_key = "game-scores-%s" % self.game.id
+			scores = cache.get(cache_key)
+			if not scores:
+				scores = self.game.score_set.filter(user__isnull=False).order_by('-points')
+				cache.set(cache_key, scores)
+			ctx.update({'players': scores,})
+			## get the logs, if they still exist
+			log = self.game.baseevent_set.all()
+			if log.count() > 0:
+				ctx.update({'show_log': True})
+			## show the overthrows history
+			overthrows = self.game.revolution_set.filter(overthrow=True)
+			if overthrows.count() > 0:
+				ctx.update({'overthrows': overthrows})
+		## comments section
+		ctx.update({
+			'started': started,
+			'finished': finished,
+			'joinable': joinable,
+			'comments': self.game.gamecomment_set.public()
+		})
+		ctx.update(**kwargs)
+		return ctx
+	
+	def post(self, request, *args, **kwargs):
+		form_class = self.get_form_class()
+		form = form_class(request.POST)
+		if form.is_valid():
+			form.save(user=request.user, game=self.game)
+			return redirect(self.game)
+		else:
+			return self.form_invalid(form)
+
+class GameRouter(View):
+	"""Return a View that depends on the current status of the game."""
+	## staticmethod avoids adding 'self' to the arguments
+	inactive_view = staticmethod(PlayInactiveGame.as_view())
+	reinforcements_view = staticmethod(PlayReinforcements.as_view())
+	finance_reinforcements_view = staticmethod(PlayFinanceReinforcements.as_view())
+	orders_view = staticmethod(PlayOrders.as_view())
+	strategic_view = staticmethod(PlayStrategic.as_view())
+	retreats_view = staticmethod(PlayRetreats.as_view())
+
+	def dispatch(self, request, *args, **kwargs):
+		game = get_game_or_404(slug=kwargs['slug'])
+		#try:
+		#	player = game.player_set.get(user=request.user)
+		#except ObjectDoesNotExist:
+		#	player = machiavelli.Player.objects.none()
+		if game.started is None \
+			or game.finished is not None \
+			or game.phase == machiavelli.PHINACTIVE \
+			or (game.paused and not request.user.is_staff):
+			return self.inactive_view(request, *args, **kwargs)
+		if game.phase == machiavelli.PHREINFORCE:
+			if game.configuration.finances:
+				return self.finance_reinforcements_view(request, *args, **kwargs)
+			else:
+				return self.reinforcements_view(request, *args, **kwargs)
+		if game.phase == machiavelli.PHORDERS:
+			return self.orders_view(request, *args, **kwargs)
+		if game.phase == machiavelli.PHSTRATEGIC:
+			return self.strategic_view(request, *args, **kwargs)
+		if game.phase == machiavelli.PHRETREATS:
+			return self.retreats_view(request, *args, **kwargs)
+
+class ReturnMoneyView(GamePlayView):
+	template_name = 'machiavelli/return_money.html'
+
+	def get_credit_or_404(self):
+		return get_object_or_404(
+			machiavelli.Credit,
+			id=self.kwargs['credit_id'],
+			player=self.player,
+			repaid=False
+		)
+
+	def get_context_data(self, **kwargs):
+		if not self.player:
+			raise Http404
+		ctx = super(ReturnMoneyView, self).get_context_data(**kwargs)
+		ctx.update({'credit': self.get_credit_or_404()})
+		return ctx
+
+	def post(self, request, *args, **kwargs):
+		if not self.player:
+			raise Http404
+		credit = self.get_credit_or_404()
+		if self.player.ducats >= credit.debt:
+			self.player.ducats = F('ducats') - credit.debt
+			self.player.save()
+			credit.repaid=True
+			credit.save()
+			messages.success(self.request, _("You have repaid the loan."))
+		else:
+			messages.error(
+				self.request,
+				_("You don't have enough money to repay the loan.")
+			)
+		return redirect(self.game)
+
+class SurrenderView(GamePlayView):
+	template_name = 'machiavelli/surrender.html'
+
+	def post(self, request, *args, **kwargs):
+		if self.player:
+			self.player.surrender()
+			messages.success(
+				self.request,
+				_("You have surrendered in this game.")
+			)
+			return redirect(self.game)
+
+class UndoActionsView(GamePlayView):
+	def post(self, request, *args, **kwargs):
+		if not self.player:
+			raise Http404
+		if not self.player.done or self.player.in_last_seconds():
+			messages.error(request, _("You cannot undo actions in this moment."))
+		else:
+			self.player.done = False
+			if self.game.phase == machiavelli.PHREINFORCE:
+				if self.game.configuration.finances:
+					## first, delete new, not placed units
+					units = self.player.unit_set.filter(placed=False)
+					if units.count() > 0:
+						costs = units.aggregate(Sum('cost'))
+						ducats = costs['cost__sum']
+					else:
+						ducats = 0
+					units.delete()
+					## then mark all units as not paid, refund the money
+					units = self.player.unit_set.filter(paid=True)
+					if units.count() > 0:
+						costs = units.aggregate(Sum('cost'))
+						ducats += costs['cost__sum']
+						units.update(paid=False)
+					self.player.ducats += ducats
+				else:
+					## first, delete new, not placed units
+					self.player.unit_set.filter(placed=False).delete()
+					## then, mark all units as paid
+					self.player.unit_set.update(paid=True)
+			elif self.game.phase == machiavelli.PHORDERS:
+				self.player.order_set.update(confirmed=False)
+				self.player.expense_set.update(confirmed=False)
+				messages.success(
+					request,
+					_("Your actions are now unconfirmed. You'll have to confirm then again.")
+				)
+			elif self.game.phase == machiavelli.PHRETREATS:
+				machiavelli.RetreatOrder.objects.filter(unit__player=self.player).delete()
+				messages.success(request, _("Your retreat orders have been undone."))
+			elif self.game.phase == machiavelli.PHSTRATEGIC:
+				machiavelli.StrategicOrder.objects.filter(unit__player=self.player).delete()
+				messages.success(request, _("Your strategic movements have been undone."))
+			if self.game.check_bonus_time():
+				self.request.user.get_profile().adjust_karma( -1 )
+			self.player.save()
+		return redirect(self.game)
+
+class WhisperCreateView(GamePlayView, FormMixin):
+	form_class = forms.WhisperForm
+
+	def form_valid(self, form):
+		if self.player:
+			form.save(self.request.user, self.game)
+		return redirect(self.game)
+	
+	def form_invalid(self, form):
+		messages.error(
+			self.request,
+			_("Maximum whisper length is 140 characters.")
+		)
+		return redirect(self.game)
 
 def get_log_qs(game, player):
 	if player and game.configuration.fow:
@@ -354,31 +1343,25 @@ def get_log_qs(game, player):
 		cache.set(cache_key, log)
 	return log
 
-def base_context(request, game, player):
+def get_game_context(request, game, player):
+	"""This function returns a common context for all the game views"""
 	context = {
 		'user': request.user,
 		'game': game,
 		'player': player,
 		'player_list': game.player_set.by_cities(),
 		'teams': game.team_set.all(),
-		'show_users': game.visible,
-		'fow': game.configuration.fow,
-		'letters': game.configuration.letters,
-		}
-	if game.slots > 0:
-		context['player_list'] = game.player_set.human()
+		'map': game.get_map_url(player),
+	}
 	if player:
-		context['map'] = game.get_map_url(player)
-	else:
-		context['map'] = game.get_map_url()
-		print context['map']
-	if player:
-		context['done'] = player.done
-		context['surrendered'] = player.surrendered
-		if game.configuration.finances:
-			context['ducats'] = player.ducats
-		context['can_excommunicate'] = player.can_excommunicate()
-		context['can_forgive'] = player.can_forgive()
+		if game.configuration.lenders:
+			credits = machiavelli.Credit.objects.filter(player=player, repaid=False). \
+				order_by('year', 'season')
+			credit_limit = player.get_credit()
+			context.update({
+				'credits': credits,
+				'credit_limit': credit_limit
+			})
 		try:
 			journal = machiavelli.Journal.objects.get(
 				user=request.user,
@@ -386,161 +1369,57 @@ def base_context(request, game, player):
 			)
 		except ObjectDoesNotExist:
 			journal = machiavelli.Journal()
-		context.update({'excerpt': journal.excerpt})
-		if game.slots == 0:
-			context['time_exceeded'] = player.time_exceeded()
-		if player.done \
-		and not player.in_last_seconds() \
-		and not player.eliminated:
-			context.update({'undoable': True,})
+		context.update({
+			'done': player.done,
+			'surrendered': player.surrendered,
+			'can_excommunicate': player.can_excommunicate(),
+			'can_forgive': player.can_forgive(),
+			'excerpt': journal.excerpt,
+			'time_exceeded': player.time_exceeded(),
+		})
 	log = get_log_qs(game, player)
 	if len(log) > 0:
 		last_year = log[0].year
 		last_season = log[0].season
 		last_phase = log[0].phase
-		context['log'] = log.filter(year__exact=last_year,
-								season__exact=last_season,
-								phase__exact=last_phase)
+		context.update({
+			'log': log.filter(
+				year=last_year,
+				season=last_season,
+				phase=last_phase)
+		})
 	else:
-		context['log'] = log # this will always be an empty queryset
-	#context['log'] = log[:10]
+		context.update({'log': log})
 	rules = game.configuration.get_enabled_rules()
 	if len(rules) > 0:
-		context['rules'] = rules
-	
+		context.update({'rules': rules})
 	if game.configuration.gossip:
 		whispers = game.whisper_set.all()[:10]
-		context.update({'whispers': whispers, })
+		context.update({'whispers': whispers})
 		if player:
 			context.update({'whisper_form': forms.WhisperForm(),})
 	if game.scenario.setting.configuration.religious_war:
-		context.update({'show_religions': True })
+		context.update({'show_religions': True})
 	return context
 
-def gamearea_list(request, slug=''):
-	game = get_game_or_404(slug=slug)
-	try:
-		player = machiavelli.Player.objects.get(game=game, user=request.user)
-	except:
-		player = machiavelli.Player.objects.none()
-	context = base_context(request, game, player)
-	areas = game.gamearea_set.all()
-	context["area_list"] = areas
-	return render_to_response('machiavelli/gamearea_list.html',
-							context,
-							context_instance=RequestContext(request))
+class GameAreaListView(ListView):
+	context_object_name = 'area_list'
+	template_name = 'machiavelli/gamearea_list'
 
-@login_required
-def surrender(request, slug=''):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(game=game, user=request.user, eliminated=False, surrendered=False)
-	context = base_context(request, game, player)
-	if request.method == 'POST':
-		player.surrender()
-		messages.success(request, _("You have surrendered in this game.")) 
-		return redirect(game)
-	return render_to_response('machiavelli/surrender.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def undo_actions(request, slug=''):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(game=game, user=request.user, eliminated=False, surrendered=False)
-	profile = request.user.get_profile()
-	if request.method == 'POST' and player.done and not player.in_last_seconds():
-		player.done = False
-		if game.phase == machiavelli.PHREINFORCE:
-			if game.configuration.finances:
-				## first, delete new, not placed units
-				units = machiavelli.Unit.objects.filter(player=player, placed=False)
-				if units.count() > 0:
-					costs = units.aggregate(Sum('cost'))
-					ducats = costs['cost__sum']
-				else:
-					ducats = 0
-				units.delete()
-				## then mark all units as not paid, refund the money
-				units = machiavelli.Unit.objects.filter(player=player, paid=True)
-				if units.count() > 0:
-					costs = units.aggregate(Sum('cost'))
-					ducats += costs['cost__sum']
-					units.update(paid=False)
-				player.ducats += ducats
-			else:
-				## first, delete new, not placed units
-				machiavelli.Unit.objects.filter(player=player, placed=False).delete()
-				## then, mark all units as paid
-				machiavelli.Unit.objects.filter(player=player).update(paid=True)
-		elif game.phase == machiavelli.PHORDERS:
-			player.order_set.update(confirmed=False)
-			player.expense_set.update(confirmed=False)
-			messages.success(request, _("Your actions are now unconfirmed. You'll have to confirm then again."))
-		elif game.phase == machiavelli.PHRETREATS:
-			machiavelli.RetreatOrder.objects.filter(unit__player=player).delete()
-			messages.success(request, _("Your retreat orders have been undone."))
-		elif game.phase == machiavelli.PHSTRATEGIC:
-			machiavelli.StrategicOrder.objects.filter(unit__player=player).delete()
-			messages.success(request, _("Your strategic movements have been undone."))
-		if game.check_bonus_time():
-			profile.adjust_karma( -1 )
-		player.save()
-
-	return redirect('show-game', slug=slug)
-
-def show_inactive_game(request, game):
-	context = {}
-	context.update({'game': game})
-	started = (game.started is not None)
-	finished = (game.finished is not None)
-	context.update({'started': started, 'finished': finished})
-	##TODO: move this to Game class
-	## check if the user can join the game
-	if not started and not finished:
-		if request.user.is_authenticated():
-			try:
-				machiavelli.Player.objects.get(game=game, user=request.user)
-			except ObjectDoesNotExist:
-				joinable = True
-			else:
-				joinable = False
-		else:
-			joinable = True
-	else:
-		joinable = False
-	context.update({'joinable': joinable})
-	## if the game is finished, get the scores
-	if finished:
-		cache_key = "game-scores-%s" % game.id
-		scores = cache.get(cache_key)
-		if not scores:
-			scores = game.score_set.filter(user__isnull=False).order_by('-points')
-			cache.set(cache_key, scores)
-		context.update({'map' : game.get_map_url(),
-						'players': scores,})
-		## get the logs, if they still exist
-		log = game.baseevent_set.all()
-		if len(log) > 0:
-			context.update({'show_log': True})
-		## show the overthrows history
-		overthrows = machiavelli.Revolution.objects.filter(game=game, overthrow=True)
-		if overthrows.count() > 0:
-			context.update({'overthrows': overthrows})
-	## comments section
-	comments = game.gamecomment_set.public()
-	context.update({'comments': comments})
-	if request.method == 'POST':
-		comment_form = forms.GameCommentForm(request.POST)
-		if comment_form.is_valid():
-			comment_form.save(user=request.user, game=game)
-			return redirect(game)
-	comment_form = forms.GameCommentForm()
-	context.update({'comment_form': comment_form})
-
-	return render_to_response('machiavelli/game_inactive.html',
-						context,	
-						context_instance=RequestContext(request,
-						processors=[activity, sidebar_ranking,]))
+	def get_queryset(self):
+		return machiavelli.GameArea.objects.filter(
+			game__slug=self.kwargs['slug']
+		)
+	
+	def get_context_data(self, **kwargs):
+		context = super(GameAreaListView, self).get_context_data(**kwargs)
+		game = get_game_or_404(slug=self.kwargs['slug'])
+		try:
+			player = game.player_set.get(user=self.request.user)
+		except ObjectDoesNotExist:
+			player = machiavelli.Player.objects.none()
+		context.update(get_game_context(self.request, game, player))
+		return context
 
 class TeamMessageListView(LoginRequiredMixin, ListAppendView):
 	model = machiavelli.TeamMessage
@@ -566,445 +1445,14 @@ class TeamMessageListView(LoginRequiredMixin, ListAppendView):
 			player = machiavelli.Player.objects.get(game=game, user=self.request.user)
 		except ObjectDoesNotExist:
 			player = machiavelli.Player.objects.none()
-		context.update(base_context(self.request, game, player))
+		context.update(get_game_context(self.request, game, player))
 		return context
 
 	def form_valid(self, form):
 		game = get_game_or_404(slug=self.kwargs['slug'])
 		player = get_player_or_404(user=self.request.user, game=game)
-		self.object = form.save(commit=False)
-		self.object.player = player
-		self.object.save()
+		self.object = form.save(player)
 		return super(TeamMessageListView, self).form_valid(form)
-
-@never_cache
-#@login_required
-def play_game(request, slug='', **kwargs):
-	game = get_game_or_404(slug=slug)
-	if game.started is None or not game.finished is None or (game.paused and not request.user.is_staff):
-		return show_inactive_game(request, game)
-	try:
-		player = machiavelli.Player.objects.get(game=game, user=request.user, surrendered=False)
-	except:
-		player = machiavelli.Player.objects.none()
-	if player:
-		if game.phase == machiavelli.PHINACTIVE:
-			context = base_context(request, game, player)
-			return render_to_response('machiavelli/inactive_actions.html',
-							context,
-							context_instance=RequestContext(request))
-		elif game.phase == machiavelli.PHREINFORCE:
-			if game.configuration.finances:
-				return play_finance_reinforcements(request, game, player)
-			else:
-				return play_reinforcements(request, game, player)
-		elif game.phase == machiavelli.PHORDERS:
-			if 'extra' in kwargs and kwargs['extra'] == 'expenses':
-				if game.configuration.finances:
-					return play_expenses(request, game, player)
-			return play_orders(request, game, player)
-		elif game.phase == machiavelli.PHRETREATS:
-			return play_retreats(request, game, player)
-		elif game.phase == machiavelli.PHSTRATEGIC:
-			return play_strategic(request, game, player)
-		else:
-			raise Http404
-	## no player
-	else:
-		context = base_context(request, game, player)
-		return render_to_response('machiavelli/inactive_actions.html',
-							context,
-							context_instance=RequestContext(request))
-
-def play_reinforcements(request, game, player):
-	context = base_context(request, game, player)
-	units_to_place = player.units_to_place()
-	if player.done:
-		context['to_place'] = player.unit_set.filter(placed=False)
-		context['to_disband'] = player.unit_set.filter(placed=True, paid=False)
-		context['to_keep'] = player.unit_set.filter(placed=True, paid=True)
-		if units_to_place == 0:
-			context.update({'undoable': False})
-	else:
-		context['cities_qty'] = player.number_of_cities
-		context['cur_units'] = len(player.unit_set.all())
-		if units_to_place > 0:
-			## place units
-			context['units_to_place'] = units_to_place
-			ReinforceForm = forms.make_reinforce_form(player)
-			ReinforceFormSet = formset_factory(ReinforceForm,
-								formset=forms.BaseReinforceFormSet,
-								extra=units_to_place)
-			if request.method == 'POST':
-				reinforce_form = ReinforceFormSet(request.POST)
-				if reinforce_form.is_valid():
-					for f in reinforce_form.forms:
-						new_unit = machiavelli.Unit(type=f.cleaned_data['type'],
-								area=f.cleaned_data['area'],
-								player=player,
-								placed=False)
-						new_unit.save()
-					## not sure, but i think i could remove the fol. line
-					player = machiavelli.Player.objects.get(id=player.pk) ## see below
-					player.end_phase()
-					messages.success(request, _("You have successfully made your reinforcements."))
-					return HttpResponseRedirect(request.path)
-			else:
-				reinforce_form = ReinforceFormSet()
-			context['reinforce_form'] = reinforce_form
-		elif units_to_place < 0:
-			## remove units
-			DisbandForm = forms.make_disband_form(player)
-			#choices = []
-			context['units_to_disband'] = -units_to_place
-			#for unit in player.unit_set.all():
-			#	choices.append((unit.pk, unit))
-			if request.method == 'POST':
-				disband_form = DisbandForm(request.POST)
-				if disband_form.is_valid():
-					if len(disband_form.cleaned_data['units']) == -units_to_place:
-						for u in disband_form.cleaned_data['units']:
-							#u.delete()
-							u.paid = False
-							u.save()
-						#game.map_changed()
-						## odd: the player object needs to be reloaded or
-						## the it doesn't know the change in game.map_outdated
-						## this hack needs to be done in some other places
-						player = machiavelli.Player.objects.get(id=player.pk)
-						## --
-						player.end_phase()
-						messages.success(request, _("You have successfully made your reinforcements."))
-						return HttpResponseRedirect(request.path)
-			else:
-				disband_form = DisbandForm()
-			context['disband_form'] = disband_form
-	return render_to_response('machiavelli/reinforcements_actions.html',
-							context,
-							context_instance=RequestContext(request))
-
-def play_finance_reinforcements(request, game, player):
-	context = base_context(request, game, player)
-	if player.done:
-		context['to_place'] = player.unit_set.filter(placed=False)
-		context['to_disband'] = player.unit_set.filter(placed=True, paid=False)
-		context['to_keep'] = player.unit_set.filter(placed=True, paid=True)
-		template_name = 'machiavelli/reinforcements_actions.html'
-	else:
-		step = player.step
-		if game.configuration.lenders:
-			if game.version <= 2:
-				credits = machiavelli.Loan.objects.filter(player=player)
-			else:
-				credits = machiavelli.Credit.objects.filter(player=player, repaid=False).order_by('year', 'season')
-			context.update({'credits': credits,})
-		if game.configuration.special_units:
-			context.update({'special_units': True})
-		if step == 0:
-			## the player must select the units that he wants to pay and keep
-			machiavelli.UnitPaymentForm = forms.make_unit_payment_form(player)
-			if request.method == 'POST':
-				form = machiavelli.UnitPaymentForm(request.POST)
-				if form.is_valid():
-					#cost = len(form.cleaned_data['units']) * 3
-					cost = 0
-					for u in form.cleaned_data['units']:
-						cost += u.cost
-					if cost <= player.ducats:
-						for u in form.cleaned_data['units']:
-							u.paid = True
-							u.save()
-						player.ducats = player.ducats - cost
-						step = 1
-						player.step = step
-						player.save()
-						messages.success(request, _("You have successfully paid your units."))
-						return HttpResponseRedirect(request.path)
-			else:
-				form = machiavelli.UnitPaymentForm()
-			context['form'] = form
-		elif step == 1:
-			## the player can create new units if he has money and areas
-			can_buy = player.ducats / 3
-			can_place = player.get_areas_for_new_units(finances=True).count()
-			max_units = min(can_buy, can_place)
-			ReinforceForm = forms.make_reinforce_form(player, finances=True,
-												special_units=game.configuration.special_units)
-			ReinforceFormSet = formset_factory(ReinforceForm,
-								formset=forms.BaseReinforceFormSet,
-								extra=max_units)
-			if request.method == 'POST':
-				if max_units > 0:
-					try:
-						formset = ReinforceFormSet(request.POST)
-					except ValidationError:
-						formset = None
-				else:
-					formset = None
-					player.end_phase()
-					messages.success(request, _("You have successfully made your reinforcements."))
-					return HttpResponseRedirect(request.path)
-				if formset and formset.is_valid():
-					total_cost = 0
-					new_units = []
-					for f in formset.forms:
-						if 'area' in f.cleaned_data:
-							new_unit = machiavelli.Unit(type=f.cleaned_data['type'],
-									area=f.cleaned_data['area'],
-									player=player,
-									placed=False)
-							if 'unit_class' in f.cleaned_data:
-								if not f.cleaned_data['unit_class'] is None:
-									unit_class = f.cleaned_data['unit_class']
-									## it's a special unit
-									new_unit.cost = unit_class.cost
-									new_unit.power = unit_class.power
-									new_unit.loyalty = unit_class.loyalty
-							new_units.append(new_unit)
-							total_cost += new_unit.cost
-					if total_cost > player.ducats:
-						messages.error(request, _("You don't have enough ducats to buy these units."))
-					else:
-						for u in new_units:
-							u.save()
-						player.ducats = player.ducats - total_cost
-						player.save()
-						player.end_phase()
-						messages.success(request, _("You have successfully made your reinforcements."))
-					return HttpResponseRedirect(request.path)
-				else:
-					messages.error(request, _("There are one or more errors in the form below."))
-			else:
-				if max_units > 0:
-					formset = ReinforceFormSet()
-				else:
-					formset = None
-			context['formset'] = formset
-			context['max_units'] = max_units
-		else:
-			raise Http404
-		template_name = 'machiavelli/finance_reinforcements_%s.html' % step
-	return render_to_response(template_name, context,
-							context_instance=RequestContext(request))
-
-
-def play_orders(request, game, player):
-	context = base_context(request, game, player)
-	#sent_orders = Order.objects.filter(unit__in=player.unit_set.all())
-	sent_orders = player.order_set.all()
-	context.update({'sent_orders': sent_orders})
-	if game.configuration.finances:
-		context['current_expenses'] = player.expense_set.all()
-	if game.configuration.assassinations:
-		context['assassinations'] = player.assassination_attempts.all()
-	if game.configuration.lenders:
-		if game.version <= 2:
-			credits = machiavelli.Loan.objects.filter(player=player)
-		else:
-			credits = machiavelli.Credit.objects.filter(player=player, repaid=False).order_by('year', 'season')
-		credit_limit = player.get_credit()
-		context.update({'credits': credits, 'credit_limit': credit_limit})
-	if not player.done:
-		OrderForm = forms.make_order_form(player)
-		if request.method == 'POST':
-			order_form = OrderForm(player, data=request.POST)
-			if request.is_ajax():
-				## validate the form
-				clean = order_form.is_valid()
-				response_dict = {'bad': 'false'}
-				if not clean:
-					response_dict.update({'bad': 'true'})
-					d = {}
-					for e in order_form.errors.iteritems():
-						d.update({e[0] : unicode(e[1])})
-					response_dict.update({'errs': d})
-				else:
-					#new_order = Order(**order_form.cleaned_data)
-					#new_order.save()
-					new_order = order_form.save()
-					response_dict.update({'pk': new_order.pk ,
-										'new_order': new_order.explain()})
-				response_json = simplejson.dumps(response_dict, ensure_ascii=False)
-
-				return HttpResponse(response_json, mimetype='application/javascript')
-			## not ajax
-			else:
-				if order_form.is_valid():
-					#new_order = Order(**order_form.cleaned_data)
-					#new_order.save()
-					new_order = order_form.save()
-					return HttpResponseRedirect(request.path)
-		else:
-			order_form = OrderForm(player)
-		context.update({'order_form': order_form})
-	return render_to_response('machiavelli/orders_actions.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def delete_order(request, slug='', order_id=''):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(game=game, user=request.user, surrendered=False)
-	#order = get_object_or_404(Order, id=order_id, unit__player=player, confirmed=False)
-	order = get_object_or_404(machiavelli.Order, id=order_id, player=player, confirmed=False)
-	response_dict = {'bad': 'false',
-					'order_id': order.id}
-	try:
-		order.delete()
-	except:
-		response_dict.update({'bad': 'true'})
-	if request.is_ajax():
-		response_json = simplejson.dumps(response_dict, ensure_ascii=False)
-		return HttpResponse(response_json, mimetype='application/javascript')
-		
-	return redirect(game)
-
-@login_required
-def confirm_orders(request, slug=''):
-	""" Confirms orders and expenses in Order Writing phase """
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(game=game, user=request.user, done=False, surrendered=False)
-	if request.method == 'POST':
-		msg = u"Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (player.id,
-			player.static_name,
-			player.user.username,
-			game.id,
-			game.slug) 
-		sent_orders = player.order_set.all()
-		for order in sent_orders:
-			msg += u"%s => " % order.format()
-			if order.is_possible():
-				order.confirm()
-				msg += u"OK\n"
-			else:
-				msg += u"Invalid\n"
-		## confirm expenses
-		player.expense_set.all().update(confirmed=True)
-		if logging:
-			logger.info(msg)
-		player.end_phase()
-		messages.success(request, _("You have successfully confirmed your actions."))
-	return redirect(game)		
-	
-def play_retreats(request, game, player):
-	context = base_context(request, game, player)
-	units = machiavelli.Unit.objects.filter(player=player).exclude(must_retreat__exact='')
-	if units.count() <= 0:
-		context.update({'undoable': False })
-	if not player.done:
-		retreat_forms = []
-		if request.method == 'POST':
-			data = request.POST
-			for u in units:
-				unitid_key = "%s-unitid" % u.id
-				area_key = "%s-area" % u.id
-				unit_data = {unitid_key: data[unitid_key], area_key: data[area_key]}
-				RetreatForm = forms.make_retreat_form(u)
-				retreat_forms.append(RetreatForm(data, prefix=u.id))
-			for f in retreat_forms:
-				if f.is_valid():
-					unitid = f.cleaned_data['unitid']
-					area= f.cleaned_data['area']
-					unit = machiavelli.Unit.objects.get(id=unitid)
-					if isinstance(area, machiavelli.GameArea):
-						retreat = machiavelli.RetreatOrder(unit=unit, area=area)
-					else:
-						retreat = machiavelli.RetreatOrder(unit=unit)
-					retreat.save()
-			player.end_phase()
-			messages.success(request, _("You have successfully retreated your units."))
-			return HttpResponseRedirect(request.path)
-		else:
-			for u in units:
-				RetreatForm = forms.make_retreat_form(u)
-				retreat_forms.append(RetreatForm(prefix=u.id))
-		if len(retreat_forms) > 0:
-			context['retreat_forms'] = retreat_forms
-	return render_to_response('machiavelli/retreats_actions.html',
-							context,
-							context_instance=RequestContext(request))
-
-def play_strategic(request, game, player):
-	context = base_context(request, game, player)
-	units = player.strategic_units()
-	context['orders'] = machiavelli.StrategicOrder.objects.filter(unit__player=player)
-	if units.count() <= 0:
-		context.update({'undoable': False})
-	if not player.done:
-		StrategicOrderForm = forms.strategic_order_form_factory(player)
-		StrategicOrderFormSet = formset_factory(StrategicOrderForm,
-			formset=forms.BaseStrategicOrderFormSet, extra=2)
-		if request.method == 'POST':
-			formset = StrategicOrderFormSet(request.POST)
-			if formset.is_valid():
-				for form in formset.forms:
-					if 'unit' in form.cleaned_data:
-						form.save()
-				player.end_phase()
-				messages.success(request, _("You have successfully sent your strategic movements."))
-				return HttpResponseRedirect(request.path)
-		else:
-			formset = StrategicOrderFormSet()
-		context['formset'] = formset
-	return render_to_response('machiavelli/strategic_actions.html',
-							context,
-							context_instance=RequestContext(request))
-
-def play_expenses(request, game, player):
-	context = base_context(request, game, player)
-	context['current_expenses'] = player.expense_set.all()
-	ExpenseForm = forms.make_expense_form(player)
-	if request.method == 'POST':
-		form = ExpenseForm(player, data=request.POST)
-		if form.is_valid():
-			expense = form.save()
-			player.ducats = F('ducats') - expense.ducats
-			player.save()
-			messages.success(request, _("Expense successfully saved."))
-			return HttpResponseRedirect(request.path)
-	else:
-		form = ExpenseForm(player)
-
-	context['form'] = form
-
-	return render_to_response('machiavelli/expenses_actions.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def undo_expense(request, slug='', expense_id=''):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(game=game, user=request.user, surrendered=False)
-	expense = get_object_or_404(machiavelli.Expense, id=expense_id, player=player)
-	try:
-		expense.undo()
-	except:
-		messages.error(request, _("Expense could not be undone."))
-	else:
-		messages.success(request, _("Expense successfully undone."))
-		
-	return redirect(game)
-
-#@login_required
-#def game_results(request, slug=''):
-#	game = get_object_or_404(Game, slug=slug)
-#	if game.phase != PHINACTIVE:
-#		raise Http404
-#	cache_key = "game-scores-%s" % game.id
-#	scores = cache.get(cache_key)
-#	if not scores:
-#		scores = game.score_set.filter(user__isnull=False).order_by('-points')
-#		cache.set(cache_key, scores)
-#	context = {'game': game,
-#				'map' : game.get_map_url(),
-#				'players': scores,
-#				'show_log': False,}
-#	log = game.baseevent_set.all()
-#	if len(log) > 0:
-#		context['show_log'] = True
-#	return render_to_response('machiavelli/game_results.html',
-#							context,
-#							context_instance=RequestContext(request))
 
 #@never_cache
 #@login_required
@@ -1014,7 +1462,7 @@ def logs_by_game(request, slug=''):
 		player = machiavelli.Player.objects.get(game=game, user=request.user)
 	except:
 		player = machiavelli.Player.objects.none()
-	context = base_context(request, game, player)
+	context = get_game_context(request, game, player)
 	#log_list = game.baseevent_set.exclude(year__exact=game.year,
 	#									season__exact=game.season,
 	#									phase__exact=game.phase)
@@ -1262,56 +1710,6 @@ def undo_overthrow(request, revolution_id):
 	messages.success(request, _("You have withdrawn from this revolution."))
 	return redirect("revolution_list")
 
-@login_required
-def excommunicate(request, slug, player_id):
-	game = get_game_or_404(slug=slug)
-	if game.phase == 0 or not game.configuration.excommunication:
-		messages.error(request, _("You cannot excommunicate in this game."))
-		return redirect(game)
-	papacy = get_player_or_404(user=request.user,
-								game=game,
-								may_excommunicate=True,
-								surrendered=False)
-	if not papacy.can_excommunicate():
-		messages.error(request, _("You cannot excommunicate in the current season."))
-		return redirect(game)
-	try:
-		player = machiavelli.Player.objects.get(game=game, id=player_id, eliminated=False,
-									conqueror__isnull=True, may_excommunicate=False)
-	except ObjectDoesNotExist:
-		messages.error(request, _("You cannot excommunicate this country."))
-	else:
-		player.set_excommunication(by_pope=True)
-		papacy.has_sentenced = True
-		papacy.save()
-		messages.success(request, _("The country has been excommunicated."))
-	return redirect(game)
-
-@login_required
-def forgive_excommunication(request, slug, player_id):
-	game = get_game_or_404(slug=slug)
-	if game.phase == 0 or not game.configuration.excommunication:
-		messages.error(request, _("You cannot forgive excommunications in this game."))
-		return redirect(game)
-	papacy = get_player_or_404(user=request.user,
-								game=game,
-								may_excommunicate=True,
-								surrendered=False)
-	if not papacy.can_forgive():
-		messages.error(request, _("You cannot forgive excommunications in the current season."))
-		return redirect(game)
-	try:
-		player = machiavelli.Player.objects.get(game=game, id=player_id, eliminated=False,
-									conqueror__isnull=True, is_excommunicated=True)
-	except ObjectDoesNotExist:
-		messages.error(request, _("You cannot forgive this country."))
-	else:
-		player.unset_excommunication()
-		papacy.has_sentenced = True
-		papacy.save()
-		messages.success(request, _("The country has been forgiven."))
-	return redirect(game)
-
 class HallOfFameView(ListView):
 	allow_empty = False
 	model = CondottieriProfile
@@ -1388,54 +1786,15 @@ class TurnLogListView(LoginRequiredMixin, ListView):
 	def get_context_data(self, **kwargs):
 		context = super(TurnLogListView, self).get_context_data(**kwargs)
 		try:
-			player = machiavelli.Player.objects.get(user=self.request.user, game=self.game)
+			player = machiavelli.Player.objects.get(
+				user=self.request.user,
+				game=self.game
+			)
 		except ObjectDoesNotExist:
 			player = machiavelli.Player.objects.none()
-		base_ctx = base_context(self.request, self.game, player)
+		base_ctx = get_game_context(self.request, self.game, player)
 		context.update(base_ctx)
 		return context
-
-@login_required
-def give_money(request, slug, player_id):
-	game = get_game_or_404(slug=slug)
-	if game.phase == 0 or not game.configuration.finances:
-		messages.error(request, _("You cannot give money in this game."))
-		return redirect(game)
-	borrower = get_player_or_404(id=player_id, game=game)
-	lender = get_player_or_404(user=request.user, game=game, surrendered=False)
-	context = base_context(request, game, lender)
-
-	if request.method == 'POST':
-		form = forms.LendForm(request.POST)
-		if form.is_valid():
-			ducats = form.cleaned_data['ducats']
-			if ducats > lender.ducats:
-				##TODO Move this to form validation
-				messages.error(request, _("You cannot give more money than you have"))
-				return redirect(game)
-			lender.ducats = F('ducats') - ducats
-			borrower.ducats = F('ducats') + ducats
-			lender.save()
-			borrower.save()
-			messages.success(request, _("The money has been successfully sent."))
-			if notification:
-				extra_context = {'game': lender.game,
-								'ducats': ducats,
-								'country': lender.contender.country,
-								'STATIC_URL': settings.STATIC_URL}
-				if lender.game.fast:
-					notification.send_now([borrower.user,], "received_ducats", extra_context)
-				else:
-					notification.send([borrower.user,], "received_ducats", extra_context)
-			return redirect(game)
-	else:
-		form = forms.LendForm()
-	context['form'] = form
-	context['borrower'] = borrower
-
-	return render_to_response('machiavelli/give_money.html',
-							context,
-							context_instance=RequestContext(request))
 
 @login_required
 def taxation(request, slug):
@@ -1444,16 +1803,14 @@ def taxation(request, slug):
 	if game.phase != machiavelli.PHORDERS or not game.configuration.taxation or player.done:
 		messages.error(request, _("You cannot impose taxes in this moment."))
 		return redirect(game)
-	context = base_context(request, game, player)
+	context = get_game_context(request, game, player)
 	TaxationForm = forms.make_taxation_form(player)
 	if request.method == 'POST':
 		form = TaxationForm(request.POST)
-		print "form is valid"
 		if form.is_valid():
 			ducats = 0
 			areas = form.cleaned_data["areas"]
 			for a in areas:
-				print a
 				ducats += a.tax()
 			player.ducats += ducats
 			player.save()
@@ -1464,199 +1821,6 @@ def taxation(request, slug):
 	return render_to_response('machiavelli/taxation.html',
 							context,
 							context_instance=RequestContext(request))
-
-@login_required
-def borrow_money(request, slug):
-	game = get_game_or_404(slug=slug)
-	### remove this block when all version 2 games are finished
-	if game.version <= 2:
-		return old_borrow_money(request, slug)
-	player = get_player_or_404(user=request.user, game=game, surrendered=False)
-	if game.phase != machiavelli.PHORDERS or not game.configuration.lenders or player.done:
-		messages.error(request, _("You cannot borrow money in this moment."))
-		return redirect(game)
-	context = base_context(request, game, player)
-	credit_limit = player.get_credit()
-	context.update({'credit_limit': credit_limit})
-	if credit_limit <= 0:
-		messages.error(request, _("You have already consumed all your credit."))
-		return redirect(game)
-	if request.method == 'POST':
-		form = forms.BorrowForm(request.POST)
-		if form.is_valid():
-			ducats = form.cleaned_data['ducats']
-			term = int(form.cleaned_data['term'])
-			if ducats > credit_limit:
-				messages.error(request, _("You cannot borrow so much money."))
-				return redirect("borrow-money", slug=slug)
-			credit = machiavelli.Credit(player=player, principal=ducats, season=game.season,
-										year = game.year + term)
-			if term == 1:
-				credit.debt = int(ceil(ducats * 1.2))
-			elif term == 2:
-				credit.debt = int(ceil(ducats * 1.5))
-			else:
-				messages.error(request, _("The chosen term is not valid."))
-				return redirect("borrow-money", slug=slug)
-			credit.save()
-			player.ducats = F('ducats') + ducats
-			player.save()
-			messages.success(request, _("You have got the loan."))
-			return redirect(game)
-	else:
-		form = forms.BorrowForm()
-	context.update({'form': form})	
-	return render_to_response('machiavelli/borrow_money.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def return_credit(request, slug, credit_id):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(user=request.user, game=game)
-	context = base_context(request, game, player)
-
-	## This block must be fixed when all the version 2 games are finished
-	if game.version <= 2:
-		credit = get_object_or_404(machiavelli.Loan, id=credit_id, player=player)
-	else:
-		credit = get_object_or_404(machiavelli.Credit, id=credit_id, player=player, repaid=False)
-	
-	context.update({'credit': credit})
-	if request.method == 'POST':
-		if player.ducats >= credit.debt:
-			player.ducats = F('ducats') - credit.debt
-			player.save()
-			if game.version <= 2:
-				credit.delete()
-			else:
-				credit.repaid=True
-				credit.save()
-			messages.success(request, _("You have repaid the loan."))
-		else:
-			messages.error(request, _("You don't have enough money to repay the loan."))
-		return redirect(game)
-	else:
-		form = forms.RepayForm()
-	context.update({'form': form})
-	return render_to_response('machiavelli/return_money.html',
-							context,
-							context_instance=RequestContext(request))
-
-def old_borrow_money(request, slug):
-	""" DEPRECATED: This view is deprecated and must be removed when all the version 2 games
-	are finished """
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(user=request.user, game=game, surrendered=False)
-	if game.phase != machiavelli.PHORDERS or not game.configuration.lenders or player.done:
-		messages.error(request, _("You cannot borrow money in this moment."))
-		return redirect(game)
-	context = base_context(request, game, player)
-	credit_limit = player.get_credit()
-	try:
-		loan = player.loan
-	except ObjectDoesNotExist:
-		## the player may ask for a loan
-		if request.method == 'POST':
-			form = forms.BorrowForm(request.POST)
-			if form.is_valid():
-				ducats = form.cleaned_data['ducats']
-				term = int(form.cleaned_data['term'])
-				if ducats > credit_limit:
-					messages.error(request, _("You cannot borrow so much money."))
-					return redirect("borrow-money", slug=slug)
-				loan = machiavelli.Loan(player=player, season=game.season)
-				if term == 1:
-					loan.debt = int(ceil(ducats * 1.2))
-				elif term == 2:
-					loan.debt = int(ceil(ducats * 1.5))
-				else:
-					messages.error(request, _("The chosen term is not valid."))
-					return redirect("borrow-money", slug=slug)
-				loan.year = game.year + term
-				loan.save()
-				player.ducats = F('ducats') + ducats
-				player.save()
-				messages.success(request, _("You have got the loan."))
-				return redirect(game)
-		else:
-			form = forms.BorrowForm()
-	else:
-		## the player must repay a loan
-		messages.error(request, _("You have already consumed all your credit."))
-		return redirect(game)
-	context.update({'credit_limit': credit_limit,
-					'form': form,})
-
-	return render_to_response('machiavelli/borrow_money.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def assassination(request, slug):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(user=request.user, game=game, surrendered=False)
-	if game.phase != machiavelli.PHORDERS or not game.configuration.assassinations or player.done:
-		messages.error(request, _("You cannot buy an assassination in this moment."))
-		return redirect(game)
-	context = base_context(request, game, player)
-	AssassinationForm = forms.make_assassination_form(player)
-	if request.method == 'POST':
-		form = AssassinationForm(request.POST)
-		if form.is_valid():
-			ducats = int(form.cleaned_data['ducats'])
-			country = form.cleaned_data['target']
-			target = machiavelli.Player.objects.get(game=game, contender__country=country)
-			if ducats > player.ducats:
-				messages.error(request, _("You don't have enough ducats for the assassination."))
-				return redirect(game)
-			if target.eliminated:
-				messages.error(request, _("You cannot kill an eliminated player."))
-				return redirect(game)
-			if target == player:
-				messages.error(request, _("You cannot kill yourself."))
-				return redirect(game)
-			try:
-				assassin = machiavelli.Assassin.objects.get(owner=player, target=country)
-			except ObjectDoesNotExist:
-				messages.error(request, _("You don't have any assassins to kill this leader."))
-				return redirect(game)
-			except MultipleObjectsReturned:
-				assassin = machiavelli.Assassin.objects.filter(owner=player, target=country)[0]
-			## everything is ok and we should have an assassin token
-			assassination = machiavelli.Assassination(killer=player, target=target, ducats=ducats)
-			assassination.save()
-			assassin.delete()
-			player.ducats = F('ducats') - ducats
-			player.save()
-			messages.success(request, _("The assassination attempt has been saved."))
-
-			return redirect(game)
-	else:
-		form = AssassinationForm()
-	context.update({'form': form,})
-	return render_to_response('machiavelli/assassination.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def new_whisper(request, slug):
-	game = get_game_or_404(slug=slug)
-	if not game.configuration.gossip:
-		raise Http404
-	try:
-		player = machiavelli.Player.objects.get(user=request.user, game=game, surrendered=False)
-	except ObjectDoesNotExist:
-		messages.error(request, _("You cannot write messages in this game"))
-		return redirect(game)
-	if request.method == 'POST':
-		form = forms.WhisperForm(request.POST)
-		if form.is_valid():
-			whisper = form.save(commit=False)
-			whisper.user=request.user
-			whisper.game=game
-			whisper.save()
-	return redirect(game)
 
 class WhisperListView(LoginRequiredMixin, ListAppendView):
 	model = machiavelli.Whisper
@@ -1678,64 +1842,12 @@ class WhisperListView(LoginRequiredMixin, ListAppendView):
 			player = machiavelli.Player.objects.get(user=self.request.user, game=self.game)
 		except ObjectDoesNotExist:
 			player = machiavelli.Player.objects.none()
-		base_ctx = base_context(self.request, self.game, player)
+		base_ctx = get_game_context(self.request, self.game, player)
 		context.update(base_ctx)
 		return context
 
 	def form_valid(self, form):
-		self.object = form.save(commit=False)
-		self.object.user = self.request.user
-		self.object.game = get_game_or_404(slug=self.kwargs['slug'])
-		self.object.save()
-		return super(WhisperListView, self).form_valid(form)
+		game = get_game_or_404(slug=self.kwargs['slug'])
+		self.object = form.save(self.request.user, game)
+		return HttpResponseRedirect(self.get_success_url())
 
-@login_required
-def edit_journal(request, slug):
-	game = get_game_or_404(slug=slug)
-	player = get_player_or_404(game=game, user=request.user, surrendered=False)
-	context = base_context(request, game, player)
-	try:
-		journal = machiavelli.Journal.objects.get(user=request.user, game=game)
-	except ObjectDoesNotExist:
-		tip = _("What you write above these symbols\n\n%%\n\nwill be shown in the sidebar")
-		journal = machiavelli.Journal(content=tip)
-	if request.method == 'POST':
-		form = forms.JournalForm(request.user, game, instance=journal, data=request.POST)
-		if form.is_valid():
-			journal = form.save()
-			messages.success(request, _("Your journal has been updated."))
-			return redirect(game)
-		else:
-			messages.error(request, _("Your journal could not be saved."))
-	else:
-		form = forms.JournalForm(request.user, game, instance=journal)
-	context.update({'journal': journal,
-					'form': form,})
-	return render_to_response('machiavelli/edit_journal.html',
-							context,
-							context_instance=RequestContext(request))
-
-@login_required
-def new_error_report(request, slug):
-	game = get_game_or_404(slug=slug)
-	try:
-		player = machiavelli.Player.objects.get(user=request.user, game=game, surrendered=False)
-	except ObjectDoesNotExist:
-		messages.error(request, _("You cannot report errors in this game"))
-		return redirect(game)
-	context = base_context(request, game, player)
-	if request.method == 'POST':
-		form = forms.ErrorReportForm(request.POST)
-		if form.is_valid():
-			report = form.save(commit=False)
-			report.user=request.user
-			report.game=game
-			report.save()
-			messages.success(request, _("Your error report has been saved"))
-			return redirect(game)
-	else:
-		form = forms.ErrorReportForm()
-	context.update({'form': form})
-	return render_to_response('machiavelli/error_report_form.html',
-							context,
-							context_instance=RequestContext(request))

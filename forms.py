@@ -115,6 +115,14 @@ class WhisperForm(forms.ModelForm):
 		widgets = {
 			'text': forms.Textarea(attrs={'rows': 3, 'cols': 20})
 		}
+	
+	def save(self, user, game, commit=True):
+		instance = super(WhisperForm, self).save(commit=False)
+		instance.user = user
+		instance.game = game
+		if commit:
+			instance.save()
+		return instance
 
 class JournalForm(forms.ModelForm):
 	class Meta:
@@ -142,6 +150,13 @@ class TeamMessageForm(forms.ModelForm):
 		model = machiavelli.TeamMessage
 		fields = ('text',)
 		exclude = ('player',)
+
+	def save(self, player, commit=True):
+		instance = super(TeamMessageForm, self).save(commit=False)
+		instance.player = player
+		if commit:
+			instance.save()
+		return instance
 	
 class UnitForm(forms.ModelForm):
 	type = forms.ChoiceField(required=True, choices=machiavelli.UNIT_TYPES)
@@ -594,3 +609,10 @@ class ErrorReportForm(forms.ModelForm):
 		fields = ('description',)
 		exclude = ('user', 'game',)
 
+	def save(self, user, game, commit=True):
+		instance = super(ErrorReportForm, self).save(commit=False)
+		instance.user = user
+		instance.game = game
+		if commit:
+			instance.save()
+		return instance

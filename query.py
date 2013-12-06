@@ -113,3 +113,6 @@ class RevolutionQuerySet(models.query.QuerySet):
 	"""A lazy database lookup for a set of revolutions"""
 	def open(self):
 		return self.exclude(overthrow=True)
+
+	def successful(self):
+		return self.filter(overthrow=True)

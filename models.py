@@ -1014,10 +1014,7 @@ class Game(models.Model):
 	def check_credits(self):
 		""" Check if any credits have exceeded their terms. If so, apply the
 		penalties. """
-		if self.version <= 2:
-			credits = Loan.objects.filter(player__game=self)
-		else:
-			credits = Credit.objects.filter(player__game=self, repaid=False)
+		credits = Credit.objects.filter(player__game=self, repaid=False)
 		for credit in credits:
 			if self.year >= credit.year and self.season >= credit.season:
 				## the credit has exceeded its term
@@ -1028,8 +1025,6 @@ class Game(models.Model):
 					credit.player.defaulted = True
 					credit.player.save()
 					credit.player.assassinate()
-					if self.version <= 2:
-						credit.delete()
 	
 	def process_expenses(self):
 		## undo unconfirmed expenses
@@ -2542,7 +2537,7 @@ class Player(models.Model):
 		""" Returns true if player.may_excommunicate and the Player has not excommunicated or
 		forgiven anyone this turn and there is no other player explicitly excommunicated """
 
-		if self.eliminated:
+		if self.eliminated or self.surrendered:
 			return False
 		if self.game.configuration.excommunication:
 			if self.may_excommunicate and not self.has_sentenced:
@@ -2701,6 +2696,11 @@ class Player(models.Model):
 
 		return self.next_phase_change() < datetime.now()
 
+	@property
+	def undoable(self):
+		"""Return True if the player can undo his actions"""
+		return self.done and not self.in_last_seconds() and not self.eliminated
+	
 	def get_time_status(self):
 		""" Returns a string describing the status of the player depending on the time limits.
 		This string is to be used as a css class to show the time """
@@ -2875,13 +2875,6 @@ class Player(models.Model):
 			max_credit = self.gamearea_set.count() + self.unit_set.count()
 			if max_credit > 25:
 				max_credit = 25
-		if self.game.version <= 2:
-			try:
-				loan = self.loan
-			except ObjectDoesNotExist:
-				return max_credit
-			else:
-				return 0
 		principal_dict = Credit.objects.filter(player=self, repaid=False).aggregate(Sum('principal'))
 		consumed = principal_dict['principal__sum']
 

@@ -22,7 +22,7 @@
 	{% endif %}
 
 	<td style="text-align: center">{{ p.cities }}</td>
-	<td style="text-align: center">{% if not fow %}{{ p.placed_units_count }}{% endif %}</td>
+	<td style="text-align: center">{% if not game.configuration.fow %}{{ p.placed_units_count }}{% endif %}</td>
 
 	<td><!-- actions -->
 	{% if player %}
@@ -30,7 +30,7 @@
 	{% ifnotequal p player %}
 	{% ifnotequal p.eliminated 1 %}
 		<div>
-		{% if letters %}
+		{% if game.configuration.letters %}
 			<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
 		{% endif %}
 		{% if game.configuration.finances %}

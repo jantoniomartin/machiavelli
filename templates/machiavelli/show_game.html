@@ -20,7 +20,7 @@
 	<thead>
 		<tr>
 		<th>{% trans "Country" %}</th>
-		{% if show_users %}
+		{% if game.visible %}
 		<th>{% trans "User" %}</th>
 		{% endif %}
 		<th><img src="{{ STATIC_URL }}machiavelli/img/city-icon-16.png" title="{% trans "Cities" %}"/></th>
@@ -50,7 +50,7 @@
 <p><a href="{% url gamearea-list game.slug %}">{% trans "Areas list" %}</a>
 | <a href="{% url scenario_detail game.scenario.name %}">{% trans "Scenario" %}</a>
 | <a href="{% url game-log game.slug %}">{% trans "All events" %}</a>
-{% if not fow %}
+{% if not game.configuration.fow %}
 | <a href="{% url turn-log-list game.slug %}">{% trans "Process" %}</a></p>
 {% endif %}
 </div>
