@@ -45,7 +45,7 @@ from django.contrib import messages
 ## generic views
 from django.views.generic.base import View, TemplateView
 from django.views.generic.list import ListView
-from django.views.generic.edit import FormMixin
+from django.views.generic.edit import FormMixin, FormView
 
 ## pybb
 if 'pybb' in settings.INSTALLED_APPS:
@@ -294,7 +294,7 @@ class RevolutionList(LoginRequiredMixin, ListView):
 	def get_queryset(self):
 		return machiavelli.Revolution.objects.open().order_by("-active")
 
-class GamePlayView(TemplateView):
+class GameMixin(object):
 	game = None
 	player = None
 
@@ -316,6 +316,7 @@ class GamePlayView(TemplateView):
 			except ObjectDoesNotExist:
 				self.player = machiavelli.Player.objects.none()
 
+class GamePlayView(TemplateView, GameMixin):
 	def dispatch(self, request, *args, **kwargs):
 		self.get_game(request, *args, **kwargs)
 		self.get_player(request, *args, **kwargs)
@@ -1567,184 +1568,209 @@ class CreateTeamGameView(CreateGameView):
 		ctx.update({'teams': True})
 		return ctx
 
-@login_required
-def invite_users(request, slug=''):
-	g = get_game_or_404(slug=slug)
-	## check that the game is open
-	if g.slots == 0:
-		raise Http404
-	## check that the current user is the creator of the game
-	if g.created_by != request.user:
-		raise Http404
-	context = {}
-	context.update({'game': g,})
-	context.update({'players': g.player_set.exclude(user__isnull=True)})
-	invitations = machiavelli.Invitation.objects.filter(game=g)
-	context.update({'invitations': invitations})
-	if request.method == 'POST':
-		form = forms.InvitationForm(request.POST)
-		if form.is_valid():
-			message = form.cleaned_data['message']
-			user_list = form.cleaned_data['user_list']
-			user_names = user_list.split(',')
-			success_list = []
-			fail_list = []
-			for u in user_names:
-				name = u.strip()
+class GameInvitationView(FormView):
+	template_name = 'machiavelli/invitation_form.html'
+	form_class = forms.InvitationForm
+
+	def dispatch(self, request, *args, **kwargs):
+		self.game = get_game_or_404(
+			slug=kwargs['slug'],
+			slots__gt=0,
+			created_by=request.user
+		)
+		return super(GameInvitationView, self).dispatch(request, *args, **kwargs)
+
+	def get_context_data(self, **kwargs):
+		ctx = super(GameInvitationView, self).get_context_data(**kwargs)
+		ctx.update({
+			'game': self.game,
+			'players': self.game.player_set.human(),
+			'invitations': self.game.invitation_set.all(),
+		})
+		return ctx
+
+	def render_to_response(self, context, **kwargs):
+		return super(GameInvitationView, self).render_to_response(
+			RequestContext(
+				self.request,
+				context,
+				processors=[activity, sidebar_ranking,]
+			),
+			**kwargs
+		)
+
+	def form_valid(self, form):
+		message = form.cleaned_data['message']
+		user_list = form.cleaned_data['user_list']
+		user_names = user_list.split(',')
+		success_list = []
+		fail_list = []
+		for u in user_names:
+			name = u.strip()
+			try:
+				user = User.objects.get(username=name)
+			except ObjectDoesNotExist:
+				fail_list.append(name)
+				continue
+			else:
+				## check that the user is not already in the game
 				try:
-					user = User.objects.get(username=name)
+					self.game.player_set.get(user=user)
 				except ObjectDoesNotExist:
-					fail_list.append(name)
-					continue
-				else:
-					## check that the user is not already in the game
+					## check for existing invitation
 					try:
-						machiavelli.Player.objects.get(game=g, user=user)
+						self.game.invitation_set.get(user=user)
 					except ObjectDoesNotExist:
-						## check for existing invitation
-						try:
-							machiavelli.Invitation.objects.get(game=g, user=user)
-						except ObjectDoesNotExist:
-							i = machiavelli.Invitation()
-							i.game = g
-							i.user = user
-							i.message = message
-							i.save()
-							success_list.append(name)
-						else:
-							fail_list.append(name)
+						i = machiavelli.Invitation()
+						i.game = self.game
+						i.user = user
+						i.message = message
+						i.save()
+						success_list.append(name)
 					else:
 						fail_list.append(name)
-			if len(success_list) > 0:
-				msg = _("The following users have been invited: %s") % ", ".join(success_list)
-				messages.success(request, msg)
-			if len(fail_list) > 0:
-				msg = _("The following users could not be invited: %s") % ", ".join(fail_list)
-				messages.error(request, msg)
-	else:
-		form = forms.InvitationForm()
-	context.update({'form': form})
-	return render_to_response('machiavelli/invitation_form.html',
-							context,
-							context_instance=RequestContext(request,
-							processors=[activity, sidebar_ranking,]))
+				else:
+					fail_list.append(name)
+		if len(success_list) > 0:
+			msg = _("The following users have been invited: %s") % ", ".join(success_list)
+			messages.success(self.request, msg)
+		if len(fail_list) > 0:
+			msg = _("The following users could not be invited: %s") % ", ".join(fail_list)
+			messages.error(self.request, msg)
+			return redirect(self.game)
 
-@login_required
-def join_game(request, slug=''):
-	g = get_game_or_404(slug=slug)
-	invitation = None
-	## check if the user has defined his languages
-	if not request.user.get_profile().has_languages():
-		messages.error(request, _("You must define at least one known language before joining a game."))
-		messages.info(request, _("Define your languages and then, try again."))
-		return redirect("profile_languages_edit")
-	if g.private:
-		## check if user has been invited
+class JoinGameView(LoginRequiredMixin, View):
+	def get(self, request, *args, **kwargs):
+		game = get_game_or_404(slug=kwargs['slug'], slots__gt=0)
 		try:
-			invitation = machiavelli.Invitation.objects.get(game=g, user=request.user)
+			game.player_set.get(user=request.user)
 		except ObjectDoesNotExist:
-			messages.error(request, _("This game is private and you have not been invited."))
-			return redirect("games-joinable")
-	else:
-		msg = request.user.get_profile().check_karma_to_join(fast=g.fast)
+			pass
+		else:
+			messages.error(request, _("You had already joined this game."))
+			return redirect('summary')
+		invitation = None
+		## check if the user has defined his languages
+		if not request.user.get_profile().has_languages():
+			messages.error(
+				request,
+				_("You must define at least one known language before joining a game.")
+			)
+			messages.info(
+				request,
+				_("Define your languages and then, try again.")
+			)
+			return redirect("profile_languages_edit")
+		if game.private:
+			## check if user has been invited
+			try:
+				invitation = game.invitation_set.get(user=request.user)
+			except ObjectDoesNotExist:
+				messages.error(
+					request,
+					_("This game is private and you have not been invited.")
+				)
+				return redirect("games-joinable")
+		msg = request.user.get_profile().check_karma_to_join(fast=game.fast)
 		if msg != "": #user can't join
 			messages.error(request, msg)
 			return redirect("summary")
-	if g.slots > 0:
-		try:
-			machiavelli.Player.objects.get(user=request.user, game=g)
-		except:
-			## the user is not in the game
-			new_player = machiavelli.Player(user=request.user, game=g)
-			new_player.save()
-			if invitation:
-				invitation.delete()
-			g.player_joined()
-			player_joined.send(sender=new_player)
-			messages.success(request, _("You have successfully joined the game."))
-			cache.delete('sidebar_activity')
-			return redirect(g)
-		else:
-			messages.error(request, _("You had already joined this game."))
-	return redirect('summary')
-
-@login_required
-def leave_game(request, slug=''):
-	g = get_game_or_404(slug=slug, slots__gt=0)
-	try:
-		player = machiavelli.Player.objects.get(user=request.user, game=g)
-	except:
-		## the user is not in the game
-		messages.error(request, _("You had not joined this game."))
-	else:
-		player.delete()
-		g.slots += 1
-		g.save()
+		new_player = machiavelli.Player(user=request.user, game=game)
+		new_player.save()
+		if invitation:
+			invitation.delete()
+		game.player_joined()
+		player_joined.send(sender=new_player)
+		messages.success(request, _("You have successfully joined the game."))
 		cache.delete('sidebar_activity')
-		messages.success(request, _("You have left the game."))
-		## if the game has no players, delete the game
-		if g.player_set.count() == 0:
-			g.delete()
-			messages.info(request, _("The game has been deleted."))
-	return redirect('summary')
+		return redirect(game)
 
-@login_required
-def make_public(request, slug=''):
-	g = get_game_or_404(
-		slug=slug,
-		slots__gt=0,
-		private=True,
-		created_by=request.user
-	)
-	g.private = False
-	g.save()
-	g.invitation_set.all().delete()
-	messages.success(request, _("The game is now open to all users."))
-	return redirect('games-pending')
-
-@login_required
-def overthrow(request, revolution_id):
-	revolution = get_object_or_404(machiavelli.Revolution, pk=revolution_id)
-	g = revolution.game
-	try:
-		## check that overthrowing user is not a player
-		machiavelli.Player.objects.get(user=request.user, game=g)
-	except ObjectDoesNotExist:
+class LeaveGameView(LoginRequiredMixin, View):
+	def get(self, request, *args, **kwargs):
+		game = get_game_or_404(slug=kwargs['slug'], slots__gt=0)
 		try:
-			## check that there is not another revolution with the same player
-			machiavelli.Revolution.objects.get(game=g, opposition=request.user)
+			player = game.player_set.get(user=request.user)
 		except ObjectDoesNotExist:
-			karma = request.user.get_profile().karma
-			if karma < settings.KARMA_TO_JOIN:
-				err = _("You need a minimum karma of %s to join a game.") % settings.KARMA_TO_JOIN
-				messages.error(request, err)
-				return redirect("revolution_list")
-			if not revolution.active:
-				err = _("This revolution is inactive.")
-				messages.error(request, err)
-				return redirect("revolution_list")
-			revolution.opposition = request.user
-			revolution.save()
-			if revolution.voluntary:
-				revolution.resolve()
-				messages.success(request, _("You are now playing this game."))
-				return redirect(revolution.game)
-			else:
-				overthrow_attempted.send(sender=revolution)
-				messages.success(request, _("Your overthrow attempt has been saved."))
+			## the user is not in the game
+			messages.error(request, _("You had not joined this game."))
 		else:
-			messages.error(request, _("You are already attempting an overthrow on another player in the same game."))
-	else:
-		messages.error(request, _("You are already playing this game."))
-	return redirect("revolution_list")
+			player.delete()
+			game.slots += 1
+			game.save()
+			cache.delete('sidebar_activity')
+			messages.success(request, _("You have left the game."))
+			## if the game has no players, delete the game
+			if game.player_set.count() == 0:
+				game.delete()
+				messages.info(request, _("The game has been deleted."))
+		return redirect('summary')
 
-@login_required
-def undo_overthrow(request, revolution_id):
-	revolution = get_object_or_404(machiavelli.Revolution, pk=revolution_id, opposition=request.user, overthrow=False)
-	revolution.opposition = None
-	revolution.save()
-	messages.success(request, _("You have withdrawn from this revolution."))
-	return redirect("revolution_list")
+class MakeGamePublic(LoginRequiredMixin, View):
+	def get(self, request, *args, **kwargs):
+		game = get_game_or_404(
+			slug=kwargs['slug'],
+			slots__gt=0,
+			private=True,
+			created_by=request.user
+		)
+		game.private = False
+		game.save()
+		game.invitation_set.all().delete()
+		messages.success(request, _("The game is now open to all users."))
+		return redirect(game)
+
+class OverthrowView(LoginRequiredMixin, View):
+	def get(self, request, *args, **kwargs):
+		revolution = get_object_or_404(machiavelli.Revolution, pk=kwargs['revolution_id'])
+		game = revolution.game
+		try:
+			## check that overthrowing user is not a player
+			game.player_set.get(user=request.user)
+		except ObjectDoesNotExist:
+			try:
+				## check that there is not another revolution with the same player
+				game.revolution_set.get(opposition=request.user)
+			except ObjectDoesNotExist:
+				karma = request.user.get_profile().karma
+				if karma < settings.KARMA_TO_JOIN:
+					err = _("You need a minimum karma of %s to join a game.") % \
+						settings.KARMA_TO_JOIN
+					messages.error(request, err)
+					return redirect("revolution_list")
+				if not revolution.active:
+					err = _("This revolution is inactive.")
+					messages.error(request, err)
+					return redirect("revolution_list")
+				revolution.opposition = request.user
+				revolution.save()
+				if revolution.voluntary:
+					revolution.resolve()
+					messages.success(request, _("You are now playing this game."))
+					return redirect(revolution.game)
+				else:
+					overthrow_attempted.send(sender=revolution)
+					messages.success(request, _("Your overthrow attempt has been saved."))
+			else:
+				messages.error(
+					request,
+					_("You are already attempting an overthrow on another player in the same game.")
+				)
+		else:
+			messages.error(request, _("You are already playing this game."))
+		return redirect("revolution_list")
+
+class UndoOverthrowView(LoginRequiredMixin, View):
+	def get(self, request, *args, **kwargs):
+		revolution = get_object_or_404(
+			machiavelli.Revolution,
+			pk=kwargs['revolution_id'],
+			opposition=request.user,
+			overthrow=False
+		)
+		revolution.opposition = None
+		revolution.save()
+		messages.success(request, _("You have withdrawn from this revolution."))
+		return redirect("revolution_list")
 
 class HallOfFameView(ListView):
 	allow_empty = False
