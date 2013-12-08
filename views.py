@@ -140,8 +140,12 @@ class SummaryView(TemplateView):
 			joinable = machiavelli.Game.objects.joinable()
 			promoted_game = machiavelli.Game.objects.get_promoted()
 		context['joinable_count'] = joinable.count()
-		if promoted_game is not None:
+		#if promoted_game is not None:
+		try:
 			num_comments = promoted_game.gamecomment_set.count()
+		except AttributeError:
+			pass
+		else:
 			context.update({
 				'promoted_game': promoted_game,
 				'num_comments': num_comments
