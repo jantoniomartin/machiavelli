@@ -312,12 +312,16 @@ class GameMixin(object):
 
 	def get_player(self, request, *args, **kwargs):
 		if not self.player:
-			try:
-				self.player = self.game.player_set.get(
-					user=request.user,
-					eliminated=False,
-					surrendered=False)
-			except ObjectDoesNotExist:
+			if request.user.is_authenticated():
+				try:
+					self.player = self.game.player_set.get(
+						user=request.user,
+						eliminated=False,
+						surrendered=False
+					)
+				except ObjectDoesNotExist:
+					self.player = machiavelli.Player.objects.none()
+			else:
 				self.player = machiavelli.Player.objects.none()
 
 class GamePlayView(TemplateView, GameMixin):
