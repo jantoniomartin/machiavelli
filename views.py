@@ -829,7 +829,7 @@ class PlayReinforcements(GamePlayView):
 
 class PlayFinanceReinforcements(GamePlayView):
 	def get_template_names(self):
-		if self.player.done:
+		if not self.player or self.player.done:
 			return ['machiavelli/reinforcements_actions.html',]
 		else:
 			return ['machiavelli/finance_reinforcements_%s.html' % self.player.step,]
@@ -1470,7 +1470,8 @@ class TeamMessageListView(LoginRequiredMixin, ListAppendView):
 		game = get_game_or_404(slug=self.kwargs['slug'])
 		player = get_player_or_404(user=self.request.user, game=game)
 		self.object = form.save(player)
-		return super(TeamMessageListView, self).form_valid(form)
+		return redirect(self.get_success_url())
+		#return super(TeamMessageListView, self).form_valid(form)
 
 #@never_cache
 #@login_required
