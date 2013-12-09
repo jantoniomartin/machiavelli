@@ -1143,8 +1143,13 @@ class PlayInactiveGame(GamePlayView, FormMixin):
 	def get_context_data(self, **kwargs):
 		ctx = {'game': self.game}
 		started = self.game.started is not None
-		finished = self.game.finished is not None 
-		joinable = self.game not in machiavelli.Game.objects.joinable(self.request.user)
+		finished = self.game.finished is not None
+		if self.request.user.is_authenticated():
+			joinable = self.game in machiavelli.Game.objects.joinable(
+				self.request.user
+			)
+		else:
+			joinable = self.game in machiavelli.Game.objects.joinable()
 		## if the game is finished, get the scores
 		if finished:
 			cache_key = "game-scores-%s" % self.game.id
