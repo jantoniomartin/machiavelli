@@ -325,6 +325,11 @@ class GameMixin(object):
 				self.player = machiavelli.Player.objects.none()
 
 class GamePlayView(TemplateView, GameMixin):
+	def get_template_names(self):
+		if not self.player:
+			return ['machiavelli/inactive_actions.html',]
+		return super(GamePlayView, self).get_template_names()
+
 	def dispatch(self, request, *args, **kwargs):
 		self.get_game(request, *args, **kwargs)
 		self.get_player(request, *args, **kwargs)
@@ -829,7 +834,9 @@ class PlayReinforcements(GamePlayView):
 
 class PlayFinanceReinforcements(GamePlayView):
 	def get_template_names(self):
-		if not self.player or self.player.done:
+		if not self.player:
+			return ['machiavelli/inactive_actions.html',]
+		if self.player.done:
 			return ['machiavelli/reinforcements_actions.html',]
 		else:
 			return ['machiavelli/finance_reinforcements_%s.html' % self.player.step,]
