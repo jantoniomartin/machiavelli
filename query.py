@@ -24,9 +24,10 @@ class GameQuerySet(models.query.QuerySet):
 		return qs
 
 	def finished(self, user=None):
-		g = self.filter(finished__isnull=False)
+		qs = self.filter(finished__isnull=False)
 		if user:
-			g = g.filter(score__user=user)
+			qs = qs.filter(score__user=user)
+		return qs
 
 	def private(self):
 		return self.filter(private=True)
