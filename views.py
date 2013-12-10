@@ -1598,6 +1598,8 @@ class GameInvitationView(FormView):
 	form_class = forms.InvitationForm
 
 	def dispatch(self, request, *args, **kwargs):
+		if not request.user.is_authenticated():
+			raise Http404
 		self.game = get_game_or_404(
 			slug=kwargs['slug'],
 			slots__gt=0,
