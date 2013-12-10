@@ -31,7 +31,7 @@
 	{% if game.is_team_game %}
 		{% for team in teams %}
 			<tr><td class="team_header">{{ team.name }} &rarr; {{ team.cities_count }}</td></tr>
-			{% for p in team.player_set.all %}
+			{% for p in team.player_set.by_cities %}
 				{% include 'machiavelli/_player_row.html' %}
 			{% endfor %}
 		{% endfor %}

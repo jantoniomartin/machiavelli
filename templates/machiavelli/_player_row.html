@@ -17,7 +17,7 @@
 	{% endif %}
 	</td>
 
-	{% if show_users %}
+	{% if game.visible %}
 	<td><a href="{% url profile_detail username=p.user.username %}" title="{{ p.user.username }}">{% avatar p.user 20 %}</a></td>
 	{% endif %}
 

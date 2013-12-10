@@ -326,8 +326,12 @@ class GameMixin(object):
 
 class GamePlayView(TemplateView, GameMixin):
 	def get_template_names(self):
-		if not self.player:
-			return ['machiavelli/inactive_actions.html',]
+		if self.game.started is not None \
+			and self.game.finished is None \
+			and self.game.phase != machiavelli.PHINACTIVE \
+			and not (self.game.paused and not request.user.is_staff):
+			if not self.player:
+				return ['machiavelli/inactive_actions.html',]
 		return super(GamePlayView, self).get_template_names()
 
 	def dispatch(self, request, *args, **kwargs):

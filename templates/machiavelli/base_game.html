@@ -102,7 +102,7 @@
 {% else %}
 <li>
 		{% ifnotequal game.slots 0 %}
-			<a href="{% url machiavelli.views.join_game game.pk %}">{% trans "Join game" %}</a>
+			<a href="{% url join-game game.slug %}">{% trans "Join game" %}</a>
 		{% endifnotequal %}
 </li>
 {% endif %}
