@@ -2329,6 +2329,12 @@ class Player(models.Model):
 	def placed_units_count(self):
 		return self.unit_set.filter(placed=True).count()
 
+	@property
+	def must_retreat(self):
+		""" Return true if the player has at least a unit to retreat."""
+		return self.unit_set.exclude(must_retreat__isnull=True).exclude(
+			must_retreat='').count() > 0
+
 	def strategic_units(self):
 		""" Returns a queryset with the Units that are elegible for a strategic movement."""
 		return self.unit_set.filter(~Q(type__exact='G') &
