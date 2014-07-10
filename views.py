@@ -228,7 +228,7 @@ class AllFinishedGamesList(GameListView):
 			cache.set(cache_key, games)
 		return games
 
-class MyFinishedGamesList(GameListView):
+class MyFinishedGamesList(LoginRequiredMixin, GameListView):
 	template_name_suffix = "_list_finished"
 
 	def get_queryset(self):
@@ -324,7 +324,7 @@ class GameMixin(object):
 			else:
 				self.player = machiavelli.Player.objects.none()
 
-class GamePlayView(TemplateView, GameMixin):
+class GamePlayView(LoginRequiredMixin, TemplateView, GameMixin):
 	def get_template_names(self):
 		if self.game.started is not None \
 			and self.game.finished is None \
@@ -369,8 +369,9 @@ class AssassinationView(GamePlayView, FormMixin):
 		ctx = super(AssassinationView, self).get_context_data(**kwargs)
 		if self.game.phase != machiavelli.PHORDERS \
 			or not self.game.configuration.assassinations \
-			or self.player is None \
-			or self.player.done:
+			or self.player is None:
+			raise Http404
+		elif self.player.done:
 			messages.error(
 				self.request,
 				_("You cannot buy an assassination in this moment.")
@@ -435,8 +436,9 @@ class BorrowMoneyView(GamePlayView, FormMixin):
 		ctx = super(BorrowMoneyView, self).get_context_data(**kwargs)
 		if self.game.phase != machiavelli.PHORDERS \
 			or not self.game.configuration.lenders \
-			or self.player is None \
-			or self.player.done:
+			or self.player is None:
+			raise Http404
+		elif self.player.done:
 			messages.error(
 				self.request,
 				_("You cannot borrow money in this moment.")
@@ -1443,10 +1445,12 @@ class GameAreaListView(ListView):
 	def get_context_data(self, **kwargs):
 		context = super(GameAreaListView, self).get_context_data(**kwargs)
 		game = get_game_or_404(slug=self.kwargs['slug'])
-		try:
-			player = game.player_set.get(user=self.request.user)
-		except ObjectDoesNotExist:
-			player = machiavelli.Player.objects.none()
+		player = machiavelli.Player.objects.none()
+		if self.request.user.is_authenticated():
+			try:
+				player = game.player_set.get(user=self.request.user)
+			except ObjectDoesNotExist:
+				pass
 		context.update(get_game_context(self.request, game, player))
 		return context
 
