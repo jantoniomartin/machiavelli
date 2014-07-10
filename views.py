@@ -1691,7 +1691,7 @@ class JoinGameView(LoginRequiredMixin, View):
 				request,
 				_("Define your languages and then, try again.")
 			)
-			return redirect("profile_languages_edit")
+			return redirect("profile_edit")
 		if game.private:
 			## check if user has been invited
 			try:
