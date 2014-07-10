@@ -1668,7 +1668,7 @@ class GameInvitationView(FormView):
 		if len(fail_list) > 0:
 			msg = _("The following users could not be invited: %s") % ", ".join(fail_list)
 			messages.error(self.request, msg)
-			return redirect(self.game)
+		return redirect(self.game)
 
 class JoinGameView(LoginRequiredMixin, View):
 	def get(self, request, *args, **kwargs):
