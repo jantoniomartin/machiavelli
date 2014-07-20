@@ -222,7 +222,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 
 {% endif %}
 
-{% if user.is_authenticated %}
+{% if user.is_authenticated and not game.paused %}
 <form action="" method="POST" class="uniForm">
 {% csrf_token %}
 {{ form|as_uni_form }}
