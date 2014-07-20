@@ -329,7 +329,7 @@ class GamePlayView(LoginRequiredMixin, TemplateView, GameMixin):
 		if self.game.started is not None \
 			and self.game.finished is None \
 			and self.game.phase != machiavelli.PHINACTIVE \
-			and not (self.game.paused and not request.user.is_staff):
+			and not (self.game.paused and not self.request.user.is_staff):
 			if not self.player:
 				return ['machiavelli/inactive_actions.html',]
 		return super(GamePlayView, self).get_template_names()
