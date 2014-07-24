@@ -369,7 +369,7 @@ class AssassinationView(GamePlayView, FormMixin):
 		ctx = super(AssassinationView, self).get_context_data(**kwargs)
 		if self.game.phase != machiavelli.PHORDERS \
 			or not self.game.configuration.assassinations \
-			or self.player is None:
+			or not self.player:
 			raise Http404
 		elif self.player.done:
 			messages.error(
@@ -436,7 +436,7 @@ class BorrowMoneyView(GamePlayView, FormMixin):
 		ctx = super(BorrowMoneyView, self).get_context_data(**kwargs)
 		if self.game.phase != machiavelli.PHORDERS \
 			or not self.game.configuration.lenders \
-			or self.player is None:
+			or not self.player:
 			raise Http404
 		elif self.player.done:
 			messages.error(
