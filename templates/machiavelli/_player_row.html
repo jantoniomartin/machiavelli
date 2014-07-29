@@ -15,6 +15,9 @@
 	{% if p.surrendered %}
 	<img src="{{ STATIC_URL }}machiavelli/img/surrender-icon-16.png" title="{% trans "Surrendered" %}" />
 	{% endif %}
+	{% if game.extended_deadline and not p.done %}
+	<img src="{{ STATIC_URL }}machiavelli/img/sleep.png" title="{% trans "Delayed" %}" />
+	{% endif %}
 	</td>
 
 	{% if game.visible %}
