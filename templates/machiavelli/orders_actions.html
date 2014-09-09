@@ -31,7 +31,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 
 <h3>{% trans "Sent orders" %}</h3>
 <div id="so_emsg">&nbsp;</div>
-<ul id="sent_orders">
+<ol id="sent_orders">
 {% for order in sent_orders %}
 <li id="order_{{ order.id }}">{{ order.explain }}
 {% ifequal order.confirmed 0 %}
@@ -39,7 +39,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 {% endifequal %}
 </li>
 {% endfor %}
-</ul>
+</ol>
 {% if player.undoable %}
 <p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again; otherwise all your orders will be lost.{% endblocktrans %}</p>
 <form method="POST" action="{% url undo-actions game.slug %}">

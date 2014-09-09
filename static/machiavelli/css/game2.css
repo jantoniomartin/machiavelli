@@ -252,6 +252,7 @@
 }
 
 #sent_orders li {
+	margin-left: 1em;
 	margin-bottom: 0.5em;
-	list-style: circle inside;
+	list-style-type: decimal;
 }
