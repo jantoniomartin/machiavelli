@@ -2,7 +2,7 @@ Condottieri, a web based version of the classic game 'Machiavelli'
 ==================================================================
 
 **Condottieri** is a web based version of the Avalon Hill's game **Machiavelli**.
-It's being developed on Django, Pinax and Python, and since October 18th 2010 it
+It's being developed on Django and Python, and since October 18th 2010 it
 is free and open source software (see COPYING for details on the license).
 
 This project was started by a fan of Machiavelli, only for fun and learning.
