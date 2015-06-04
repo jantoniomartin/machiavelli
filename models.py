@@ -1857,7 +1857,7 @@ class Game(models.Model):
 					s.points += bonus[2]
 			s.save()
 			## add the points to the profile total_score
-			profile = s.user.get_profile()
+			profile = s.user.profile
 			profile.finished_games += 1
 			if s.position == 1:
 				profile.victories += 1
@@ -1883,8 +1883,8 @@ class Game(models.Model):
 				s = Score(user=o.government, game=self, country=o.country,
 					points=p, cities=0, position=pos)
 				s.save()
-				s.user.get_profile().total_score += s.points
-				s.user.get_profile().save()
+				s.user.profile.total_score += s.points
+				s.user.profile.save()
 		
 	def game_over(self):
 		self.phase = PHINACTIVE
@@ -1946,8 +1946,8 @@ class GameComment(models.Model):
 		return self.comment[:50]
 		
 class LiveGameManager(models.Manager):
-	def get_query_set(self):
-		return super(LiveGameManager, self).get_query_set().filter(finished__isnull=True, started__isnull=False)
+	def get_queryset(self):
+		return super(LiveGameManager, self).get_queryset().filter(finished__isnull=True, started__isnull=False)
 
 class LiveGame(Game):
 	objects = LiveGameManager()
@@ -2618,7 +2618,7 @@ class Player(models.Model):
 		if not forced:
 			if self.game.uses_karma and self.game.check_bonus_time():
 				## get a karma bonus
-				self.user.get_profile().adjust_karma(1)
+				self.user.profile.adjust_karma(1)
 			## close possible revolutions
 			self.close_revolution()
 			msg = "Player %s ended phase" % self.pk
@@ -2667,7 +2667,7 @@ class Player(models.Model):
 		if not self.game.uses_karma:
 			karma = 100.
 		else:
-			karma = float(self.user.get_profile().karma)
+			karma = float(self.user.profile.karma)
 		if karma > 100:
 			if self.game.phase == PHORDERS:
 				k = 1 + (karma - 100) / 200
@@ -2723,11 +2723,11 @@ class Player(models.Model):
 		""" If a player doesn't submit his orders, he loses karma points.
 		If the game is not private, a new revolution is created, and he can be overthrown. """
 		if self.game.uses_karma:
-			self.user.get_profile().adjust_karma(-10)
+			self.user.profile.adjust_karma(-10)
 			logger.info("%s lost 10 karma points" % self)
 			created = False
 			karma_to_revolution = getattr(settings, "KARMA_TO_REVOLUTION", 170)
-			if self.user.get_profile().karma < karma_to_revolution:
+			if self.user.profile.karma < karma_to_revolution:
 				revolution, created = Revolution.objects.get_or_create(game=self.game,
 					government=self.user, overthrow=False)
 				revolution.active = datetime.now()
@@ -2991,7 +2991,7 @@ class Revolution(models.Model):
 		if self.voluntary:
 			player.surrendered = False
 		player.save()
-		self.opposition.get_profile().adjust_karma(10)
+		self.opposition.profile.adjust_karma(10)
 		self.active = None
 		self.overthrow = True
 		self.save()
@@ -3007,7 +3007,7 @@ signals.overthrow_attempted.connect(notify_overthrow_attempt)
 
 class UnitManager(models.Manager):
 	def get_with_strength(self, game, **kwargs):
-		u = self.get_query_set().get(**kwargs)
+		u = self.get_queryset().get(**kwargs)
 		qry = Q(unit__player__game=game,
 				  code__exact='S',
 				  subunit=u)
