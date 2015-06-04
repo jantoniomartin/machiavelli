@@ -2,4 +2,4 @@
 
 {% blocktrans with game.title as slug %}You are now playing the game '{{ slug }}'.{% endblocktrans %}
 
-{% trans "Go to the game" %} http://{{ current_site }}{% url show-game game.slug %}
+{% trans "Go to the game" %} http://{{ current_site }}{% url "show-game" game.slug %}

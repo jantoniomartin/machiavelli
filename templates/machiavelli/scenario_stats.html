@@ -26,6 +26,6 @@
 {% endfor %}
 </table>
 
-<p><a href="{% url show-scenario scenario_id=scenario.id %}">{% trans "Return to scenario details." %}</a></p>
+<p><a href="{% url "show-scenario" scenario_id=scenario.id %}">{% trans "Return to scenario details." %}</a></p>
 
 {% endblock %}

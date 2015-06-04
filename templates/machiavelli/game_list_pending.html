@@ -16,7 +16,7 @@
 		{% blocktrans %}The following games have not yet started, and you can join any of them.{% endblocktrans %}
 	{% else %}
 		{% blocktrans %}At this moment, there is no available games that you can join. Maybe you want to create a new game.{% endblocktrans %}
-		<p><a href="{% url new-game %}">{% trans "New game" %}</a></p>
+		<p><a href="{% url "new-game" %}">{% trans "New game" %}</a></p>
 	{% endif %}
 	</p>
 {% else %}
@@ -54,7 +54,7 @@
 <dl>
 <dt>{% trans "Average score" %}</dt><dd>{{ game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ game.get_average_karma|karma_stars }}</dd>
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url "scenario_detail" game.scenario.name %}">{{ game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ game.created_by.username }}</dd>
@@ -69,7 +69,7 @@
 	<ul>
 	{% for p in game.player_set.all %}
 		{% if p.user %}
-		<li><a href="{% url profile_detail username=p.user.username %}">{{ p.user.username }}</a></li>
+		<li><a href="{% url "profile_detail" username=p.user.username %}">{{ p.user.username }}</a></li>
 		{% endif %}
 	{% endfor %}
 	</ul>
@@ -89,15 +89,15 @@
 	<li>{% rule_icons game.configuration %}</li>
 	{% if game.private %}
 		{% ifequal game.created_by user %}
-			<li><a href="{% url invite-users game.slug %}">{% trans "Invitations" %}</a></li>
-			<li><a href="{% url make-public game.slug %}">{% trans "Make public" %}</a></li>
+			<li><a href="{% url "invite-users" game.slug %}">{% trans "Invitations" %}</a></li>
+			<li><a href="{% url "make-public" game.slug %}">{% trans "Make public" %}</a></li>
 		{% endifequal %}
 	{% endif %}
-	<li><a href="{% url show-game game.slug %}">{% trans "View game" %}</a></li>
+	<li><a href="{% url "show-game" game.slug %}">{% trans "View game" %}</a></li>
 	{% if joinable %}
-	<li><a href="{% url join-game game.slug %}">{% trans "Join game" %}</a></li>
+	<li><a href="{% url "join-game" game.slug %}">{% trans "Join game" %}</a></li>
 	{% else %}
-	<li><a href="{% url leave-game game.slug %}">{% trans "Leave game" %}</a></li>
+	<li><a href="{% url "leave-game" game.slug %}">{% trans "Leave game" %}</a></li>
 	{% endif %}
 </ul>
 </div>

@@ -47,11 +47,11 @@
 <div class="log_list">
 <h2>{% trans "Campaign log" %}</h2>
 <div class="menu">
-<p><a href="{% url gamearea-list game.slug %}">{% trans "Areas list" %}</a>
-| <a href="{% url scenario_detail game.scenario.name %}">{% trans "Scenario" %}</a>
-| <a href="{% url game-log game.slug %}">{% trans "All events" %}</a>
+<p><a href="{% url "gamearea-list" game.slug %}">{% trans "Areas list" %}</a>
+| <a href="{% url "scenario_detail" game.scenario.name %}">{% trans "Scenario" %}</a>
+| <a href="{% url "game-log" game.slug %}">{% trans "All events" %}</a>
 {% if not game.configuration.fow %}
-| <a href="{% url turn-log-list game.slug %}">{% trans "Process" %}</a></p>
+| <a href="{% url "turn-log-list" game.slug %}">{% trans "Process" %}</a></p>
 {% endif %}
 </div>
 <ul>
@@ -73,7 +73,7 @@
 {% endfor %}
 </ul>
 {% if whisper_form %}
-<form action="{% url new-whisper game.slug %}" method="POST">
+<form action="{% url "new-whisper" game.slug %}" method="POST">
 {% csrf_token %}
 {{ whisper_form.text }}
 <div>
@@ -81,7 +81,7 @@
 </div>
 </form>
 {% endif %}
-<p><a href="{% url whisper-list game.slug %}">{% trans "Show all" %}</a></p>
+<p><a href="{% url "whisper-list" game.slug %}">{% trans "Show all" %}</a></p>
 </div>
 {% endif %}
 
@@ -89,7 +89,7 @@
 <div id="mini_journal">
 <h2>{% trans "Journal" %}</h2>
 <p>{{ excerpt|linebreaks }}</p>
-<p><a href="{% url edit-journal game.slug %}">{% trans "Edit journal" %}</a></p>
+<p><a href="{% url "edit-journal" game.slug %}">{% trans "Edit journal" %}</a></p>
 </div>
 {% endif %}
 
@@ -97,8 +97,8 @@
 <div id="game_management">
 <h2>{% trans "Game management" %}</h2>
 <ul>
-<li><a href="{% url surrender game.slug %}">{% trans "Surrender" %}</a></li>
-<li><a href="{% url new-report game.slug %}">{% trans "Report error" %}</a></li>
+<li><a href="{% url "surrender" game.slug %}">{% trans "Surrender" %}</a></li>
+<li><a href="{% url "new-report" game.slug %}">{% trans "Report error" %}</a></li>
 </ul>
 </div>
 {% endif %}

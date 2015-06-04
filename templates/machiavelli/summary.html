@@ -44,9 +44,9 @@
 	</div>
 	<p class="{{ player.get_time_status }}">{{ player.game.next_phase_change|timeuntil }}</span></p>
 <ul>
-	<li><a href="{% url game-log player.game.slug %}">{% trans "Log" %}</a></li> 
-	<li><a href="{% url condottieri_messages_inbox player.game.slug %}">{% trans "Inbox" %}</a></li>
-	<li><a href="{% url condottieri_messages_outbox player.game.slug %}">{% trans "Outbox" %}</a></li>
+	<li><a href="{% url "game-log" player.game.slug %}">{% trans "Log" %}</a></li> 
+	<li><a href="{% url "condottieri_messages_inbox" player.game.slug %}">{% trans "Inbox" %}</a></li>
+	<li><a href="{% url "condottieri_messages_outbox" player.game.slug %}">{% trans "Outbox" %}</a></li>
 </ul>
 </div>
 	{% endfor %}
@@ -71,7 +71,7 @@
 <dl>
 <dt>{% trans "Average score" %}</dt><dd>{{ promoted_game.get_average_score|score_stars }}</dd>
 <dt>{% trans "Average karma" %}</dt><dd>{{ promoted_game.get_average_karma|karma_stars }}</dd>
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail promoted_game.scenario.name %}">{{ promoted_game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url "scenario_detail" promoted_game.scenario.name %}">{{ promoted_game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ promoted_game.cities_to_win }}</dd>
 <dt>{% trans "Time limit" %}</dt><dd>{{ promoted_game.get_time_limit_display }}</dd>
 <dt>{% trans "Creator" %}</dt><dd>{{ promoted_game.created_by.username }}</dd>
@@ -82,7 +82,7 @@
 	<ul>
 	{% for p in promoted_game.player_set.all %}
 		{% if p.user %}
-		<li><a href="{% url profile_detail username=p.user.username %}">{{ p.user.username }}</a></li>
+		<li><a href="{% url "profile_detail" username=p.user.username %}">{{ p.user.username }}</a></li>
 		{% endif %}
 	{% endfor %}
 	</ul>
@@ -96,18 +96,18 @@
 	<li>{% trans "Version" %}: {{ promoted_game.version }}</li>
 	<li>{{ num_comments }} {% trans "comments" %}</li>
 	<li>{% rule_icons promoted_game.configuration %}</li>
-	<li><a href="{% url join-game promoted_game.slug %}">{% trans "Join game" %}</a></li>
+	<li><a href="{% url "join-game" promoted_game.slug %}">{% trans "Join game" %}</a></li>
 </ul>
 </div>
 {% endif %}
 
 {% if joinable_count > 0 %}
-<p>{% blocktrans %}There are {{joinable_count}} games waiting for players.{% endblocktrans %} <a href="{% url games-joinable %}">{% trans "Join a game." %}</a></p>
+<p>{% blocktrans %}There are {{joinable_count}} games waiting for players.{% endblocktrans %} <a href="{% url "games-joinable" %}">{% trans "Join a game." %}</a></p>
 
 {% else %}
 	<p>{% blocktrans %}At this time there are no games waiting for players. Of course you can create a new one.{% endblocktrans %}</p>
 {% endif %}
-<p><a href="{% url new-game %}">{% trans "New game" %}</a></p>
+<p><a href="{% url "new-game" %}">{% trans "New game" %}</a></p>
 
 </div>
 
@@ -137,7 +137,7 @@
 	{% avatar c.user 24 %}
 		{% blocktrans with c.submit_date|timesince as time and c.user as user and c.game.title as slug %}{{ time }} ago by {{ user }} in the game {{ slug }}
 		{% endblocktrans %}
-		<a href="{% url show-game c.game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
+		<a href="{% url "show-game" c.game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
 	</div>
 	</div>
 	</div>
@@ -156,7 +156,7 @@
 <div id="new_scenario">
 <h2>{% blocktrans with new_scenario.title as title %}New scenario: "{{title}}"{% endblocktrans %}</h2>
 <p>{{ new_scenario.description|truncatewords:20 }}</p>
-<a href="{% url scenario_detail new_scenario.name %}"><img src="{{ new_scenario.thumbnail_url }}" style="border: solid 1px #000"/></a>
+<a href="{% url "scenario_detail" new_scenario.name %}"><img src="{{ new_scenario.thumbnail_url }}" style="border: solid 1px #000"/></a>
 </div>
 {% endif %}
 
@@ -166,7 +166,7 @@
 <ul>
 {% for w in whispers %}
 <li>{{ w.text|escape }}
-<a href="{% url show-game w.game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
+<a href="{% url "show-game" w.game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
 <span class="date">{{ w.created_at|timesince }}, {{ w.game.title|truncatewords:5 }}</span></li>
 {% endfor %}
 </ul>

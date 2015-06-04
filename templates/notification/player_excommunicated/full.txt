@@ -2,4 +2,4 @@
 
 {% blocktrans with game.title as slug %}You have been excommunicated in the game '{{ slug }}'.{% endblocktrans %}
 
-{% trans "Go to the game" %} http://{{ current_site }}{% url show-game game.slug %}
+{% trans "Go to the game" %} http://{{ current_site }}{% url "show-game" game.slug %}

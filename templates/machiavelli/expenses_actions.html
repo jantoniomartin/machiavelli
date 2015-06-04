@@ -81,14 +81,14 @@
 {% for e in current_expenses %}
 <li id="expense_{{ e.id }}">{{ e }}
 {% ifequal e.confirmed 0 %}
-(<a href="{% url undo-expense game.slug e.id %}">{% trans "Delete" %}</a>)
+(<a href="{% url "undo-expense" game.slug e.id %}">{% trans "Delete" %}</a>)
 {% endifequal %}
 </li>
 {% endfor %}
 </ul>
 {% endif %}
 
-<p><a href="{% url show-game game.slug %}">{% trans "Return to game" %}</a></p>
+<p><a href="{% url "show-game" game.slug %}">{% trans "Return to game" %}</a></p>
 </div>
 {% endblock %}
 

@@ -17,7 +17,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 <p>{% blocktrans %}If you compose an order that break the rules, you should see an error and you will have to fix the order. However, if you compose an impossible order, this unit will hold, instead of carrying out its order. Be careful.{% endblocktrans %}</p>
 {% if order_form %}
 <div class="action_form">
-<form action="{% url show-game game.slug %}" method="post" id="order_form">
+<form action="{% url "show-game" game.slug %}" method="post" id="order_form">
 {% csrf_token %}
 <div id="emsg">&nbsp;</div>
 <fieldset>
@@ -35,14 +35,14 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 {% for order in sent_orders %}
 <li id="order_{{ order.id }}">{{ order.explain }}
 {% ifequal order.confirmed 0 %}
-(<a href="{% url delete-order game.slug order.id %}" class="delete_order">{% trans "Delete" %}</a>)
+(<a href="{% url "delete-order" game.slug order.id %}" class="delete_order">{% trans "Delete" %}</a>)
 {% endifequal %}
 </li>
 {% endfor %}
 </ol>
 {% if player.undoable %}
 <p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again; otherwise all your orders will be lost.{% endblocktrans %}</p>
-<form method="POST" action="{% url undo-actions game.slug %}">
+<form method="POST" action="{% url "undo-actions" game.slug %}">
 {% csrf_token %}
 <p><input type="submit" value="{% trans "Change orders" %}" /></p>
 </form>
@@ -54,7 +54,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 <div class="action_block">
 <h2>{% trans "Taxation" %}</h2>
 <p>{% blocktrans %}You can get some additional ducats through taxation.{% endblocktrans %}</p>
-<p><a href="{% url taxation game.slug %}">{% trans "Select areas to tax" %}</a></p>
+<p><a href="{% url "taxation" game.slug %}">{% trans "Select areas to tax" %}</a></p>
 </div>
 
 {% endif %}
@@ -80,7 +80,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 <tr>
 <td>{{ c.debt }}</td>
 <td>{{ c.get_season_display }}, {{ c.year }}</td>
-<td><a href="{% url return-credit game.slug c.id %}">{% trans "Repay" %}</a></td> 
+<td><a href="{% url "return-credit" game.slug c.id %}">{% trans "Repay" %}</a></td> 
 </tr>
 {% endfor %}
 </table>
@@ -89,7 +89,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 
 {% if not done and credit_limit > 0 %}
 <p>{% blocktrans %}You can borrow up to {{ credit_limit }} ducats from a banker or financier. Depending on the term that you choose, you will have to pay a different interest. If you can't or don't repay a loan, something very bad will happen to you and, of course, you won't be able to borrow money anymore.{% endblocktrans %}</p>
-<p><a href="{% url borrow-money game.slug %}">{% trans "Ask for a loan" %}</a>.</p>
+<p><a href="{% url "borrow-money" game.slug %}">{% trans "Ask for a loan" %}</a>.</p>
 {% endif %}
 
 </div>
@@ -102,7 +102,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 <h2>{% trans "Expenses" %}</h2>
 {% if not done %}
 <p>{% blocktrans %}Finances are applied in this game. If you want to expend some of your ducats, click on the following link.{% endblocktrans %}</p>
-<p><a href="{% url expenses game.slug %}">{% trans "Expenses" %}</a></p>
+<p><a href="{% url "expenses" game.slug %}">{% trans "Expenses" %}</a></p>
 {% endif %}
 {% if current_expenses %}
 <h3>{% trans "Your expenses for this turn" %}</h3>
@@ -110,7 +110,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 {% for e in current_expenses %}
 <li id="expense_{{ e.id }}">{{ e }}
 {% ifequal e.confirmed 0 %}
-(<a href="{% url undo-expense game.slug e.id %}">{% trans "Delete" %}</a>)
+(<a href="{% url "undo-expense" game.slug e.id %}">{% trans "Delete" %}</a>)
 {% endifequal %}
 </li>
 {% endfor %}
@@ -134,7 +134,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 </ul>
 {% endif %}
 
-<p><a href="{% url assassination game.slug %}">{% trans "Try an assassination" %}</a></p>
+<p><a href="{% url "assassination" game.slug %}">{% trans "Try an assassination" %}</a></p>
 </div>
 
 {% endif %}
@@ -143,7 +143,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 
 <div class="action_block">
 <h2>{% trans "Confirm your actions" %}</h2>
-<form action="{% url confirm-orders game.slug %}" method="POST" />
+<form action="{% url "confirm-orders" game.slug %}" method="POST" />
 {% csrf_token %}
 <p>{% blocktrans %}The orders above are saved but <strong>are not confirmed</strong>. If you don't confirm your orders, they will be ignored.{% endblocktrans %}</p>
 <p>{% blocktrans %}To confirm the orders and end your phase, click the "Confirm" button.{% endblocktrans %}</p>
@@ -160,7 +160,7 @@ orders. If you want a unit to do nothing, select the "Hold" option for it.
 {% block extra_game %}
 {% if order_form %}
 <script>
-	var game_url = "{% url show-game game.slug %}";
+	var game_url = "{% url "show-game" game.slug %}";
 	var delete_text = "{% trans "Delete" %}";
 </script>
 	{{ order_form.media }}

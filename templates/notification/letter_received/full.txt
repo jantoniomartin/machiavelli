@@ -7,5 +7,5 @@
 {% trans "Body" %}:
 {{ letter.body }}
 
-{% trans "Read the letter" %}: {{ current_site }}{% url show-letter letter.id %}
+{% trans "Read the letter" %}: {{ current_site }}{% url "show-letter" letter.id %}
 

@@ -25,12 +25,12 @@
 	{% for game in game_list.object_list %}
 	<tr>
 	<td><a href="{{ game.get_absolute_url }}">{{ game.slug }}</a></td>
-	<td><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></td>
+	<td><a href="{% url "scenario_detail" game.scenario.name %}">{{ game.scenario.title }}</a></td>
 	<td>{{ game.get_time_limit_display }}</td>
 	<td>{% rule_icons game.configuration %}</td>
 	<td>
 	{% if game.highest_score %}
-	<a href="{% url profile_detail username=game.highest_score.user.username %}">{{ game.highest_score.user }}</a> ({{ game.highest_score.country }})
+	<a href="{% url "profile_detail" username=game.highest_score.user.username %}">{{ game.highest_score.user }}</a> ({{ game.highest_score.country }})
 	{% endif %}
 	</td>
 	</tr>

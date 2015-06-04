@@ -21,7 +21,7 @@
 	</td>
 
 	{% if game.visible %}
-	<td><a href="{% url profile_detail username=p.user.username %}" title="{{ p.user.username }}">{% avatar p.user 20 %}</a></td>
+	<td><a href="{% url "profile_detail" username=p.user.username %}" title="{{ p.user.username }}">{% avatar p.user 20 %}</a></td>
 	{% endif %}
 
 	<td style="text-align: center">{{ p.cities }}</td>
@@ -34,19 +34,19 @@
 	{% ifnotequal p.eliminated 1 %}
 		<div>
 		{% if game.configuration.letters %}
-			<a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
+			<a href="{% url "condottieri_messages_compose" sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a>
 		{% endif %}
 		{% if game.configuration.finances %}
-			<a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a>
+			<a href="{% url "lend" game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a>
 		{% endif %}
 		{% if can_excommunicate %}
 			{% ifnotequal p.is_excommunicated 1 %}
-			<a href="{% url excommunicate game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" title="{% trans "Excommunicate" %}" /></a>
+			<a href="{% url "excommunicate" game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/excommunication-icon-16.png" title="{% trans "Excommunicate" %}" /></a>
 			{% endifnotequal %}
 		{% endif %}
 		{% if can_forgive %}
 			{% ifequal p.is_excommunicated 1 %}
-			<a href="{% url forgive-excommunication game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/forgive-icon-16.png" title="{% trans "Forgive" %}" /></a>
+			<a href="{% url "forgive-excommunication" game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/forgive-icon-16.png" title="{% trans "Forgive" %}" /></a>
 			{% endifequal %}
 		{% endif %}
 		</div>

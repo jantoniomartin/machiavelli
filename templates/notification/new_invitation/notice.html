@@ -1,4 +1,4 @@
 {% load i18n %}
 
 {% blocktrans with game.slug as slug %}You have been invited to join the game '{{ slug }}'.{% endblocktrans %}
-<a href="{% url games-joinable %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
+<a href="{% url "games-joinable" %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>

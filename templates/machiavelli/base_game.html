@@ -37,16 +37,16 @@
 
 {% block subnav %}
 <ul>
-<li><a href="{% url home %}">{% trans "Home" %}</a></li>
-<li><a href="{% url new-game %}">{% trans "New game" %}</a></li>
-<li><a href="{% url games-joinable %}">{% trans "Join game" %}</a></li> 
+<li><a href="{% url "home" %}">{% trans "Home" %}</a></li>
+<li><a href="{% url "new-game" %}">{% trans "New game" %}</a></li>
+<li><a href="{% url "games-joinable" %}">{% trans "Join game" %}</a></li> 
 {% if user.is_authenticated %}
-<li><a href="{% url games-my-active %}">{% trans "Active games" %}</a></li>
-<li><a href="{% url games-pending %}">{% trans "Pending games" %}</a></li>
-<li><a href="{% url games-my-finished %}">{% trans "Finished games" %}</a></li>
+<li><a href="{% url "games-my-active" %}">{% trans "Active games" %}</a></li>
+<li><a href="{% url "games-pending" %}">{% trans "Pending games" %}</a></li>
+<li><a href="{% url "games-my-finished" %}">{% trans "Finished games" %}</a></li>
 {% else %}
-<li><a href="{% url games-other-active %}">{% trans "Active games" %}</a></li>
-<li><a href="{% url games-all-finished %}">{% trans "Finished games" %}</a></li>
+<li><a href="{% url "games-other-active" %}">{% trans "Active games" %}</a></li>
+<li><a href="{% url "games-all-finished" %}">{% trans "Finished games" %}</a></li>
 {% endif %}
 </ul>
 {% endblock %}
@@ -102,7 +102,7 @@
 {% else %}
 <li>
 		{% ifnotequal game.slots 0 %}
-			<a href="{% url join-game game.slug %}">{% trans "Join game" %}</a>
+			<a href="{% url "join-game" game.slug %}">{% trans "Join game" %}</a>
 		{% endifnotequal %}
 </li>
 {% endif %}
@@ -118,18 +118,18 @@
 
 {% if player %}
 {% if game.is_team_game %}
-<li><a href="{% url team_messages game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
+<li><a href="{% url "team_messages" game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Team messages" %}" /></a></li>
 {% else %}
 	{% if game.configuration.letters %}
 	<li class="mailbox_button">
 		{% if player.unread_count > 0 %}
-		<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>
+		<a href="{% url "condottieri_messages_inbox" game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/unread-icon.png" title="{% trans "You have new mail" %} ({{ player.unread_count }})" /></a>
 		{% else %}
-		<a href="{% url condottieri_messages_inbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" /></a>
+		<a href="{% url "condottieri_messages_inbox" game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/inbox-icon.png" title="{% trans "Inbox" %}" /></a>
 		{% endif %}
 	</li>
 	<li class="mailbox_button">
-		<a href="{% url condottieri_messages_outbox game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
+		<a href="{% url "condottieri_messages_outbox" game.slug %}"><img src="{{ STATIC_URL }}condottieri_messages/img/outbox-icon.png" title="{% trans "Outbox" %}" /></a>
 	</li>
 	{% endif %}
 {% endif %}

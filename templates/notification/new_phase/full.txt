@@ -1,5 +1,5 @@
 {% load i18n %}
 
 {% blocktrans with game.title as slug and game.get_phase_display as phase %}The phase '{{ phase }}' has begun in the game '{{ slug }}'. You can {% endblocktrans %}
-{% trans "go to the game" %}: http://{{ current_site }}{% url show-game game.slug %}.
+{% trans "go to the game" %}: http://{{ current_site }}{% url "show-game" game.slug %}.
 

@@ -1,5 +1,5 @@
 {% load i18n %}
 
 {% blocktrans with game.slug as slug and game.get_phase_display as phase %}'{{ phase }}' has begun in '{{ slug }}'.{% endblocktrans %}
-<a href="{% url show-game game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
+<a href="{% url "show-game" game.slug %}"><img src="{{ STATIC_URL }}machiavelli/img/link.png" alt="Go" /></a>
 

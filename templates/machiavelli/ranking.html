@@ -34,18 +34,18 @@
 	<td>{{ q.points }}</td>
 	<td>{{ q.cities }}</td>
 	<td>{{ q.position }}</td>
-	<td><a href="{% url show-game q.game.slug %}" title="{{ q.game.title }}">{{ q.game.title|truncatewords:5 }}</a></td> 
+	<td><a href="{% url "show-game" q.game.slug %}" title="{{ q.game.title }}">{{ q.game.title|truncatewords:5 }}</a></td> 
 	{% if key == "user" %}
-	<td><a href="{% url scenario_detail q.game.scenario.name %}">{{ q.game.scenario }}</a></td>
+	<td><a href="{% url "scenario_detail" q.game.scenario.name %}">{{ q.game.scenario }}</a></td>
 	<td>{{ q.country }}</td>
 	{% endif %}
 	{% if key == "scenario" %}
 	<td>{{ q.country }}</td>
-	<td><a href="{% url profile_detail username=q.user.username %}">{{ q.user }}</a></td>
+	<td><a href="{% url "profile_detail" username=q.user.username %}">{{ q.user }}</a></td>
 	{% endif %}
 	{% if key == "country" %}
-	<td><a href="{% url scenario_detail q.game.scenario.name %}">{{ q.game.scenario }}</a></td>
-	<td><a href="{% url profile_detail username=q.user.username %}">{{ q.user }}</a></td>
+	<td><a href="{% url "scenario_detail" q.game.scenario.name %}">{{ q.game.scenario }}</a></td>
+	<td><a href="{% url "profile_detail" username=q.user.username %}">{{ q.user }}</a></td>
 	{% endif %}
 	<td>{{ q.created_at|date:"SHORT_DATE_FORMAT" }}
 	</tr>

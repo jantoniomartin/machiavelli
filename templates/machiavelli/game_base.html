@@ -22,14 +22,14 @@
 			<div class="login">
 			{% if user.is_authenticated %}
 				{% avatar user 20 %}
-				<b><a href="{% url profile_detail user %}">{{ user }}</a> (K:{{ user.get_profile.karma }}, P:{{ user.get_profile.total_score }})</b> |
-				<a href="{% url acct_email %}">{% trans "Account" %}</a> |
+				<b><a href="{% url "profile_detail" user %}">{{ user }}</a> (K:{{ user.profile.karma }}, P:{{ user.profile.total_score }})</b> |
+				<a href="{% url "acct_email" %}">{% trans "Account" %}</a> |
 				{% if user.is_staff %}<a href="/admin/">{% trans "Admin" %}</a> | {% endif %}
-				<a href="{% url acct_logout %}">{% trans "Logout" %}</a> |
+				<a href="{% url "acct_logout" %}">{% trans "Logout" %}</a> |
 			{% else %}
-				<a href="{% url acct_login %}">{% trans "Login" %}</a> {% if ACCOUNT_OPEN_SIGNUP %}{% trans "or" %} <a href="{% url acct_signup %}"><b>{% trans "Sign up" %}</b></a>{% endif %} |
+				<a href="{% url "acct_login" %}">{% trans "Login" %}</a> {% if ACCOUNT_OPEN_SIGNUP %}{% trans "or" %} <a href="{% url "acct_signup" %}"><b>{% trans "Sign up" %}</b></a>{% endif %} |
 			{% endif %}
-			<a href="{% url summary %}">{% trans "Home" %}</a>
+			<a href="{% url "summary" %}">{% trans "Home" %}</a>
 			</div>
 		</div>
 		
@@ -43,13 +43,13 @@
 				<tr class="{{ p.static_name }}">
 				<td>{{ p.contender.country.name }}</td>
 					{% if show_users %}
-				<td><a href="{% url profile_detail username=p.user.username %}">{% avatar p.user 20 %}</a>{{ p.user.username }}</p>
+				<td><a href="{% url "profile_detail" username=p.user.username %}">{% avatar p.user 20 %}</a>{{ p.user.username }}</p>
 					{% endif %}
 				<td>{{ p.number_of_cities }} {% trans "cities" %}</td>
 				<td>{{ p.placed_units_count }} {% trans "units" %}</td>
-				<td><a href="{% url condottieri_messages_compose sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a></td>
+				<td><a href="{% url "condottieri_messages_compose" sender_id=player.id recipient_id=p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/envelope.png" title="{% trans "Send message" %}" /></a></td>
 				{% if game.configuration.finances %}
-				<td><a href="{% url lend game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a></td>
+				<td><a href="{% url "lend" game.slug p.id %}"><img src="{{ STATIC_URL }}machiavelli/img/coin.png" title="{% trans "Give money" %}" /></a></td>
 				{% endif %}
 				</tr>
 				{% endfor %}

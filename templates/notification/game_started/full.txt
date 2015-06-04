@@ -1,5 +1,5 @@
 {% load i18n %}
 
 {% blocktrans with game.title as slug %}The game '{{ slug }}' has just started. You can {% endblocktrans %}
-{% trans "play it in " %} http://{{ current_site }}{% url show-game game.slug %}.
+{% trans "play it in " %} http://{{ current_site }}{% url "show-game" game.slug %}.
 

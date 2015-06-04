@@ -9,17 +9,17 @@
 
 {% block subnav %}
 <ul>
-<li><a href="{% url home %}">{% trans "Home" %}</a></li>
-<li><a href="{% url new-game %}">{% trans "New" %}</a></li>
-<li><a href="{% url games-joinable %}">{% trans "Join" %} ({{ joinable_counter }})</a></li> 
+<li><a href="{% url "home" %}">{% trans "Home" %}</a></li>
+<li><a href="{% url "new-game" %}">{% trans "New" %}</a></li>
+<li><a href="{% url "games-joinable" %}">{% trans "Join" %} ({{ joinable_counter }})</a></li> 
 {% if user.is_authenticated %}
-<li><a href="{% url revolution_list %}">{% trans "Revolutions" %} ({{ revolution_counter }})</a></li> 
-<li><a href="{% url games-my-active %}">{% trans "Active" %} ({{ active_counter }})</a></li>
-<li><a href="{% url games-pending %}">{% trans "Pending" %} ({{ pending_counter }})</a></li>
-<li><a href="{% url games-my-finished %}">{% trans "Finished " %}</a></li>
+<li><a href="{% url "revolution_list" %}">{% trans "Revolutions" %} ({{ revolution_counter }})</a></li> 
+<li><a href="{% url "games-my-active" %}">{% trans "Active" %} ({{ active_counter }})</a></li>
+<li><a href="{% url "games-pending" %}">{% trans "Pending" %} ({{ pending_counter }})</a></li>
+<li><a href="{% url "games-my-finished" %}">{% trans "Finished " %}</a></li>
 {% else %}
-<li><a href="{% url games-other-active %}">{% trans "Active" %}</a></li>
-<li><a href="{% url games-all-finished %}">{% trans "Finished" %}</a></li>
+<li><a href="{% url "games-other-active" %}">{% trans "Active" %}</a></li>
+<li><a href="{% url "games-all-finished" %}">{% trans "Finished" %}</a></li>
 {% endif %}
 </ul>
 {% endblock %}
@@ -47,25 +47,25 @@
 <ul>
 {% for profile in top_users %}
 	<li
-	{% ifequal user.get_profile profile %}
+	{% ifequal user.profile profile %}
 	class="my_position"
 	{% endifequal %}
 	>
 	<span>{% cycle "1" "2" "3" "4" "5" %}. </span>
-	<a href="{% url profile_detail username=profile.user.username %}">{% avatar profile.user 24 %}</a>
+	<a href="{% url "profile_detail" username=profile.user.username %}">{% avatar profile.user 24 %}</a>
 	<span>{{ profile.user.username }}</span>:
 	<span>{{ profile.weighted_score }}</span></li>
 {% endfor %}
 	{% if my_position %}
 		<li class="my_position">
 		<span>{{ my_position }}. </span>
-		<a href="{% url profile_detail username=user.username %}">{% avatar user 24 %}</a>
+		<a href="{% url "profile_detail" username=user.username %}">{% avatar user 24 %}</a>
 		<span>{{ user.username }}</span>:
-		<span>{{ user.get_profile.weighted_score }}</span>
+		<span>{{ user.profile.weighted_score }}</span>
 		</li>
 	{% endif %}
 </ul>
-<p style="text-align: right"><a href="{% url hall-of-fame %}">{% trans "Hall of Fame" %}</a></p>
+<p style="text-align: right"><a href="{% url "hall-of-fame" %}">{% trans "Hall of Fame" %}</a></p>
 <p style="font-size:smaller">{% trans "Last updated:" %} {{ ranking_last_update|date:"SHORT_DATE_FORMAT" }}</p>
 </div>
 

@@ -34,7 +34,7 @@ unit depends on its class. Regular units cost 3 ducats, and special units cost m
 
 {% endif %}
 
-<form action="{% url show-game game.slug %}" method="post">
+<form action="{% url "show-game" game.slug %}" method="post">
 {% csrf_token %}
 
 {% if formset %}
@@ -107,7 +107,7 @@ unit depends on its class. Regular units cost 3 ducats, and special units cost m
 <tr>
 <td>{{ c.debt }}</td>
 <td>{{ c.get_season_display }}, {{ c.year }}</td>
-<td><a href="{% url return-credit game.slug c.id %}">{% trans "Repay" %}</a></td> 
+<td><a href="{% url "return-credit" game.slug c.id %}">{% trans "Repay" %}</a></td> 
 </tr>
 {% endfor %}
 </table>

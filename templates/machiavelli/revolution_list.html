@@ -31,7 +31,7 @@
 <tbody>
 {% for revolution in revolution_list %}
 	<tr>
-	<td><a href="{% url show-game revolution.game.slug %}" title="{{ revolution.game.title }}">{{ revolution.game.title|truncatewords:5 }}</a></td>
+	<td><a href="{% url "show-game" revolution.game.slug %}" title="{{ revolution.game.title }}">{{ revolution.game.title|truncatewords:5 }}</a></td>
 	<td>{{ revolution.country }}</td>
 	{% if revolution.active %}
 	<td>{% trans "Active since" %} {{ revolution.active|timesince }}</td>
@@ -40,17 +40,17 @@
 	{% endif %}
 	<td>{{ revolution.voluntary|yesno }}</td>
 	{% if revolution.government == user %}
-	<td><a href="{% url show-game revolution.game.slug %}">{% trans "Play" %}</a></td>
+	<td><a href="{% url "show-game" revolution.game.slug %}">{% trans "Play" %}</a></td>
 	{% else %}
 		{% if not revolution.opposition %}
 			{% if revolution.active %}
-			<td><a href="{% url overthrow revolution.pk %}">{% trans "Overthrow" %}</a></td>
+			<td><a href="{% url "overthrow" revolution.pk %}">{% trans "Overthrow" %}</a></td>
 			{% else %}
 				<td>&nbsp;</td>
 			{% endif %}
 		{% else %}
 			{% if revolution.opposition == user %}
-				<td><a href="{% url undo_overthrow revolution.pk %}">{% trans "Withdraw" %}</a></td>
+				<td><a href="{% url "undo_overthrow" revolution.pk %}">{% trans "Withdraw" %}</a></td>
 			{% else %}
 				<td>&nbsp;</td>
 			{% endif %}

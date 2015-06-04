@@ -25,7 +25,7 @@ restrictions are applied:{% endblocktrans %}</p>
 
 {% if formset %}
 <div class="action_form">
-<form action="{% url show-game game.slug %}" method="post" class="uniForm">
+<form action="{% url "show-game" game.slug %}" method="post" class="uniForm">
 {% csrf_token %}
 {{ formset.management_form }}
 {{ formset.non_form_errors }}
@@ -52,7 +52,7 @@ restrictions are applied:{% endblocktrans %}</p>
 
 {% if player.undoable %}
 <p>{% blocktrans %}If you wish, you can change your orders. To do so, push the following button. Remember that you will need to confirm your actions again, even if you don't want to make any movements.{% endblocktrans %}</p>
-<form method="POST" action="{% url undo-actions game.slug %}">
+<form method="POST" action="{% url "undo-actions" game.slug %}">
 {% csrf_token %}
 <p><input type="submit" value="{% trans "Undo strategic movements" %}" /></p>
 </form>

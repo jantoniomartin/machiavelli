@@ -14,7 +14,7 @@
 {% blocktrans %}These are all the finished games that you have played until the end.{% endblocktrans %}
 </p>
 <p>
-<a href="{% url games-all-finished %}">{% trans "See all the finished games" %}</a>
+<a href="{% url "games-all-finished" %}">{% trans "See all the finished games" %}</a>
 </p>
 {% else %}
 <h1>{% trans "All the finished games" %}</h1>
@@ -36,26 +36,26 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 </div>
 {% endif %}
 <dl>
-<dt>{% trans "Scenario" %}</dt><dd><a href="{% url scenario_detail game.scenario.name %}">{{ game.scenario.title }}</a></dd>
+<dt>{% trans "Scenario" %}</dt><dd><a href="{% url "scenario_detail" game.scenario.name %}">{{ game.scenario.title }}</a></dd>
 <dt>{% trans "Cities to win" %}</dt><dd>{{ game.cities_to_win }}</dd>
 <dt>{% trans "Players" %}</dt>
 <dd>
 	<ul>
 	{% for s in game.score_set.all %}
-		<li><a href="{% url profile_detail username=s.user.username %}">{{ s.user.username }}</a> ({{ s.points }})</li>
+		<li><a href="{% url "profile_detail" username=s.user.username %}">{{ s.user.username }}</a> ({{ s.points }})</li>
 	{% endfor %}
 	</ul>
 </dd>
 <dt>{% trans "Winner" %}</dt>
 {% for w in game.winners_qs %}
-<dd><a href="{% url profile_detail username=w.user.username %}">{{ w.user }}</a></dd>
+<dd><a href="{% url "profile_detail" username=w.user.username %}">{{ w.user }}</a></dd>
 {% endfor %}
 </dl>
 <ul class="section_menu">
 	<li>{% trans "Version" %}: {{ game.version }}</li>
 	<li>{{ game.comments_count }} {% trans "comments" %}</li>
 	<li>{% rule_icons game.configuration %}</li>
-	<li><a href="{% url show-game game.slug %}">{% trans "View scores" %}</a></li>
+	<li><a href="{% url "show-game" game.slug %}">{% trans "View scores" %}</a></li>
 </ul>
 </div>
 {% endfor %}

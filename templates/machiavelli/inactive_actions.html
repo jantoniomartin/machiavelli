@@ -8,7 +8,7 @@
 {% if player %}
 {% else %}
 		{% ifnotequal game.slots 0 %}
-			<a href="{% url join-game game.slug %}">{% trans "Join game" %}</a>
+			<a href="{% url "join-game" game.slug %}">{% trans "Join game" %}</a>
 		{% endifnotequal %}
 {% endif %}
 </div>

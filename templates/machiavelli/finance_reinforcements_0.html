@@ -17,7 +17,7 @@ players have done it or the time limit is reached.{% endblocktrans %}</p>
 in order to keep them in play. You will pay the cost in ducats of every unit that you
 select. The units not selected won't be paid and will be disbanded.</p>{% endblocktrans %}
 
-<form action="{% url show-game game.slug %}" method="post">
+<form action="{% url "show-game" game.slug %}" method="post">
 {% csrf_token %}
 
 <div class="action_form">
@@ -47,7 +47,7 @@ select. The units not selected won't be paid and will be disbanded.</p>{% endblo
 <tr>
 <td>{{ c.debt }}</td>
 <td>{{ c.get_season_display }}, {{ c.year }}</td>
-<td><a href="{% url return-credit game.slug c.id %}">{% trans "Repay" %}</a></td> 
+<td><a href="{% url "return-credit" game.slug c.id %}">{% trans "Repay" %}</a></td> 
 </tr>
 {% endfor %}
 </table>
