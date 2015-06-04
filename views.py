@@ -39,7 +39,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.decorators import method_decorator
 from django.utils.functional import lazy
-from django.utils import simplejson
+import json
 from django.contrib import messages
 
 ## generic views
@@ -524,7 +524,7 @@ class DeleteOrderView(GamePlayView):
 		except:
 			response_dict.update({'bad': 'true'})
 		if request.is_ajax():
-			response_json = simplejson.dumps(response_dict, ensure_ascii=False)
+			response_json = json.dumps(response_dict, ensure_ascii=False)
 			return HttpResponse(response_json, mimetype='application/javascript')		
 		return redirect(self.game)
 
@@ -1031,7 +1031,7 @@ class PlayOrders(GamePlayView):
 						'pk': new_order.pk ,
 						'new_order': new_order.explain()
 					})
-				response_json = simplejson.dumps(response_dict, ensure_ascii=False)
+				response_json = json.dumps(response_dict, ensure_ascii=False)
 				return HttpResponse(response_json, mimetype='application/javascript')
 			## not ajax
 			else:
@@ -1322,7 +1322,7 @@ class UndoActionsView(GamePlayView):
 				machiavelli.StrategicOrder.objects.filter(unit__player=self.player).delete()
 				messages.success(request, _("Your strategic movements have been undone."))
 			if self.game.check_bonus_time():
-				self.request.user.get_profile().adjust_karma( -1 )
+				self.request.user.profile.adjust_karma( -1 )
 			self.player.save()
 		return redirect(self.game)
 
@@ -1682,7 +1682,7 @@ class JoinGameView(LoginRequiredMixin, View):
 			return redirect('summary')
 		invitation = None
 		## check if the user has defined his languages
-		if not request.user.get_profile().has_languages():
+		if not request.user.profile.has_languages():
 			messages.error(
 				request,
 				_("You must define at least one known language before joining a game.")
@@ -1702,7 +1702,7 @@ class JoinGameView(LoginRequiredMixin, View):
 					_("This game is private and you have not been invited.")
 				)
 				return redirect("games-joinable")
-		msg = request.user.get_profile().check_karma_to_join(fast=game.fast)
+		msg = request.user.profile.check_karma_to_join(fast=game.fast)
 		if msg != "": #user can't join
 			messages.error(request, msg)
 			return redirect("summary")
@@ -1762,7 +1762,7 @@ class OverthrowView(LoginRequiredMixin, View):
 				## check that there is not another revolution with the same player
 				game.revolution_set.get(opposition=request.user)
 			except ObjectDoesNotExist:
-				karma = request.user.get_profile().karma
+				karma = request.user.profile.karma
 				if karma < settings.KARMA_TO_JOIN:
 					err = _("You need a minimum karma of %s to join a game.") % \
 						settings.KARMA_TO_JOIN
