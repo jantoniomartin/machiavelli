@@ -4,7 +4,7 @@
 ##
 
 import re
-from django.template.defaultfilters import slugify
+from django.utils.text import slugify
 
 
 def unique_slugify(instance, value, slug_field_name='slug', queryset=None,
