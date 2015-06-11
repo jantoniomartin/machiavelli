@@ -132,10 +132,6 @@ class SummaryView(TemplateView):
 				reverse=False
 			)
 			context.update({ 'actions': player_list })
-			"""Unseen notices"""
-			if notification:
-				context['new_notices'] = notification.Notice.objects. \
-				notices_for(self.request.user, unseen=True, on_site=True)[:20]
 		else:
 			joinable = machiavelli.Game.objects.joinable()
 			promoted_game = machiavelli.Game.objects.get_promoted()
