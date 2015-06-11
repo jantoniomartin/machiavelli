@@ -73,8 +73,8 @@ import condottieri_events.paginator as events_paginator
 import logging
 logger = logging.getLogger(__name__)
 
-if "notification" in settings.INSTALLED_APPS:
-	from notification import models as notification
+if "pinax.notifications" in settings.INSTALLED_APPS:
+	from pinax.notifications import models as notification
 else:
 	notification = None
 

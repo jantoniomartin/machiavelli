@@ -44,8 +44,8 @@ from django.template.defaultfilters import capfirst, timesince, force_escape
 
 from model_utils.managers import PassThroughManager
 
-if "notification" in settings.INSTALLED_APPS:
-	from notification import models as notification
+if "pinax.notifications" in settings.INSTALLED_APPS:
+	from pinax.notifications import models as notification
 else:
 	notification = None
 
@@ -1911,15 +1911,15 @@ class Game(models.Model):
 	## notification methods
 	##------------------------
 
-	def notify_players(self, label, extra_context={}, on_site=True):
+	def notify_players(self, label, extra_context={}):
 		if notification:
 			users = User.objects.filter(player__game=self,
 										player__eliminated=False)
 			extra_context.update({'STATIC_URL': settings.STATIC_URL, })
 			if self.fast:
-				notification.send_now(users, label, extra_context, on_site)
+				notification.send_now(users, label, extra_context)
 			else:
-				notification.send(users, label, extra_context, on_site)
+				notification.send(users, label, extra_context)
 
 class GameComment(models.Model):
 	game = models.ForeignKey(Game, editable=False)
@@ -2577,8 +2577,7 @@ class Player(models.Model):
 		if notification:
 			user = [self.user,]
 			extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-			notification.send(user, "player_excommunicated", extra_context,
-				on_site=True)
+			notification.send(user, "player_excommunicated", extra_context)
 	
 	def unset_excommunication(self):
 		self.is_excommunicated = False
@@ -2592,8 +2591,7 @@ class Player(models.Model):
 		if notification:
 			user = [self.user,]
 			extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-			notification.send(user, "player_absolved", extra_context,
-				on_site=True)
+			notification.send(user, "player_absolved", extra_contex)
 
 	def assassinate(self):
 		if not self.assassinated:
@@ -2736,8 +2734,7 @@ class Player(models.Model):
 					if notification:
 						user = [self.user,]
 						extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-						notification.send(user, "new_revolution", extra_context,
-							on_site=True)
+						notification.send(user, "new_revolution", extra_context)
 				else:
 					if revolution.opposition:
 						logger.info("Executing overthrow")
@@ -2747,8 +2744,7 @@ class Player(models.Model):
 				if notification:
 					user = [self.user,]
 					extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-					notification.send(user, "missed_turn", extra_context,
-						on_site=True)
+					notification.send(user, "missed_turn", extra_context)
 				logger.info("Karma prevents revolution for %s" % self)
 
 	def close_revolution(self):
@@ -2976,7 +2972,7 @@ class Revolution(models.Model):
 			## notify the old player
 			user = [self.government,]
 			extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-			notification.send(user, "lost_player", extra_context, on_site=True)
+			notification.send(user, "lost_player", extra_context)
 			## notify the new player
 			user = [self.opposition]
 			if self.game.fast:
@@ -3001,7 +2997,7 @@ def notify_overthrow_attempt(sender, **kw):
 		user = [sender.government,]
 		extra_context = {'game': sender.game,
 			'STATIC_URL': settings.STATIC_URL,}
-		notification.send(user, "overthrow_attempt", extra_context , on_site=True)
+		notification.send(user, "overthrow_attempt", extra_context) 
 
 signals.overthrow_attempted.connect(notify_overthrow_attempt)
 
@@ -4109,7 +4105,7 @@ def notify_new_invitation(sender, instance, created, **kw):
 		extra_context = {'game': instance.game,
 						'invitation': instance,
 						'STATIC_URL': settings.STATIC_URL, }
-		notification.send(user, "new_invitation", extra_context , on_site=True)
+		notification.send(user, "new_invitation", extra_context)
 
 models.signals.post_save.connect(notify_new_invitation, sender=Invitation)
 
