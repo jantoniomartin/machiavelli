@@ -2162,7 +2162,7 @@ class Score(models.Model):
 	team = models.ForeignKey('Team', null=True, blank=True, verbose_name=_("team"))
 
 	def __unicode__(self):
-		return "%s (%s)" % (self.user, self.game)
+		return u"%s (%s)" % (self.user, self.game)
 
 	class Meta:
 		verbose_name = _("score")
@@ -4020,7 +4020,7 @@ class Assassin(models.Model):
 	target = models.ForeignKey(Country)
 
 	def __unicode__(self):
-		return "%(owner)s may assassinate %(target)s" % {'owner': self.owner, 'target': self.target, }
+		return _("%(owner)s may assassinate %(target)s") % {'owner': self.owner, 'target': self.target, }
 
 class Assassination(models.Model):
 	""" An Assassination describes an attempt made by a Player to murder the leader of another
@@ -4030,7 +4030,7 @@ class Assassination(models.Model):
 	ducats = models.PositiveIntegerField(default=0)
 
 	def __unicode__(self):
-		return "%(killer)s tries to kill %(target)s" % {'killer': self.killer, 'target': self.target, }
+		return _("%(killer)s tries to kill %(target)s") % {'killer': self.killer, 'target': self.target, }
 
 	def explain(self):
 		return _("%(ducats)sd to kill the leader of %(country)s.") % {'ducats': self.ducats,
