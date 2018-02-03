@@ -42,8 +42,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.defaultfilters import capfirst, timesince, force_escape
 
-from model_utils.managers import PassThroughManager
-
 if "pinax.notifications" in settings.INSTALLED_APPS:
         from pinax.notifications import models as notification
 else:
@@ -217,7 +215,7 @@ class Game(models.Model):
         """ if teams < 2, there will be no teams """
         teams = models.PositiveIntegerField(_("teams"), default=0)
 
-        objects = PassThroughManager.for_queryset_class(query.GameQuerySet)()
+        objects = query.GameQuerySet.as_manager()
 
         class Meta:
                 verbose_name = _("game")
@@ -1930,7 +1928,7 @@ class GameComment(models.Model):
                 editable=False)
         is_public = models.BooleanField(_('is public'), default=True)
 
-        objects = PassThroughManager.for_queryset_class(query.GameCommentQuerySet)()
+        objects = query.GameCommentQuerySet.as_manager()
 
         class Meta:
                 verbose_name = _("Game comment")
@@ -2247,7 +2245,7 @@ class Player(models.Model):
         team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"))
         secret_key = models.CharField(_("secret key"), max_length=20, default="", editable=False)
 
-        objects = PassThroughManager.for_queryset_class(query.PlayerQuerySet)()
+        objects = query.PlayerQuerySet.as_manager()
         
         ## the 'deadline' is not persistent, and is used to order a user's players by the time
         ## that they have to play
@@ -2935,7 +2933,7 @@ class Revolution(models.Model):
         country = models.ForeignKey(Country)
         voluntary = models.BooleanField(default=False)
 
-        objects = PassThroughManager.for_queryset_class(query.RevolutionQuerySet)()
+        objects = query.RevolutionQuerySet.as_manager()
         
         class Meta:
                 verbose_name = _("Revolution")
