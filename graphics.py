@@ -250,13 +250,13 @@ def make_map(game, fow=False):
 		for player in game.player_set.filter(user__isnull=False):
 			player_map = base_map.copy()
 			paste_units(player_map, game, watcher=player)
-			result = player_map
+			result = player_map.convert("RBG")
 			filename = game.get_map_path(player)
 			ensure_dir(filename)
 			result.save(filename)
 	else:
 		paste_units(base_map, game)
-		result = base_map
+		result = base_map.convert("RGB")
 		filename = game.get_map_path()
 		ensure_dir(filename)
 		result.save(filename)
