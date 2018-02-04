@@ -817,8 +817,8 @@ class PlayReinforcements(GamePlayView):
                 'to_disband': self.player.unit_set.filter(placed=True, paid=False),
                 'to_keep': self.player.unit_set.filter(placed=True, paid=True),
             })
-            if units_to_place == 0:
-                ctx.update({'undoable': False})
+            if units_to_place != 0:
+                ctx.update({'undoable': True})
         else:
             ctx.update({
                 'cities_qty': self.player.number_of_cities,
