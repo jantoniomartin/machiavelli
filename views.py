@@ -959,6 +959,7 @@ class PlayFinanceReinforcements(GamePlayView):
                 'to_place': self.player.unit_set.filter(placed=False),
                 'to_disband': self.player.unit_set.filter(placed=True, paid=False),
                 'to_keep': self.player.unit_set.filter(placed=True, paid=True),
+                'undoable': True,
             })
         else:
             if self.game.configuration.lenders:
