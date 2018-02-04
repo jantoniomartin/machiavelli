@@ -2,7 +2,7 @@
 
 {% load i18n %}
 
-{% load uni_form_tags %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% blocktrans %}Games{% endblocktrans %}{% endblock %}
 
@@ -27,7 +27,7 @@
 <p>{% blocktrans %}If you want to invite more users, type their user names, separated by commas. There is no limit to the number of users that you can invite.{% endblocktrans %}</p>
 <form action='' method='POST' class="uniForm">
 {% csrf_token %}
-{{ form|as_uni_form }}
+{{ form|crispy }}
 <p><input type="submit" value="{% trans "Invite" %}" /></p>
 </form>
 

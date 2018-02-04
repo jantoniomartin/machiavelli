@@ -2,7 +2,7 @@
 
 {% load i18n %}
 
-{% load uni_form_tags %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% blocktrans %}Games{% endblocktrans %}{% endblock %}
 
@@ -52,9 +52,9 @@ phases of the game. This time limit is reset when all the players have completed
 <form action="" method="post" class="uniForm">
 {% csrf_token %}
 <fieldset class="inlineLabels">
-{{ game_form|as_uni_form }}
+{{ game_form|crispy }}
 <h3>{% trans "Rules" %}</h3>
-{{ config_form|as_uni_form }}
+{{ config_form|crispy }}
 <div class="form_block">
 <input type="submit" value="{% trans "Save" %}" />
 </div>

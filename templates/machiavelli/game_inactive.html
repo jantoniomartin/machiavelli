@@ -1,7 +1,7 @@
 {% extends "machiavelli/base.html" %}
 
 {% load i18n %}
-{% load uni_form_tags %}
+{% load crispy_forms_tags %}
 {% load avatar_tags %}
 {% load machiavelli_tags %}
 {% load condottieri_profiles_tags %}
@@ -225,7 +225,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 {% if user.is_authenticated and not game.paused %}
 <form action="" method="POST" class="uniForm">
 {% csrf_token %}
-{{ form|as_uni_form }}
+{{ form|crispy }}
 <input type="submit" value="{% trans "Send" %}" />
 </form>
 {% endif %}

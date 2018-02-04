@@ -1,7 +1,7 @@
 {% extends 'machiavelli/show_game.html' %}
 
 {% load i18n %}
-{% load uni_form_tags %}
+{% load crispy_forms_tags %}
 
 {% block actions %}
 <div class="action_block">
@@ -30,7 +30,7 @@ restrictions are applied:{% endblocktrans %}</p>
 {{ formset.management_form }}
 {{ formset.non_form_errors }}
 {% for form in formset.forms %}
-	{{ form|as_uni_form }}
+	{{ form|crispy }}
 {% endfor %}
 <p><input type="submit" value="{% trans "Confirm" %}" /></p>
 </form>

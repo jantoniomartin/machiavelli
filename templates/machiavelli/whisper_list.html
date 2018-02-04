@@ -1,7 +1,7 @@
 {% extends 'machiavelli/show_game.html' %}
 
 {% load i18n %}
-{% load uni_form_tags %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% trans "Gossip" %}: {{ game.slug }}{% endblock %}
 
@@ -18,7 +18,7 @@
 {% if player %}
 <form action="" method="post" class="uniForm">
 {% csrf_token %}
-{{ form|as_uni_form }}
+{{ form|crispy }}
 <p><input type="submit" value="{% trans "Send" %}" /></p>
 </form>
 {% endif %}
