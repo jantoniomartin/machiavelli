@@ -74,6 +74,7 @@ logger = logging.getLogger(__name__)
 
 if "pinax.notifications" in settings.INSTALLED_APPS:
     from pinax.notifications import models as notification
+    from condottieri_notification.models import Notice
 else:
     notification = None
 
@@ -131,6 +132,10 @@ class SummaryView(TemplateView):
                 reverse=False
             )
             context.update({ 'actions': player_list })
+            """Unseen notices"""
+            if notification:
+                context.update({ 'new_notices': Notice.objects.notices_for(
+                    self.request.user, unseen=True)[:20]})
         else:
             joinable = machiavelli.Game.objects.joinable()
             promoted_game = machiavelli.Game.objects.get_promoted()
