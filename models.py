@@ -2592,7 +2592,7 @@ class Player(models.Model):
                 if notification:
                         user = [self.user,]
                         extra_context = {'game': self.game, 'STATIC_URL': settings.STATIC_URL,}
-                        notification.send(user, "player_absolved", extra_contex)
+                        notification.send(user, "player_absolved", extra_context)
 
         def assassinate(self):
                 if not self.assassinated:
