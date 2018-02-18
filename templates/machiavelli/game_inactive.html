@@ -164,7 +164,7 @@ Finished on {{ finished }} after {{ time }}.{% endblocktrans %}
 	{% if game.is_team_game %}
 	<td>{{ p.team }}</td>
 	{% endif %}
-	<td>{{ p.user }}</td>
+        <td><a href="{% url "profile_detail" p.user.username %}">{{ p.user }}</a></td>
 	<td>{{ p.country }}</td>
 	<td class="data_c">{{ p.points }}</td>
 	<td class="data_c">{{ p.cities }}</td>
