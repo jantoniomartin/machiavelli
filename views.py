@@ -483,6 +483,9 @@ class BorrowMoneyView(GamePlayView, FormMixin):
         return redirect(self.game)
 
 class ConfirmOrdersView(GamePlayView):
+
+    http_method_names = ['post',]
+
     def post(self, request, *args, **kwargs):
         if self.player:
             msg = u"Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (
@@ -1278,6 +1281,8 @@ class SurrenderView(GamePlayView):
             return redirect(self.game)
 
 class UndoActionsView(GamePlayView):
+    http_method_names = ['post',]
+    
     def post(self, request, *args, **kwargs):
         if not self.player:
             raise Http404
@@ -1326,6 +1331,7 @@ class UndoActionsView(GamePlayView):
         return redirect(self.game)
 
 class WhisperCreateView(GamePlayView, FormMixin):
+    http_method_names = ['post',]
     form_class = forms.WhisperForm
 
     def form_valid(self, form):
