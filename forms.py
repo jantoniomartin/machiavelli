@@ -19,7 +19,7 @@ CITIES_TO_WIN = (
 class GameBaseForm(forms.ModelForm):
     scenario = forms.ModelChoiceField(queryset=Scenario.objects.filter(enabled=True),
                                     empty_label=None,
-                                    cache_choices=True,
+                                    #cache_choices=True,
                                     label=_("Scenario"))
     time_limit = forms.ChoiceField(choices=machiavelli.TIME_LIMITS, label=_("Time limit"))
     visible = forms.BooleanField(required=False, label=_("Visible players?"))
