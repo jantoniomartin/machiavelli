@@ -115,7 +115,7 @@ class SummaryView(TemplateView):
         context = super(SummaryView, self).get_context_data(**kwargs)
         context['comments'] = machiavelli.GameComment.objects.public(). \
             order_by('-id')[:3]
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             joinable = machiavelli.Game.objects.joinable(self.request.user)
             promoted_game = machiavelli.Game.objects.get_promoted(
                 self.request.user)
@@ -178,7 +178,7 @@ class MyActiveGamesList(GameListView):
     context_object_name = 'player_list'
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             my_players = machiavelli.Player.objects.active(
                 user=self.request.user
             ).select_related(
@@ -201,7 +201,7 @@ class OtherActiveGamesList(GameListView):
     template_name = 'machiavelli/game_list_active.html'
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             user_id = self.request.user.id
         else:
             user_id = None
@@ -252,7 +252,7 @@ class JoinableGamesList(GameListView):
     template_name_suffix = '_list_pending'
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             return machiavelli.Game.objects.joinable(
                 self.request.user
             ).annotate(comments_count=Count('gamecomment'))
@@ -313,7 +313,7 @@ class GameMixin(object):
 
     def get_player(self, request, *args, **kwargs):
         if not self.player:
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 try:
                     self.player = self.game.player_set.get(
                         user=request.user,
@@ -1160,7 +1160,7 @@ class PlayInactiveGame(GamePlayView, FormMixin):
         ctx = {'game': self.game}
         started = self.game.started is not None
         finished = self.game.finished is not None
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             joinable = self.game in machiavelli.Game.objects.joinable(
                 self.request.user
             )
@@ -1452,7 +1452,7 @@ class GameAreaListView(ListView):
         context = super(GameAreaListView, self).get_context_data(**kwargs)
         game = get_game_or_404(slug=self.kwargs['slug'])
         player = machiavelli.Player.objects.none()
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             try:
                 player = game.player_set.get(user=self.request.user)
             except ObjectDoesNotExist:
@@ -1608,7 +1608,7 @@ class GameInvitationView(FormView):
     form_class = forms.InvitationForm
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             raise Http404
         self.game = get_game_or_404(
             slug=kwargs['slug'],
