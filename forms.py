@@ -95,10 +95,10 @@ class ConfigurationForm(forms.ModelForm):
             cleaned_data['lenders'] = True
         if cleaned_data['assassinations'] or cleaned_data['lenders'] or cleaned_data['special_units']:
             cleaned_data['finances'] = True
-        if 'taxation' in cleaned_data.keys() and cleaned_data['taxation']:
+        if 'taxation' in list(cleaned_data.keys()) and cleaned_data['taxation']:
             cleaned_data['finances'] = True
             cleaned_data['famine'] = True
-        if 'variable_home' in cleaned_data.keys() and cleaned_data['variable_home']:
+        if 'variable_home' in list(cleaned_data.keys()) and cleaned_data['variable_home']:
             cleaned_data['conquering'] = False
         return cleaned_data
 
@@ -319,8 +319,8 @@ def make_order_form(player):
         
         def as_td(self):
             "Returns this form rendered as HTML <td>s -- excluding the <tr></tr>."
-            tds = self._html_output(u'<td>%(errors)s %(field)s%(help_text)s</td>', u'<td style="width:10%%">%s</td>', '</td>', u' %s', False)
-            return unicode(tds)
+            tds = self._html_output('<td>%(errors)s %(field)s%(help_text)s</td>', '<td style="width:10%%">%s</td>', '</td>', ' %s', False)
+            return str(tds)
         
     return OrderForm
 
@@ -390,7 +390,7 @@ class BaseReinforceFormSet(BaseFormSet):
                 if not form.cleaned_data['unit_class'] is None:
                     special_count += 1
                 if special_count > 1:
-                    raise forms.ValidationError, _("You cannot buy more than one special unit")
+                    raise forms.ValidationError(_("You cannot buy more than one special unit"))
 
 def make_disband_form(player):
     class DisbandForm(forms.Form):

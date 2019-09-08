@@ -14,7 +14,7 @@ class ListAppendView(MultipleObjectMixin,
         self.object_list = self.get_queryset()
         allow_empty = self.get_allow_empty()
         if not allow_empty and len(self.object_list) == 0:
-            raise Http404(_(u"Empty list and '%(class_name)s.allow_empty' is False.")
+            raise Http404(_("Empty list and '%(class_name)s.allow_empty' is False.")
                           % {'class_name': self.__class__.__name__})
         self.object = None
         form_class = self.get_form_class()

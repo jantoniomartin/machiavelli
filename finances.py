@@ -45,7 +45,7 @@ INCOME_TABLE = {
 def get_ducats(row, column, double=False):
 	""" Given a country or city, and the result of the die, return the number
 	of ducats"""
-	if not row in INCOME_TABLE.keys():
+	if not row in list(INCOME_TABLE.keys()):
 		return 0
 	if not column in (1,2,3,4,5,6):
 		return 0

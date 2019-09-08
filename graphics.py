@@ -28,7 +28,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import logging
 logger = logging.getLogger(__name__)
 
-import models as machiavelli
+from . import models as machiavelli
 from machiavelli.exceptions import GraphicsError
 
 TOKENS_DIR=os.path.join(settings.MEDIA_ROOT, settings.SCENARIOS_ROOT, 'tokens')
@@ -71,7 +71,7 @@ def paste_units(board, game, watcher=None):
 	tokens = load_unit_tokens(game)
 	if isinstance(watcher, machiavelli.Player):
 		visible = watcher.visible_areas()
-		print "Making secret map for %s" % watcher.static_name
+		print("Making secret map for %s" % watcher.static_name)
 	afs = machiavelli.Unit.objects.filter(type__in=('A','F'), player__game=game, placed=True)
 	gars = machiavelli.Unit.objects.filter(type__exact='G', player__game=game, placed=True)
 	dips = None

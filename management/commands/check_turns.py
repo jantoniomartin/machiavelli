@@ -28,7 +28,7 @@ when all the players have finished OR the time limit is exceeded
 			self.stdout.write("Checking game %s" % g.slug)
 			try:
 				g.check_finished_phase()
-			except Exception, e:
+			except Exception as e:
 				msg = "Error while checking if phase is finished in game %s\n\n" % g.pk
 				logger.error(msg)
 				logger.error(e)
@@ -39,7 +39,7 @@ when all the players have finished OR the time limit is exceeded
 		for game in fast_games:
 			try:
 				game.check_finished_phase()
-			except Exception, e:
+			except Exception as e:
 				self.stderr.write("Error while checking if phase is finished in game %s\n\n" % game.pk)
 				self.stderr.write(e)
 				continue

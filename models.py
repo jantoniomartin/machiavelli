@@ -23,7 +23,7 @@ Defines the core classes of the machiavelli game.
 
 ## stdlib
 import random
-import thread
+import _thread
 from datetime import datetime, timedelta
 import string
 import os
@@ -61,7 +61,7 @@ import machiavelli.dice as dice
 import machiavelli.disasters as disasters
 import machiavelli.exceptions as exceptions
 import machiavelli.query as query
-import slugify
+from . import slugify
 
 ## condottieri_scenarios
 from condottieri_scenarios.models import Scenario, Contender, Country, Area, CountryRandomIncome, CityRandomIncome, FamineCell, PlagueCell, StormCell, TradeRoute
@@ -137,9 +137,9 @@ class Invasion(object):
         """
 
         def __init__(self, unit, area, conv=''):
-                assert isinstance(unit, Unit), u"%s is not a Unit" % unit
-                assert isinstance(area, GameArea), u"%s is not a GameArea" % area
-                assert conv in ['', 'A', 'F'], u"%s is not a valid conversion" % conv
+                assert isinstance(unit, Unit), "%s is not a Unit" % unit
+                assert isinstance(area, GameArea), "%s is not a GameArea" % area
+                assert conv in ['', 'A', 'F'], "%s is not a valid conversion" % conv
                 self.unit = unit
                 self.area = area
                 self.conversion = conv
@@ -560,7 +560,7 @@ class Game(models.Model):
                         try:
                                 a = GameArea.objects.get(game=self, board_area=s.area)
                         except:
-                                print "Error 1: Area not found!"
+                                print("Error 1: Area not found!")
                         else:   
                                 if s.unit_type:
                                         new_unit = Unit(type='G', area=a, player=autonomous)
@@ -689,15 +689,15 @@ class Game(models.Model):
                 If at least a player is not done, check the time limit
                 """
                 players = self.player_set.all()
-                msg = u"Checking phase change in game %s\n" % self.pk
+                msg = "Checking phase change in game %s\n" % self.pk
                 if self.time_is_exceeded():
-                        msg += u"Time exceeded.\n"
+                        msg += "Time exceeded.\n"
                         self.force_phase_change()
                 for p in players:
                         if not p.done:
-                                msg += u"At least a player is not done.\n"
+                                msg += "At least a player is not done.\n"
                                 return False
-                msg += u"All players done.\n"
+                msg += "All players done.\n"
                 if logging:
                         logger.info(msg)
                 self.process_turn()
@@ -959,7 +959,7 @@ class Game(models.Model):
                 codes = FamineCell.objects.roll(self.scenario.setting, row, column).values_list('area__code', flat=True)
                 famine_areas = GameArea.objects.filter(game=self, board_area__code__in=codes)
                 for f in famine_areas:
-                        print f
+                        print(f)
                         f.famine=True
                         f.save()
                         signals.famine_marker_placed.send(sender=f)
@@ -1091,28 +1091,28 @@ class Game(models.Model):
                 """ Resolves all the assassination attempts """
                 attempts = Assassination.objects.filter(killer__game=self)
                 victims = []
-                msg = u"Processing assassinations in game %s:\n" % self
+                msg = "Processing assassinations in game %s:\n" % self
                 for a in attempts:
-                        msg += u"\n%s spends %s ducats to kill %s\n" % (a.killer, a.ducats, a.target)
+                        msg += "\n%s spends %s ducats to kill %s\n" % (a.killer, a.ducats, a.target)
                         signals.assassination_attempted.send(sender=a.target)
                         if a.target in victims:
-                                msg += u"%s already killed\n" % a.target
+                                msg += "%s already killed\n" % a.target
                                 continue
                         if self.version < 2:
                                 dice_rolled = int(a.ducats / 12)
                         else:
                                 dice_rolled = a.get_dice()
                         if dice_rolled < 1:
-                                msg += u"%s are not enough" % a.ducats
+                                msg += "%s are not enough" % a.ducats
                                 continue
-                        msg += u"%s dice will be rolled\n" % dice_rolled
+                        msg += "%s dice will be rolled\n" % dice_rolled
                         if dice.check_one_six(dice_rolled):
-                                msg += u"Attempt is successful\n"
+                                msg += "Attempt is successful\n"
                                 ## attempt is successful
                                 a.target.assassinate()
                                 victims.append(a.target)
                         else:
-                                msg += u"Attempt fails\n"
+                                msg += "Attempt fails\n"
                 attempts.delete()
                 if logging:
                         logger.info(msg)
@@ -1155,37 +1155,37 @@ class Game(models.Model):
                         ## In the second pass, every support order being attacked by a superior force is deleted
                         ## because the unit will be dislodged.
                         if step == 1:
-                                info = u"Step 2a: Cancel supports from units under attack.\n"
+                                info = "Step 2a: Cancel supports from units under attack.\n"
                         elif step == 2:
-                                info += u"Step 2b: Cancel supports from units that will be dislodged.\n"
+                                info += "Step 2b: Cancel supports from units that will be dislodged.\n"
                         support_orders = Order.objects.filter(unit__player__game=self, code__exact='S')
                         for s in support_orders:
-                                info += u"Checking order %s.\n" % s
+                                info += "Checking order %s.\n" % s
                                 if s.unit.type != 'G' and s.unit.area in conflict_areas:
                                         attacks = Order.objects.filter(~Q(unit__player=s.unit.player) &
                                                                                                 ((Q(code__exact='-') & Q(destination=s.unit.area)) |
                                                                                                 (Q(code__exact='=') & Q(unit__area=s.unit.area) &
                                                                                                 Q(unit__type__exact='G'))))
                                         if len(attacks) > 0:
-                                                info += u"Supporting unit is being attacked.\n"
+                                                info += "Supporting unit is being attacked.\n"
                                                 for a in attacks:
                                                         if (s.subcode == '-' and s.subdestination == a.unit.area) or \
                                                         (s.subcode == '=' and s.subtype in ['A','F'] and s.subunit.area == a.unit.area):
                                                                 if step == 1:
-                                                                        info += u"Attack comes from area where support is given. Support is not broken.\n"
-                                                                        info += u"Support will be broken if the unit is dislodged.\n"
+                                                                        info += "Attack comes from area where support is given. Support is not broken.\n"
+                                                                        info += "Support will be broken if the unit is dislodged.\n"
                                                                         continue
                                                                 elif step == 2:
                                                                         a_unit = Unit.objects.get_with_strength(self, id=a.unit.id)
                                                                         d_unit = Unit.objects.get_with_strength(self, id=s.unit.id)
                                                                         if a_unit.strength > d_unit.strength:
-                                                                                info += u"Attack from %s breaks support (unit dislodged).\n" % a_unit
+                                                                                info += "Attack from %s breaks support (unit dislodged).\n" % a_unit
                                                                                 signals.support_broken.send(sender=s.unit)
                                                                                 s.delete()
                                                                                 break
                                                         else:
                                                                 if step == 1:
-                                                                        info += u"Attack from %s breaks support.\n" % a.unit
+                                                                        info += "Attack from %s breaks support.\n" % a.unit
                                                                         signals.support_broken.send(sender=s.unit)
                                                                         s.delete()
                                                                         break
@@ -1197,7 +1197,7 @@ class Game(models.Model):
                 doesn't resolve the conflict
                 """
 
-                info = u"Step 3: Cancel convoys by fleets that will be dislodged.\n"
+                info = "Step 3: Cancel convoys by fleets that will be dislodged.\n"
                 ## find units attacking fleets
                 sea_attackers = Unit.objects.filter(Q(player__game=self),
                                                                                         (Q(order__code__exact='-') &
@@ -1223,13 +1223,13 @@ class Game(models.Model):
                                 ## no attacked convoying fleet is found 
                                 continue
                         else:
-                                info += u"Convoying %s is being attacked by %s.\n" % (defender, s)
+                                info += "Convoying %s is being attacked by %s.\n" % (defender, s)
                                 a_strength = Unit.objects.get_with_strength(self, id=s.id).strength
                                 d_strength = Unit.objects.get_with_strength(self, id=defender.id).strength
                                 if a_strength > d_strength:
                                         d_order = defender.get_order()
                                         if d_order:
-                                                info += u"%s can't convoy.\n" % defender
+                                                info += "%s can't convoy.\n" % defender
                                                 defender.delete_order()
                                         else:
                                                 continue
@@ -1240,17 +1240,17 @@ class Game(models.Model):
                 having a convoy line.
                 """
 
-                info = u"Step 4: Cancel attacks to unreachable areas.\n"
+                info = "Step 4: Cancel attacks to unreachable areas.\n"
                 attackers = Order.objects.filter(unit__player__game=self, code__exact='-')
                 for o in attackers:
                         is_fleet = (o.unit.type == 'F')
                         if not o.unit.area.board_area.is_adjacent(o.destination.board_area, is_fleet):
                                 if is_fleet:
-                                        info += u"Impossible attack: %s.\n" % o
+                                        info += "Impossible attack: %s.\n" % o
                                         o.delete()
                                 else:
                                         if not o.find_convoy_line():
-                                                info += u"Impossible attack: %s.\n" % o
+                                                info += "Impossible attack: %s.\n" % o
                                                 o.delete()
                 return info
         
@@ -1258,12 +1258,12 @@ class Game(models.Model):
                 """ Units with '= G' orders in areas without a garrison, convert into garrison.
                 """
 
-                info = u"Step 1: Garrisoning units.\n"
+                info = "Step 1: Garrisoning units.\n"
                 garrisoning = Unit.objects.filter(player__game=self,
                                                                         order__code__exact='=',
                                                                         order__type__exact='G')
                 for g in garrisoning:
-                        info += u"%s tries to convert into garrison.\n" % g
+                        info += "%s tries to convert into garrison.\n" % g
                         try:
                                 defender = Unit.objects.get(player__game=self,
                                                                                 type__exact='G',
@@ -1272,13 +1272,13 @@ class Game(models.Model):
                                 try:
                                         Rebellion.objects.get(area=g.area, garrisoned=True)
                                 except ObjectDoesNotExist:
-                                        info += u"Success!\n"
+                                        info += "Success!\n"
                                         g.convert('G')
                                 else:
-                                        info += u"There is a garrisoned rebellion.\n"
+                                        info += "There is a garrisoned rebellion.\n"
                                 g.delete_order()
                         else:
-                                info += u"Fail: there is a garrison in the city.\n"
+                                info += "Fail: there is a garrison in the city.\n"
                 return info
 
         def resolve_conflicts(self):
@@ -1290,7 +1290,7 @@ class Game(models.Model):
 
                 ## units sorted (reverse) by a temporary strength attribute
                 ## strength = 1 means unit without supports
-                info = u"Step 5: Process conflicts.\n"
+                info = "Step 5: Process conflicts.\n"
                 units = Unit.objects.list_with_strength(self)
                 conditioned_invasions = []
                 conditioned_origins = []
@@ -1302,10 +1302,10 @@ class Game(models.Model):
                         ## they will not move
                         u_order = u.get_order()
                         if not u_order:
-                                info += u"%s has no orders.\n" % u
+                                info += "%s has no orders.\n" % u
                                 continue
                         else:
-                                info += u"%s was ordered: %s.\n" % (u, u_order)
+                                info += "%s was ordered: %s.\n" % (u, u_order)
                                 if finances and u_order.code == 'H' and not u.type == 'G':
                                         ## the unit counts for removing a rebellion
                                         holding.append(u)
@@ -1313,16 +1313,16 @@ class Game(models.Model):
                                         continue
                         ##################
                         s = u.strength
-                        info += u"Total strength = %s.\n" % s
+                        info += "Total strength = %s.\n" % s
                         ## rivals and defender are the units trying to enter into or stay
                         ## in the same area as 'u'
                         rivals = u_order.get_rivals()
                         defender = u_order.get_defender()
-                        info += u"Unit has %s rivals.\n" % len(rivals)
+                        info += "Unit has %s rivals.\n" % len(rivals)
                         conflict_area = u.get_attacked_area()
                         ##
                         if conflict_area.standoff:
-                                info += u"Trying to enter a standoff area.\n"
+                                info += "Trying to enter a standoff area.\n"
                                 #u.delete_order()
                                 continue
                         else:
@@ -1332,19 +1332,19 @@ class Game(models.Model):
                         ## if not, check for defenders
                         for r in rivals:
                                 strength = Unit.objects.get_with_strength(self, id=r.id).strength
-                                info += u"Rival %s has strength %s.\n" % (r, strength)
+                                info += "Rival %s has strength %s.\n" % (r, strength)
                                 if strength >= s: #in fact, strength cannot be greater
-                                        info += u"Rival wins.\n"
+                                        info += "Rival wins.\n"
                                         standoff = True
                                         exit
                                 else:
                                         ## the rival is defeated and loses its orders
-                                        info += u"Deleting order of %s.\n" % r
+                                        info += "Deleting order of %s.\n" % r
                                         r.delete_order()
                         ## if there is a standoff, delete the order and all rivals' orders
                         if standoff:
                                 conflict_area.mark_as_standoff()
-                                info += u"Standoff in %s.\n" % conflict_area
+                                info += "Standoff in %s.\n" % conflict_area
                                 for r in rivals:
                                         r.delete_order()
                                 u.delete_order()
@@ -1358,11 +1358,11 @@ class Game(models.Model):
                                         ## a 'friend enemy' is always as strong as the invading unit
                                         if defender.player == u.player:
                                                 strength = s
-                                                info += u"Defender is a friend.\n"
+                                                info += "Defender is a friend.\n"
                                         else:
                                                 strength = Unit.objects.get_with_strength(self,
                                                                                                                 id=defender.id).strength
-                                        info += u"Defender %s has strength %s.\n" % (defender, strength)
+                                        info += "Defender %s has strength %s.\n" % (defender, strength)
                                         ## if attacker is not as strong as defender
                                         if strength >= s:
                                                 ## if the defender is trying to exchange areas with
@@ -1370,14 +1370,14 @@ class Game(models.Model):
                                                 ## area
                                                 if defender.get_attacked_area() == u.area:                      
                                                         defender.area.mark_as_standoff()
-                                                        info += u"Trying to exchange areas.\n"
-                                                        info += u"Standoff in %s.\n" % defender.area
+                                                        info += "Trying to exchange areas.\n"
+                                                        info += "Standoff in %s.\n" % defender.area
                                                 else:
                                                 ## the invasion is conditioned to the defender leaving
-                                                        info += u"%s's movement is conditioned.\n" % u
+                                                        info += "%s's movement is conditioned.\n" % u
                                                         inv = Invasion(u, defender.area)
                                                         if u_order.code == '-':
-                                                                info += u"%s might get empty.\n" % u.area
+                                                                info += "%s might get empty.\n" % u.area
                                                                 conditioned_origins.append(u.area)
                                                         elif u_order.code == '=':
                                                                 inv.conversion = u_order.type
@@ -1389,26 +1389,26 @@ class Game(models.Model):
                                                 defender.save()
                                                 if u_order.code == '-':
                                                         u.invade_area(defender.area)
-                                                        info += u"Invading %s.\n" % defender.area
+                                                        info += "Invading %s.\n" % defender.area
                                                 elif u_order.code == '=':
-                                                        info += u"Converting into %s.\n" % u_order.type
+                                                        info += "Converting into %s.\n" % u_order.type
                                                         u.convert(u_order.type)
                                                 defender.delete_order()
                                 ## no defender means either that the area is empty *OR*
                                 ## that there is a unit trying to leave the area
                                 else:
-                                        info += u"There is no defender.\n"
+                                        info += "There is no defender.\n"
                                         try:
                                                 unit_leaving = Unit.objects.get(type__in=['A','F'],
                                                                                                 area=conflict_area)
                                         except ObjectDoesNotExist:
                                                 ## if the province is empty, invade it
-                                                info += u"Province is empty.\n"
+                                                info += "Province is empty.\n"
                                                 if u_order.code == '-':
-                                                        info += u"Invading %s.\n" % conflict_area
+                                                        info += "Invading %s.\n" % conflict_area
                                                         u.invade_area(conflict_area)
                                                 elif u_order.code == '=':
-                                                        info += u"Converting into %s.\n" % u_order.type
+                                                        info += "Converting into %s.\n" % u_order.type
                                                         u.convert(u_order.type)
                                         else:
                                                 ## if the area is not empty, and the unit in province
@@ -1416,22 +1416,22 @@ class Game(models.Model):
                                                 ## it invades the area, and the unit in the province
                                                 ## must retreat (if it invades another area, it mustnt).
                                                 if unit_leaving.player != u.player and u.strength > unit_leaving.power:
-                                                        info += u"There is a unit in %s, but attacker is supported and beats defender's power.\n" % conflict_area
+                                                        info += "There is a unit in %s, but attacker is supported and beats defender's power.\n" % conflict_area
                                                         unit_leaving.must_retreat = u.area.board_area.code
                                                         unit_leaving.save()
                                                         if u_order.code == '-':
                                                                 u.invade_area(unit_leaving.area)
-                                                                info += u"Invading %s.\n" % unit_leaving.area
+                                                                info += "Invading %s.\n" % unit_leaving.area
                                                         elif u_order.code == '=':
-                                                                info += u"Converting into %s.\n" % u_order.type
+                                                                info += "Converting into %s.\n" % u_order.type
                                                                 u.convert(u_order.type)
                                                 ## if the area is not empty, the invasion is conditioned
                                                 else:
-                                                        info += u"Area is not empty and attacker isn't supported, or there is a friend\n"
-                                                        info += u"%s movement is conditioned.\n" % u
+                                                        info += "Area is not empty and attacker isn't supported, or there is a friend\n"
+                                                        info += "%s movement is conditioned.\n" % u
                                                         inv = Invasion(u, conflict_area)
                                                         if u_order.code == '-':
-                                                                info += u"%s might get empty.\n" % u.area
+                                                                info += "%s might get empty.\n" % u.area
                                                                 conditioned_origins.append(u.area)
                                                         elif u_order.code == '=':
                                                                 inv.conversion = u_order.type
@@ -1444,11 +1444,11 @@ class Game(models.Model):
                 ## to now empty areas
                 try_empty = True
                 while try_empty:
-                        info += u"Looking for possible, conditioned invasions.\n"
+                        info += "Looking for possible, conditioned invasions.\n"
                         try_empty = False
                         for ci in conditioned_invasions:
                                 if ci.area.province_is_empty():
-                                        info += u"Found empty area in %s.\n" % ci.area
+                                        info += "Found empty area in %s.\n" % ci.area
                                         if ci.unit.area in conditioned_origins:
                                                 conditioned_origins.remove(ci.unit.area)
                                         if ci.conversion == '':
@@ -1462,13 +1462,13 @@ class Game(models.Model):
                 ## cannot be made
                 try_impossible = True
                 while try_impossible:
-                        info += u"Looking for impossible, conditioned.\n"
+                        info += "Looking for impossible, conditioned.\n"
                         try_impossible = False
                         for ci in conditioned_invasions:
                                 if not ci.area in conditioned_origins:
                                         ## the unit is trying to invade an area with a stationary
                                         ## unit
-                                        info += u"Found impossible invasion in %s.\n" % ci.area
+                                        info += "Found impossible invasion in %s.\n" % ci.area
                                         ci.area.mark_as_standoff()
                                         conditioned_invasions.remove(ci)
                                         if ci.unit.area in conditioned_origins:
@@ -1477,13 +1477,13 @@ class Game(models.Model):
                                         break
                 ## at this point, if there are any conditioned_invasions, they form
                 ## closed circuits, so all of them should be carried out
-                info += u"Resolving closed circuits.\n"
+                info += "Resolving closed circuits.\n"
                 for ci in conditioned_invasions:
                         if ci.conversion == '':
-                                info += u"%s invades %s.\n" % (ci.unit, ci.area)
+                                info += "%s invades %s.\n" % (ci.unit, ci.area)
                                 ci.unit.invade_area(ci.area)
                         else:
-                                info += u"%s converts into %s.\n" % (ci.unit, ci.conversion)
+                                info += "%s converts into %s.\n" % (ci.unit, ci.conversion)
                                 ci.unit.convert(ci.conversion)
                 ## units in 'holding' that don't need to retreat, can put rebellions down
                 for h in holding:
@@ -1492,30 +1492,30 @@ class Game(models.Model):
                         else:
                                 reb = h.area.has_rebellion(h.player, same=True)
                                 if reb and not reb.garrisoned:
-                                        info += u"Rebellion in %s is put down.\n" % h.area
+                                        info += "Rebellion in %s is put down.\n" % h.area
                                         reb.delete()
                 
-                info += u"End of conflicts processing"
+                info += "End of conflicts processing"
                 return info
 
         def resolve_sieges(self):
                 ## get units that are besieging but do not besiege a second time
-                info = u"Step 6: Process sieges.\n"
+                info = "Step 6: Process sieges.\n"
                 broken = Unit.objects.filter(Q(player__game=self,
                                                                         besieging__exact=True),
                                                                         ~Q(order__code__exact='B'))
                 for b in broken:
-                        info += u"Siege of %s is discontinued.\n" % b
+                        info += "Siege of %s is discontinued.\n" % b
                         b.besieging = False
                         b.save()                
                 ## get besieging units
                 besiegers = Unit.objects.filter(player__game=self,
                                                                                 order__code__exact='B')
                 for b in besiegers:
-                        info += u"%s besieges " % b
+                        info += "%s besieges " % b
                         mode = ''
                         if b.player.assassinated:
-                                info += u"\n%s belongs to an assassinated player.\n" % b
+                                info += "\n%s belongs to an assassinated player.\n" % b
                                 continue
                         try:
                                 defender = Unit.objects.get(player__game=self,
@@ -1525,10 +1525,10 @@ class Game(models.Model):
                                 reb = b.area.has_rebellion(b.player, same=True)
                                 if reb and reb.garrisoned:
                                         mode = 'rebellion'
-                                        info += u"a rebellion "
+                                        info += "a rebellion "
                                 else:
                                         ok = False
-                                        info += u"Besieging an empty city. Ignoring.\n"
+                                        info += "Besieging an empty city. Ignoring.\n"
                                         b.besieging = False
                                         b.save()
                                         continue
@@ -1536,11 +1536,11 @@ class Game(models.Model):
                                 mode = 'garrison'
                         if mode != '':
                                 if b.besieging:
-                                        info += u"for second time.\n"
+                                        info += "for second time.\n"
                                         b.besieging = False
-                                        info += u"Siege is successful. "
+                                        info += "Siege is successful. "
                                         if mode == 'garrison':
-                                                info += u"Garrison disbanded.\n" 
+                                                info += "Garrison disbanded.\n" 
                                                 if signals:
                                                         signals.unit_surrendered.send(sender=defender)
                                                 else:
@@ -1549,18 +1549,18 @@ class Game(models.Model):
                                                                                                 message=2)
                                                 defender.delete()
                                         elif mode == 'rebellion':
-                                                info += u"Rebellion is put down.\n"
+                                                info += "Rebellion is put down.\n"
                                                 reb.delete()
                                         b.save()
                                 else:
-                                        info += u"for first time.\n"
+                                        info += "for first time.\n"
                                         b.besieging = True
                                         if signals:
                                                 signals.siege_started.send(sender=b)
                                         else:
                                                 self.log_event(UnitEvent, type=b.type, area=b.area.board_area, message=3)
                                         if mode == 'garrison' and defender.player.assassinated:
-                                                info += u"Player is assassinated. Garrison surrenders\n"
+                                                info += "Player is assassinated. Garrison surrenders\n"
                                                 if signals:
                                                         signals.unit_surrendered.send(sender=defender)
                                                 else:
@@ -1574,10 +1574,10 @@ class Game(models.Model):
                 return info
         
         def announce_retreats(self):
-                info = u"Step 7: Retreats\n"
+                info = "Step 7: Retreats\n"
                 retreating = Unit.objects.filter(player__game=self).exclude(must_retreat__exact='')
                 for u in retreating:
-                        info += u"%s must retreat.\n" % u
+                        info += "%s must retreat.\n" % u
                         if signals:
                                 signals.forced_to_retreat.send(sender=u)
                         else:
@@ -1595,12 +1595,12 @@ class Game(models.Model):
                 ## delete all orders sent by players that don't control the unit
                 if self.configuration.finances:
                         Order.objects.filter(player__game=self).exclude(player=F('unit__player')).delete()
-                info = u"The following orders are not confirmed and will be deleted:\n"
+                info = "The following orders are not confirmed and will be deleted:\n"
                 ## delete all orders that were not confirmed
                 for o in Order.objects.filter(unit__player__game=self, confirmed=False):
-                        info += u"%s\n" % o
+                        info += "%s\n" % o
                         o.delete()
-                info += u"---------------\n"
+                info += "---------------\n"
                 ## cancel interrupted sieges
                 besieging = Unit.objects.filter(player__game=self, besieging=True)
                 for u in besieging:
@@ -1615,37 +1615,37 @@ class Game(models.Model):
                                 if signals:
                                         signals.order_placed.send(sender=o)
                         else:
-                                info += u"%s was ordered to hold\n" % o.unit
+                                info += "%s was ordered to hold\n" % o.unit
                 return info
         
         def process_orders(self):
                 """ Run a batch of methods in the correct order to process all the orders.
                 """
 
-                info = u"Processing orders in game %s\n" % self.slug
-                info += u"------------------------------\n\n"
+                info = "Processing orders in game %s\n" % self.slug
+                info += "------------------------------\n\n"
                 info += self.preprocess_orders()
-                info += u"\n"
+                info += "\n"
                 ## resolve =G that are not opposed
                 info += self.resolve_auto_garrisons()
-                info += u"\n"
+                info += "\n"
                 ## delete supports from units in conflict areas
                 info += self.filter_supports()
-                info += u"\n"
+                info += "\n"
                 ## delete convoys that will be invaded
                 info += self.filter_convoys()
-                info += u"\n"
+                info += "\n"
                 ## delete attacks to areas that are not reachable
                 info += self.filter_unreachable_attacks()
-                info += u"\n"
+                info += "\n"
                 ## process conflicts
                 info += self.resolve_conflicts()
-                info += u"\n"
+                info += "\n"
                 ## resolve sieges
                 info += self.resolve_sieges()
-                info += u"\n"
+                info += "\n"
                 info += self.announce_retreats()
-                info += u"--- END ---\n"
+                info += "--- END ---\n"
                 if logging:
                         logger.info(info)
                 turn_log = TurnLog(game=self, year=self.year,
@@ -1965,18 +1965,18 @@ class ErrorReport(models.Model):
                 verbose_name_plural = _("error reports")
 
         def __unicode__(self):
-                return u"Report #%s in game %s" % (self.pk, self.game)
+                return "Report #%s in game %s" % (self.pk, self.game)
 
 def send_error_report(sender, instance, created, raw, **kwargs):
     if raw:
         return
     if isinstance(instance, ErrorReport):
         domain = Site.objects.get_current().domain
-        subject = u"New error report in '%s'" % instance.game.slug
-        msg = u"%s(user) reported a new error in the game \"%s\":\n\n" % (instance.user, instance.game.title)
-        msg += unicode(instance.description)
-        msg += u"\n\nThe user's email is %s\n" % instance.user.email
-        msg += u"Go to the game: http://%s%s\n" % (domain, instance.game.get_absolute_url())
+        subject = "New error report in '%s'" % instance.game.slug
+        msg = "%s(user) reported a new error in the game \"%s\":\n\n" % (instance.user, instance.game.title)
+        msg += str(instance.description)
+        msg += "\n\nThe user's email is %s\n" % instance.user.email
+        msg += "Go to the game: http://%s%s\n" % (domain, instance.game.get_absolute_url())
         mail_admins(subject, msg)
 
 models.signals.post_save.connect(send_error_report, sender=ErrorReport)
@@ -2007,7 +2007,7 @@ class GameArea(models.Model):
         def __unicode__(self):
                 #return self.board_area.name
                 #return "(%(code)s) %(name)s" % {'name': self.board_area.name, 'code': self.board_area.code}
-                return unicode(self.board_area)
+                return str(self.board_area)
 
         def build_possible(self, type):
                 return self.board_area.build_possible(type)
@@ -2077,7 +2077,7 @@ class GameArea(models.Model):
                                 if r_player and r_area:
                                         if r_player != r_area:
                                                 mod += 1
-                                                print "modifier is %s" % mod
+                                                print("modifier is %s" % mod)
                         die = dice.roll_1d6() - mod
                         try:
                                 Unit.objects.get(area=self, player=self.player)
@@ -2163,7 +2163,7 @@ class Score(models.Model):
         team = models.ForeignKey('Team', null=True, blank=True, verbose_name=_("team"))
 
         def __unicode__(self):
-                return u"%s (%s)" % (self.user, self.game)
+                return "%s (%s)" % (self.user, self.game)
 
         class Meta:
                 verbose_name = _("score")
@@ -2196,7 +2196,7 @@ class Team(models.Model):
                 """ Return a name to identify the team """
                 players = self.player_set.all().order_by('id')
                 if players.count() > 0:
-                        return u"%s team" % players[0].contender
+                        return "%s team" % players[0].contender
                 return _("Anonymous team")
         
         name = property(_get_name)
@@ -2273,9 +2273,9 @@ class Player(models.Model):
 
         def __unicode__(self):
                 if self.user:
-                        return u"%s (%s)" % (self.user, self.game)
+                        return "%s (%s)" % (self.user, self.game)
                 else:
-                        return u"Autonomous in %s" % self.game
+                        return "Autonomous in %s" % self.game
 
         def get_language(self):
                 if self.user:
@@ -2309,7 +2309,7 @@ class Player(models.Model):
                         try:
                                 a = GameArea.objects.get(game=self.game, board_area=s.area)
                         except:
-                                print "Error 2: Area not found!"
+                                print("Error 2: Area not found!")
                         else:
                                 if s.unit_type:
                                         new_unit = Unit(type=s.unit_type, area=a, player=self, paid=False)
@@ -2901,7 +2901,7 @@ class TeamMessage(models.Model):
         def as_li(self):
                 signature = _("Written by %(country)s %(date)s ago") % {'country': self.player.contender.country,
                         'date': timesince(self.created_at),}
-                html = u"<li>%(text)s<span class=\"date\">%(signature)s</span> </li>" % {
+                html = "<li>%(text)s<span class=\"date\">%(signature)s</span> </li>" % {
                                                                 'signature': signature,
                                                                 'text': force_escape(self.text), }
                 return html
@@ -2941,7 +2941,7 @@ class Revolution(models.Model):
                 unique_together = [('game', 'government'), ('game', 'opposition')]
 
         def __unicode__(self):
-                return u"%s (%s)" % (self.government, self.game)
+                return "%s (%s)" % (self.government, self.game)
 
         def save(self, *args, **kwargs):
                 if self.id is None:
@@ -3361,7 +3361,7 @@ class Order(models.Model):
         def as_dict(self):
                 result = {
                         'id': self.pk,
-                        'unit': unicode(self.unit),
+                        'unit': str(self.unit),
                         'code': self.get_code_display(),
                         'destination': '',
                         'type': '',
@@ -3371,15 +3371,15 @@ class Order(models.Model):
                         'subtype': ''
                 }
                 if isinstance(self.destination, GameArea):
-                        result.update({'destination': unicode(self.destination)})
+                        result.update({'destination': str(self.destination)})
                 if not self.type == None:
                         result.update({'type': self.get_type_display()})
                 if isinstance(self.subunit, Unit):
-                        result.update({'subunit': unicode(self.subunit)})
+                        result.update({'subunit': str(self.subunit)})
                         if not self.subcode == None:
                                 result.update({'subcode': self.get_subcode_display()})
                         if isinstance(self.subdestination, GameArea):
-                                result.update({'subdestination': unicode(self.subdestination)})
+                                result.update({'subdestination': str(self.subdestination)})
                         if not self.subtype == None:
                                 result.update({'subtype': self.get_subtype_display()})
 
@@ -3770,14 +3770,14 @@ class Configuration(models.Model):
         press = models.PositiveIntegerField(_('press'), choices=PRESS_TYPES, default=0)
 
         def __unicode__(self):
-                return unicode(self.game)
+                return str(self.game)
 
         def get_enabled_rules(self):
                 rules = []
                 for f in self._meta.fields:
                         if isinstance(f, models.BooleanField):
                                 if f.value_from_object(self):
-                                        rules.append(unicode(f.verbose_name))
+                                        rules.append(str(f.verbose_name))
                 return rules
 
         def _get_gossip(self):
@@ -3839,7 +3839,7 @@ EXPENSE_COST = {
 }
 
 def get_expense_cost(type, unit=None, area=None):
-        assert type in EXPENSE_COST.keys()
+        assert type in list(EXPENSE_COST.keys())
         k = 1
         if type in (5, 6, 7, 8, 9):
                 assert isinstance(unit, Unit)
@@ -3874,7 +3874,7 @@ class Expense(models.Model):
                 elif self.type in (4, 5, 6, 7, 8, 9):
                         assert isinstance(self.unit, Unit), "Expense needs a Unit"
                 else:
-                        raise ValueError, "Wrong expense type %s" % self.type
+                        raise ValueError("Wrong expense type %s" % self.type)
                 ## if no errors raised, save the expense
                 super(Expense, self).save(*args, **kwargs)
                 if logging:
@@ -3904,7 +3904,7 @@ class Expense(models.Model):
                         11: _("%(country)s hires a diplomat in %(area)s"),
                 }
 
-                if self.type in messages.keys():
+                if self.type in list(messages.keys()):
                         return messages[self.type] % data
                 else:
                         return "Unknown expense"
@@ -4062,10 +4062,10 @@ class Whisper(models.Model):
 
         def as_li(self):
                 if self.as_admin:
-                        li = u"<li class=\"admin\">"
+                        li = "<li class=\"admin\">"
                 else:
-                        li = u"<li>"
-                html = u"%(li)s<strong>#%(order)s</strong>&nbsp;&nbsp;%(text)s<span class=\"date\">%(date)s</span> </li>" % {
+                        li = "<li>"
+                html = "%(li)s<strong>#%(order)s</strong>&nbsp;&nbsp;%(text)s<span class=\"date\">%(date)s</span> </li>" % {
                                                                 'order': self.order,
                                                                 'li': li,
                                                                 'date': timesince(self.created_at),
@@ -4115,7 +4115,7 @@ class Journal(models.Model):
                 unique_together = (('user', 'game'),)
 
         def __unicode__(self):
-                return u"%s in %s" % (self.user, self.game)
+                return "%s in %s" % (self.user, self.game)
 
         def _get_excerpt(self):
                 return self.content.split("%%")[0]
@@ -4131,7 +4131,7 @@ class GameRoute(models.Model):
                 unique_together = (('game', 'trade_route'),)
 
         def __unicode__(self):
-                return unicode(self.trade_route)
+                return str(self.trade_route)
         
         def _get_traders(self):
                 """ gets the two players who control the trade route ends. The same player can be
@@ -4172,7 +4172,7 @@ class Diplomat(models.Model):
                 super(Diplomat, self).save(*args, **kwargs)
 
         def uncover(self):
-                d = random.choice(range(1, 7))
+                d = random.choice(list(range(1, 7)))
                 if self.area.player == self.player:
                         return False
                 if not self.area.player:

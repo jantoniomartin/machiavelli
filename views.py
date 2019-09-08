@@ -488,7 +488,7 @@ class ConfirmOrdersView(GamePlayView):
 
     def post(self, request, *args, **kwargs):
         if self.player:
-            msg = u"Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (
+            msg = "Confirming orders for player %s (%s, %s) in game %s (%s):\n" % (
                 self.player.id,
                 self.player.static_name,
                 self.player.user.username,
@@ -497,12 +497,12 @@ class ConfirmOrdersView(GamePlayView):
             ) 
             sent_orders = self.player.order_set.all()
             for order in sent_orders:
-                msg += u"%s => " % order.format()
+                msg += "%s => " % order.format()
                 if order.is_possible():
                     order.confirm()
-                    msg += u"OK\n"
+                    msg += "OK\n"
                 else:
-                    msg += u"Invalid\n"
+                    msg += "Invalid\n"
             ## confirm expenses
             self.player.expense_set.all().update(confirmed=True)
             logger.info(msg)
@@ -1025,8 +1025,8 @@ class PlayOrders(GamePlayView):
                 if not clean:
                     response_dict.update({'bad': 'true'})
                     d = {}
-                    for e in order_form.errors.iteritems():
-                        d.update({e[0] : unicode(e[1])})
+                    for e in order_form.errors.items():
+                        d.update({e[0] : str(e[1])})
                     response_dict.update({'errs': d})
                 else:
                     new_order = order_form.save()

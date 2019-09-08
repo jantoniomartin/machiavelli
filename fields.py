@@ -27,16 +27,15 @@ if 'south' in settings.INSTALLED_APPS:
 else:
 	modelsinspector = None
 
-class AutoTranslateField(models.CharField):
+class AutoTranslateField(models.CharField, metaclass=models.SubfieldBase):
 	""" This class is a CharField whose contents are translated when shown to
 	the user. You need an aux file (translate.py) for manage.py to make the
 	messages.
 
 	Taken from http://overtag.dk/wordpress/2008/07/django-auto-translation-of-field-values/
 	"""
-	__metaclass__ = models.SubfieldBase
 	def to_python(self, value):
-		return unicode(_(value))
+		return str(_(value))
 
 if modelsinspector:
 	modelsinspector.add_introspection_rules([], ["^machiavelli\.fields\.AutoTranslateField"])

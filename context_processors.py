@@ -10,7 +10,7 @@ def banners(request):
 	except AttributeError:
 		return context
 	else:
-		for k, v in conf.items():
+		for k, v in list(conf.items()):
 			if not v['banner'] is None and v['banner'] != "":
 				context.update({'%s_banner' % k: v['banner']})
 			if not v['url'] is None:

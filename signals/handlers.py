@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_noop as _
 def create_notice_types(sender, **kwargs):
     if "pinax.notifications" in settings.INSTALLED_APPS:
         from pinax.notifications.models import NoticeType 
-        print "Creating notices for machiavelli"
+        print("Creating notices for machiavelli")
         NoticeType.create("game_started",
             _("Game started"),
             _("a game that you're a player in has started"))
@@ -51,4 +51,4 @@ def create_notice_types(sender, **kwargs):
             _("Expired game"),
             _("one of your games expires and is deleted"))
     else:
-        print "machiavelli: Skipping creation of NoticeTypes"
+        print("machiavelli: Skipping creation of NoticeTypes")
