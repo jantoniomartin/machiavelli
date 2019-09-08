@@ -128,7 +128,8 @@ class SummaryView(TemplateView):
                 p.deadline = p.next_phase_change()
                 player_list.append(p)
             player_list.sort(
-                cmp=lambda x,y: cmp(x.deadline, y.deadline), 
+                #cmp=lambda x,y: cmp(x.deadline, y.deadline), 
+                key=lambda p: p.deadline,
                 reverse=False
             )
             context.update({ 'actions': player_list })
