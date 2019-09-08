@@ -240,7 +240,7 @@ class Game(models.Model):
         ##------------------------
         ## representation methods
         ##------------------------
-        def __unicode__(self):
+        def __str__(self):
                 return self.title
 
         def get_absolute_url(self):
@@ -1940,7 +1940,7 @@ class GameComment(models.Model):
                         self.after_game = True
                 super(GameComment, self).save(*args, **kwargs)
 
-        def __unicode__(self):
+        def __str__(self):
                 return self.comment[:50]
                 
 class LiveGameManager(models.Manager):
@@ -1964,7 +1964,7 @@ class ErrorReport(models.Model):
                 verbose_name = _("error report")
                 verbose_name_plural = _("error reports")
 
-        def __unicode__(self):
+        def __str__(self):
                 return "Report #%s in game %s" % (self.pk, self.game)
 
 def send_error_report(sender, instance, created, raw, **kwargs):
@@ -2004,7 +2004,7 @@ class GameArea(models.Model):
                 return self.board_area.code
                 #return "%s (%s)" % (self.board_area.code, self.board_area.name)
 
-        def __unicode__(self):
+        def __str__(self):
                 #return self.board_area.name
                 #return "(%(code)s) %(name)s" % {'name': self.board_area.name, 'code': self.board_area.code}
                 return str(self.board_area)
@@ -2162,7 +2162,7 @@ class Score(models.Model):
         """ The score was got in a team game """
         team = models.ForeignKey('Team', null=True, blank=True, verbose_name=_("team"))
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%s (%s)" % (self.user, self.game)
 
         class Meta:
@@ -2179,7 +2179,7 @@ class Team(models.Model):
                 verbose_name_plural = _("teams")
                 ordering = ["-game",]
 
-        def __unicode__(self):
+        def __str__(self):
                 return _("Team %s") % self.pk
 
         def _get_cities_count(self):
@@ -2271,7 +2271,7 @@ class Player(models.Model):
 
         deadline = property(_get_deadline, _set_deadline)
 
-        def __unicode__(self):
+        def __str__(self):
                 if self.user:
                         return "%s (%s)" % (self.user, self.game)
                 else:
@@ -2895,7 +2895,7 @@ class TeamMessage(models.Model):
         class Meta:
                 ordering = ["-created_at" ,]
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%s" % self.pk
 
         def as_li(self):
@@ -2940,7 +2940,7 @@ class Revolution(models.Model):
                 verbose_name_plural = _("Revolutions")
                 unique_together = [('game', 'government'), ('game', 'opposition')]
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%s (%s)" % (self.government, self.game)
 
         def save(self, *args, **kwargs):
@@ -3160,7 +3160,7 @@ class Unit(models.Model):
                                                                 type=self.type, area=self.area.board_area)
                 super(Unit, self).delete()
         
-        def __unicode__(self):
+        def __str__(self):
                 return _("%(type)s in %(area)s") % {'type': self.get_type_display(), 'area': self.area}
 
         def describe_with_cost(self):
@@ -3692,7 +3692,7 @@ class Order(models.Model):
                                         return True
                 return False
 
-        def __unicode__(self):
+        def __str__(self):
                 return self.format()
 
 class RetreatOrder(models.Model):
@@ -3703,7 +3703,7 @@ class RetreatOrder(models.Model):
         unit = models.ForeignKey(Unit)
         area = models.ForeignKey(GameArea, null=True, blank=True)
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%s" % self.unit
 
 class StrategicOrder(models.Model):
@@ -3712,7 +3712,7 @@ class StrategicOrder(models.Model):
         unit = models.ForeignKey(Unit)
         area = models.ForeignKey(GameArea)
 
-        def __unicode__(self):
+        def __str__(self):
                 return _("%(unit)s moves to %(area)s") % {'unit': self.unit,
                         'area': self.area.board_area.name}
 
@@ -3731,7 +3731,7 @@ class TurnLog(models.Model):
         class Meta:
                 ordering = ['-timestamp',]
 
-        def __unicode__(self):
+        def __str__(self):
                 return self.log
 
 PRESS_TYPES = (
@@ -3769,7 +3769,7 @@ class Configuration(models.Model):
                 help_text=_('each player sees only what happens near his borders'))
         press = models.PositiveIntegerField(_('press'), choices=PRESS_TYPES, default=0)
 
-        def __unicode__(self):
+        def __str__(self):
                 return str(self.game)
 
         def get_enabled_rules(self):
@@ -3882,7 +3882,7 @@ class Expense(models.Model):
                                                                                                         self)
                         logger.info(msg)
         
-        def __unicode__(self):
+        def __str__(self):
                 data = {
                         #'country': self.player.country,
                         'country': self.player.contender.country,
@@ -3955,7 +3955,7 @@ class Rebellion(models.Model):
         """
         repressed = models.BooleanField(default=False)
 
-        def __unicode__(self):
+        def __str__(self):
                 return "Rebellion in %(area)s against %(player)s" % {'area': self.area,
                                                                                                                 'player': self.player}
         
@@ -3999,7 +3999,7 @@ class Credit(models.Model):
         year = models.PositiveIntegerField(default=0)
         repaid = models.BooleanField(default=False)
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%(player)s ows %(debt)s ducats" % {'player': self.player, 'debt': self.debt, }
 
 class Loan(models.Model):
@@ -4010,7 +4010,7 @@ class Loan(models.Model):
         season = models.PositiveIntegerField(choices=SEASONS)
         year = models.PositiveIntegerField(default=0)
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%(player)s ows %(debt)s ducats" % {'player': self.player, 'debt': self.debt, }
 
 class Assassin(models.Model):
@@ -4018,7 +4018,7 @@ class Assassin(models.Model):
         owner = models.ForeignKey(Player)
         target = models.ForeignKey(Country)
 
-        def __unicode__(self):
+        def __str__(self):
                 return _("%(owner)s may assassinate %(target)s") % {'owner': self.owner, 'target': self.target, }
 
 class Assassination(models.Model):
@@ -4028,7 +4028,7 @@ class Assassination(models.Model):
         target = models.ForeignKey(Player, related_name="assassination_targets")
         ducats = models.PositiveIntegerField(default=0)
 
-        def __unicode__(self):
+        def __str__(self):
                 return _("%(killer)s tries to kill %(target)s") % {'killer': self.killer, 'target': self.target, }
 
         def explain(self):
@@ -4057,7 +4057,7 @@ class Whisper(models.Model):
                 ordering = ["-created_at" ,]
                 unique_together = (("game", "order"),)
 
-        def __unicode__(self):
+        def __str__(self):
                 return self.text
 
         def as_li(self):
@@ -4095,7 +4095,7 @@ class Invitation(models.Model):
         class Meta:
                 unique_together = (('game', 'user'),)
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%s" % self.user
 
 def notify_new_invitation(sender, instance, created, raw, **kw):
@@ -4114,7 +4114,7 @@ class Journal(models.Model):
         class Meta:
                 unique_together = (('user', 'game'),)
 
-        def __unicode__(self):
+        def __str__(self):
                 return "%s in %s" % (self.user, self.game)
 
         def _get_excerpt(self):
@@ -4130,7 +4130,7 @@ class GameRoute(models.Model):
         class Meta:
                 unique_together = (('game', 'trade_route'),)
 
-        def __unicode__(self):
+        def __str__(self):
                 return str(self.trade_route)
         
         def _get_traders(self):
@@ -4160,7 +4160,7 @@ class Diplomat(models.Model):
                 verbose_name = _("diplomat")
                 verbose_name_plural = _("diplomats")
 
-        def __unicode__(self):
+        def __str__(self):
                 return _("%(country)s's diplomat in %(area)s") % {
                         'country': self.player.contender.country,
                         'area': self.area}

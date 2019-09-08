@@ -32,12 +32,12 @@ class ScoreInline(admin.TabularInline):
 	readonly_fields = ('user', 'game', 'country', 'points', 'cities')
 
 class UnitAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'player', 'must_retreat', 'power', 'loyalty', 'placed', 'paid')
+	list_display = ('__str__', 'player', 'must_retreat', 'power', 'loyalty', 'placed', 'paid')
 	ordering = ['player']
 	list_filter = ('player', 'must_retreat')
 
 class SpecialUnitAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'cost', 'power', 'loyalty')
+	list_display = ('__str__', 'cost', 'power', 'loyalty')
 
 class GameAreaAdmin(admin.ModelAdmin):
 	list_display = ('game', 'board_area', 'player', 'home_of', 'years', 'standoff', 'famine', 'storm')
@@ -46,7 +46,7 @@ class GameAreaAdmin(admin.ModelAdmin):
 	list_filter = ('game', )
 
 class OrderAdmin(admin.ModelAdmin):
-	list_display = ('player', '__unicode__', 'explain', 'confirmed')
+	list_display = ('player', '__str__', 'explain', 'confirmed')
 	list_editable = ('confirmed', )
 	list_filter = ('confirmed',)
 
@@ -101,11 +101,11 @@ class TurnLogAdmin(admin.ModelAdmin):
 	list_filter = ('game',)
 
 class ExpenseAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'player', 'ducats', 'type', 'unit', 'area', 'confirmed')
+	list_display = ('__str__', 'player', 'ducats', 'type', 'unit', 'area', 'confirmed')
 	list_filter = ('player', 'type',)
 
 class RebellionAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'player', 'garrisoned', 'repressed',)
+	list_display = ('__str__', 'player', 'garrisoned', 'repressed',)
 	list_filter = ('player',)
 
 class LoanAdmin(admin.ModelAdmin):
@@ -121,13 +121,13 @@ class AssassinationAdmin(admin.ModelAdmin):
 	pass
 
 class WhisperAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'user', 'game', 'order',)
+	list_display = ('__str__', 'user', 'game', 'order',)
 
 class InvitationAdmin(admin.ModelAdmin):
 	pass
 
 class GameCommentAdmin(admin.ModelAdmin):
-	list_display = ('__unicode__', 'user', 'game', 'is_public')
+	list_display = ('__str__', 'user', 'game', 'is_public')
 
 admin.site.register(machiavelli.Game, GameAdmin)
 admin.site.register(machiavelli.LiveGame, LiveGameAdmin)

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.core.management.base import NoArgsCommand, CommandError
 
-from notification import models as notification
+from pinax.notifications import models as notification
 
 AGE=10*24*60*60
 
