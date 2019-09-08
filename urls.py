@@ -1,9 +1,9 @@
-from django.conf.urls import *
+from django.conf.urls import url
 from django.views.decorators.cache import cache_page
 
 import machiavelli.views as views
 
-urlpatterns = patterns('machiavelli.views',
+urlpatterns = [
 	url(r'^$', views.SummaryView.as_view(), name='summary'),
 	url(r'^games/all_finished$',
 		views.AllFinishedGamesList.as_view(),
@@ -29,7 +29,7 @@ urlpatterns = patterns('machiavelli.views',
 	url(r'^ranking$',
 		views.HallOfFameView.as_view(),
 		name='hall-of-fame'),
-	url(r'^ranking/(?P<key>[-\w]+)/(?P<val>[-\w]+)$', 'ranking', name='ranking'),
+	url(r'^ranking/(?P<key>[-\w]+)/(?P<val>[-\w]+)$', views.ranking, name='ranking'),
 	url(r'^overthrow/(?P<revolution_id>\d+)',
 		views.OverthrowView.as_view(),
 		name='overthrow'),
@@ -54,7 +54,7 @@ urlpatterns = patterns('machiavelli.views',
 	url(r'^game/(?P<slug>[-\w]+)/leave$',
 		views.LeaveGameView.as_view(),
 		name='leave-game'),
-	url(r'^game/(?P<slug>[-\w]+)/log$', 'logs_by_game', name='game-log'),
+	url(r'^game/(?P<slug>[-\w]+)/log$', views.logs_by_game, name='game-log'),
 	url(r'^game/(?P<slug>[-\w]+)/areas$',
 		views.GameAreaListView.as_view(),
 		name='gamearea-list'),
@@ -97,7 +97,7 @@ urlpatterns = patterns('machiavelli.views',
 	url(r'^game/(?P<slug>[-\w]+)/undo_expense/(?P<expense_id>\d+)$',
 		views.ExpenseDeleteView.as_view(),
 		name='undo-expense'),
-	url(r'^game/(?P<slug>[-\w]+)/taxation$', 'taxation', name='taxation'),
+	url(r'^game/(?P<slug>[-\w]+)/taxation$', views.taxation, name='taxation'),
 	url(r'^game/(?P<slug>[-\w]+)/whisper$',
 		views.WhisperCreateView.as_view(),
 		name='new-whisper'),
@@ -116,5 +116,5 @@ urlpatterns = patterns('machiavelli.views',
 	url(r'^game/(?P<slug>[-\w]+)',
 		views.GameRouter.as_view(),
 		name='show-game'),
-)
+]
 
