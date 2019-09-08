@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 
 from pinax.notifications import models as notification
 
 AGE=10*24*60*60
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
 	"""
 This script deletes all notices that are older than AGE days.
 	"""

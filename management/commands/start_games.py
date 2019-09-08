@@ -1,4 +1,4 @@
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 import logging
@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 from machiavelli import models
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
 	"""
 	Starts games that have all their players and have not started.
 	"""

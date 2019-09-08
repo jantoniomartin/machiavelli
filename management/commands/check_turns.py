@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 import logging
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 from machiavelli import models
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
 	"""
 This script checks in every active game if the current turn must change. This happens either
 when all the players have finished OR the time limit is exceeded
