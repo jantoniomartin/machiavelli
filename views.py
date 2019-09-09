@@ -24,8 +24,7 @@ from datetime import datetime, timedelta
 
 ## django
 from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonResponse
-from django.shortcuts import render_to_response, get_object_or_404, redirect
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -96,19 +95,22 @@ class LoginRequiredMixin(object):
     def dispatch(self, *args, **kwargs):
         return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
-class GameListView(ListView):
+class SidebarMixin:
+    """A mixin to show sidebar information common to some views."""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(activity(self.request))
+        context.update(latest_gossip(self.request))
+        context.update(sidebar_ranking(self.request))
+        return context
+
+class GameListView(SidebarMixin, ListView):
     model = machiavelli.Game
     paginate_by = 10
     context_object_name = 'game_list'
     
-    def render_to_response(self, context, **kwargs):
-        return super(GameListView, self).render_to_response(
-            RequestContext(self.request,
-                context,
-                processors=[activity, sidebar_ranking,]),
-            **kwargs)
-
-class SummaryView(TemplateView):
+class SummaryView(SidebarMixin, TemplateView):
     template_name = 'machiavelli/summary.html'
 
     def get_context_data(self, **kwargs):
@@ -165,13 +167,6 @@ class SummaryView(TemplateView):
             })
         return context
         
-    def render_to_response(self, context, **kwargs):
-        return super(SummaryView, self).render_to_response(
-            RequestContext(self.request,
-                context,
-                processors=[activity, latest_gossip, sidebar_ranking,]),
-            **kwargs)
-
 class MyActiveGamesList(GameListView):
     template_name = 'machiavelli/game_list_my_active.html'
     model = machiavelli.Player
@@ -192,7 +187,7 @@ class MyActiveGamesList(GameListView):
             p.deadline = p.next_phase_change()
             player_list.append(p)
         player_list.sort(
-            cmp=lambda x,y: cmp(x.deadline, y.deadline),
+            key=lambda x: x.deadline,
             reverse=False
         )
         return player_list
@@ -284,18 +279,11 @@ class PendingGamesList(LoginRequiredMixin, GameListView):
         context["joinable"] = False
         return context
 
-class RevolutionList(LoginRequiredMixin, ListView):
+class RevolutionList(LoginRequiredMixin, SidebarMixin, ListView):
     model = machiavelli.Revolution
     paginate_by = 10
     context_object_name = 'revolution_list'
     
-    def render_to_response(self, context, **kwargs):
-        return super(RevolutionList, self).render_to_response(
-            RequestContext(self.request,
-                context,
-                processors=[activity, sidebar_ranking,]),
-            **kwargs)
-
     def get_queryset(self):
         return machiavelli.Revolution.objects.open().order_by("-active")
 
@@ -325,7 +313,7 @@ class GameMixin(object):
             else:
                 self.player = machiavelli.Player.objects.none()
 
-class GamePlayView(LoginRequiredMixin, TemplateView, GameMixin):
+class GamePlayView(LoginRequiredMixin, SidebarMixin, TemplateView, GameMixin):
     def get_template_names(self):
         if self.game.started is not None \
             and self.game.finished is None \
@@ -1141,16 +1129,6 @@ class PlayInactiveGame(GamePlayView, FormMixin):
     template_name = 'machiavelli/game_inactive.html'
     form_class = forms.GameCommentForm
     
-    def render_to_response(self, context, **kwargs):
-        return super(PlayInactiveGame, self).render_to_response(
-            RequestContext(
-                self.request,
-                context,
-                processors=[activity, sidebar_ranking,]
-            ),
-            **kwargs
-        )
-
     def get_game(self, request, *args, **kwargs):
         if not self.game:
             self.game = get_game_or_404(slug=kwargs['slug'])
@@ -1523,22 +1501,10 @@ def logs_by_game(request, slug=''):
 
     context['season_log'] = log
 
-    return render_to_response('machiavelli/log_list.html',
-                            context,
-                            context_instance=RequestContext(request))
+    return render(request, 'machiavelli/log_list.html', context)
 
-class CreateGameView(LoginRequiredMixin, TemplateView):
+class CreateGameView(LoginRequiredMixin, SidebarMixin, TemplateView):
     template_name = 'machiavelli/game_form.html'
-
-    def render_to_response(self, context, **kwargs):
-        return super(CreateGameView, self).render_to_response(
-            RequestContext(
-                self.request,
-                context,
-                processors=[activity, sidebar_ranking,]
-            ),
-            **kwargs
-        )
 
     def get_context_data(self, **kwargs):
         ctx = super(CreateGameView, self).get_context_data(**kwargs)
@@ -1603,7 +1569,7 @@ class CreateTeamGameView(CreateGameView):
         ctx.update({'teams': True})
         return ctx
 
-class GameInvitationView(FormView):
+class GameInvitationView(SidebarMixin, FormView):
     template_name = 'machiavelli/invitation_form.html'
     form_class = forms.InvitationForm
 
@@ -1625,16 +1591,6 @@ class GameInvitationView(FormView):
             'invitations': self.game.invitation_set.all(),
         })
         return ctx
-
-    def render_to_response(self, context, **kwargs):
-        return super(GameInvitationView, self).render_to_response(
-            RequestContext(
-                self.request,
-                context,
-                processors=[activity, sidebar_ranking,]
-            ),
-            **kwargs
-        )
 
     def form_valid(self, form):
         message = form.cleaned_data['message']
@@ -1809,7 +1765,7 @@ class UndoOverthrowView(LoginRequiredMixin, View):
         messages.success(request, _("You have withdrawn from this revolution."))
         return redirect("revolution_list")
 
-class HallOfFameView(ListView):
+class HallOfFameView(SidebarMixin, ListView):
     allow_empty = False
     model = CondottieriProfile
     paginate_by = 10
@@ -1819,13 +1775,6 @@ class HallOfFameView(ListView):
     def get_queryset(self):
         order = self.request.GET.get('o', 'w')
         return CondottieriProfile.objects.hall_of_fame(order=order)
-    
-    def render_to_response(self, context, **kwargs):
-        return super(HallOfFameView, self).render_to_response(
-            RequestContext(self.request,
-                context,
-                processors=[activity, sidebar_ranking,]),
-            **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(HallOfFameView, self).get_context_data(**kwargs)
@@ -1866,9 +1815,8 @@ def ranking(request, key='', val=''):
         'val': val,
         'title': title,
         }
-    return render_to_response('machiavelli/ranking.html',
-                            context,
-                            context_instance=RequestContext(request))
+    return render(request, 'machiavelli/ranking.html',
+                            context)
 
 class TurnLogListView(LoginRequiredMixin, ListView):
     model = machiavelli.TurnLog
@@ -1917,9 +1865,7 @@ def taxation(request, slug):
             return redirect(game)
     form = TaxationForm()
     context["form"] = form
-    return render_to_response('machiavelli/taxation.html',
-                            context,
-                            context_instance=RequestContext(request))
+    return render(request, 'machiavelli/taxation.html', context)
 
 class WhisperListView(LoginRequiredMixin, ListAppendView):
     model = machiavelli.Whisper
