@@ -171,9 +171,9 @@ class Game(models.Model):
         phase = models.PositiveIntegerField(_("phase"), blank=True, null=True,
                 choices=GAME_PHASES, default=0)
         slots = models.SmallIntegerField(_("slots"), null=False, default=0)
-        scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"))
+        scenario = models.ForeignKey(Scenario, verbose_name=_("scenario"), on_delete=models.CASCADE)
         created_by = models.ForeignKey(User, editable=False,
-                verbose_name=_("created by"))
+                verbose_name=_("created by"), on_delete=models.CASCADE)
         ## whether the player of each country is visible
         visible = models.BooleanField(_("visible"), default=False,
                 help_text=_("if checked, it will be known who controls each country"))
@@ -1920,8 +1920,8 @@ class Game(models.Model):
                                 notification.send(users, label, extra_context)
 
 class GameComment(models.Model):
-        game = models.ForeignKey(Game, editable=False)
-        user = models.ForeignKey(User, editable=False)
+        game = models.ForeignKey(Game, editable=False, on_delete=models.CASCADE)
+        user = models.ForeignKey(User, editable=False, on_delete=models.CASCADE)
         comment = models.TextField(_('comment'))
         after_game = models.BooleanField(_('sent after the game'), default=False, editable=False)
         submit_date = models.DateTimeField(_('submission date'), auto_now_add=True,
@@ -1955,8 +1955,8 @@ class LiveGame(Game):
 
 class ErrorReport(models.Model):
         """ This class defines an error report sent by a player to the staff """
-        game = models.ForeignKey(Game)
-        user = models.ForeignKey(User)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
         description = models.TextField()
         created_on = models.DateTimeField(auto_now_add=True)
 
@@ -1984,12 +1984,12 @@ models.signals.post_save.connect(send_error_report, sender=ErrorReport)
 class GameArea(models.Model):
         """ This class defines the actual game areas where each game is played. """
 
-        game = models.ForeignKey(Game)
-        board_area = models.ForeignKey(Area)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        board_area = models.ForeignKey(Area, on_delete=models.CASCADE)
         ## player is who controls the area, if any
-        player = models.ForeignKey('Player', blank=True, null=True)
+        player = models.ForeignKey('Player', blank=True, null=True, on_delete=models.CASCADE)
         ## the player whose this area is home
-        home_of = models.ForeignKey('Player', blank=True, null=True, related_name="homes")
+        home_of = models.ForeignKey('Player', blank=True, null=True, related_name="homes", on_delete=models.CASCADE)
         ## number of years that the area has belong to 'player'
         years = models.PositiveIntegerField(default=0)
         standoff = models.BooleanField(default=False)
@@ -2150,9 +2150,9 @@ models.signals.post_save.connect(check_min_karma, sender=CondottieriProfile)
 class Score(models.Model):
         """ This class defines the scores that a user got in a finished game. """
 
-        user = models.ForeignKey(User)
-        game = models.ForeignKey(Game)
-        country = models.ForeignKey(Country)
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        country = models.ForeignKey(Country, on_delete=models.CASCADE)
         points = models.IntegerField(default=0)
         cities = models.PositiveIntegerField(default=0)
         position = models.PositiveIntegerField(default=0)
@@ -2160,7 +2160,7 @@ class Score(models.Model):
         """ Ignore this score in averages (victories, points, etc) """
         ignore_avg = models.BooleanField(default=False)
         """ The score was got in a team game """
-        team = models.ForeignKey('Team', null=True, blank=True, verbose_name=_("team"))
+        team = models.ForeignKey('Team', null=True, blank=True, verbose_name=_("team"), on_delete=models.CASCADE)
 
         def __str__(self):
                 return "%s (%s)" % (self.user, self.game)
@@ -2172,7 +2172,7 @@ class Score(models.Model):
 
 class Team(models.Model):
         """ This class defines a group of players that play together """
-        game = models.ForeignKey(Game, verbose_name=_("game"))
+        game = models.ForeignKey(Game, verbose_name=_("game"), on_delete=models.CASCADE)
 
         class Meta:
                 verbose_name = _("team")
@@ -2215,15 +2215,15 @@ def generate_secret_key():
 class Player(models.Model):
         """ This class defines the relationship between a User and a Game. """
 
-        user = models.ForeignKey(User, blank=True, null=True) # can be null because of autonomous units
-        game = models.ForeignKey(Game)
+        user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE) # can be null because of autonomous units
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
         ## country is deprecated and will be deleted. Only used here to ease the migration
         ## to condottieri_scenarios. contender is used in its place
-        country = models.ForeignKey(Country, blank=True, null=True)
-        contender = models.ForeignKey(Contender, blank=True, null=True)
+        country = models.ForeignKey(Country, blank=True, null=True, on_delete=models.CASCADE)
+        contender = models.ForeignKey(Contender, blank=True, null=True, on_delete=models.CASCADE)
         done = models.BooleanField(default=False)
         eliminated = models.BooleanField(default=False)
-        conqueror = models.ForeignKey('self', related_name='conquered', blank=True, null=True)
+        conqueror = models.ForeignKey('self', related_name='conquered', blank=True, null=True, on_delete=models.CASCADE)
         excommunicated = models.PositiveIntegerField(blank=True, null=True)
         assassinated = models.BooleanField(default=False)
         defaulted = models.BooleanField(default=False)
@@ -2242,7 +2242,7 @@ class Player(models.Model):
         """ pope_excommunicated is True if the player has been explicitly excommunicated """
         pope_excommunicated = models.BooleanField(default=False)
         """ the player may belong to a team, in a team game """
-        team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"))
+        team = models.ForeignKey(Team, null=True, blank=True, verbose_name=_("team"), on_delete=models.CASCADE)
         secret_key = models.CharField(_("secret key"), max_length=20, default="", editable=False)
 
         objects = query.PlayerQuerySet.as_manager()
@@ -2888,7 +2888,7 @@ class Player(models.Model):
 
 class TeamMessage(models.Model):
         """ A message that any member of a team can write and read """
-        player = models.ForeignKey(Player, verbose_name=_("player"))
+        player = models.ForeignKey(Player, verbose_name=_("player"), on_delete=models.CASCADE)
         created_at = models.DateTimeField(auto_now_add=True)
         text = models.TextField(_("text"))
 
@@ -2923,14 +2923,14 @@ class Revolution(models.Model):
         ``opposition`` is trying to replace it.
         """
 
-        game = models.ForeignKey(Game)
-        government = models.ForeignKey(User, related_name="revolutions")
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        government = models.ForeignKey(User, related_name="revolutions", on_delete=models.CASCADE)
         active = models.DateTimeField(null=True, blank=True)
         opposition = models.ForeignKey(User, blank=True, null=True,
-                related_name="overthrows")
+                related_name="overthrows", on_delete=models.CASCADE)
         overthrow = models.BooleanField(default=False)
         """ Copy of the country """
-        country = models.ForeignKey(Country)
+        country = models.ForeignKey(Country, on_delete=models.CASCADE)
         voluntary = models.BooleanField(default=False)
 
         objects = query.RevolutionQuerySet.as_manager()
@@ -3088,8 +3088,8 @@ class Unit(models.Model):
         """ This class defines a unit in a game, its location and status. """
 
         type = models.CharField(max_length=1, choices=UNIT_TYPES)
-        area = models.ForeignKey(GameArea)
-        player = models.ForeignKey(Player)
+        area = models.ForeignKey(GameArea, on_delete=models.CASCADE)
+        player = models.ForeignKey(Player, on_delete=models.CASCADE)
         besieging = models.BooleanField(default=False)
         """ must_retreat contains the code, if any, of the area where the attack came from """
         must_retreat = models.CharField(max_length=5, blank=True, default='')
@@ -3340,20 +3340,20 @@ class Order(models.Model):
         """
 
         #unit = models.OneToOneField(Unit)
-        unit = models.ForeignKey(Unit)
+        unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
         code = models.CharField(max_length=1, choices=ORDER_CODES)
-        destination = models.ForeignKey(GameArea, blank=True, null=True)
+        destination = models.ForeignKey(GameArea, blank=True, null=True, on_delete=models.CASCADE)
         type = models.CharField(max_length=1, blank=True, null=True, choices=UNIT_TYPES)
         ## suborder field is deprecated, and will be removed
         suborder = models.CharField(max_length=15, blank=True, null=True)
-        subunit = models.ForeignKey(Unit, related_name='affecting_orders', blank=True, null=True)
+        subunit = models.ForeignKey(Unit, related_name='affecting_orders', blank=True, null=True, on_delete=models.CASCADE)
         subcode = models.CharField(max_length=1, choices=ORDER_SUBCODES, blank=True, null=True)
-        subdestination = models.ForeignKey(GameArea, related_name='affecting_orders', blank=True, null=True)
+        subdestination = models.ForeignKey(GameArea, related_name='affecting_orders', blank=True, null=True, on_delete=models.CASCADE)
         subtype = models.CharField(max_length=1, blank=True, null=True, choices=UNIT_TYPES)
         confirmed = models.BooleanField(default=False)
         ## player field is to be used when a player buys an enemy unit. It can be null for backwards
         ## compatibility
-        player = models.ForeignKey(Player, null=True)
+        player = models.ForeignKey(Player, null=True, on_delete=models.CASCADE)
 
         class Meta:
                 unique_together = (('unit', 'player'),)
@@ -3700,8 +3700,8 @@ class RetreatOrder(models.Model):
         blank, the unit will be disbanded.
         """
 
-        unit = models.ForeignKey(Unit)
-        area = models.ForeignKey(GameArea, null=True, blank=True)
+        unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+        area = models.ForeignKey(GameArea, null=True, blank=True, on_delete=models.CASCADE)
 
         def __str__(self):
                 return "%s" % self.unit
@@ -3709,8 +3709,8 @@ class RetreatOrder(models.Model):
 class StrategicOrder(models.Model):
         """ Defines the area where the unit will try to go with a strategic movement.
         """
-        unit = models.ForeignKey(Unit)
-        area = models.ForeignKey(GameArea)
+        unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+        area = models.ForeignKey(GameArea, on_delete=models.CASCADE)
 
         def __str__(self):
                 return _("%(unit)s moves to %(area)s") % {'unit': self.unit,
@@ -3721,7 +3721,7 @@ class TurnLog(models.Model):
         ``Game.process_orders()``.
         """
 
-        game = models.ForeignKey(Game)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
         year = models.PositiveIntegerField()
         season = models.PositiveIntegerField(choices=SEASONS)
         phase = models.PositiveIntegerField(choices=GAME_PHASES)
@@ -3746,7 +3746,7 @@ class Configuration(models.Model):
         At the moment, only some of them are actually implemented.
         """
 
-        game = models.OneToOneField(Game, verbose_name=_('game'), editable=False)
+        game = models.OneToOneField(Game, verbose_name=_('game'), editable=False, on_delete=models.CASCADE)
         finances = models.BooleanField(_('finances'), default=False)
         assassinations = models.BooleanField(_('assassinations'), default=False,
                                         help_text=_('will enable Finances'))
@@ -3859,11 +3859,11 @@ def get_expense_cost(type, unit=None, area=None):
 
 class Expense(models.Model):
         """ A player may expend unit to affect some units or areas in the game. """
-        player = models.ForeignKey(Player)
+        player = models.ForeignKey(Player, on_delete=models.CASCADE)
         ducats = models.PositiveIntegerField(default=0)
         type = models.PositiveIntegerField(choices=EXPENSE_TYPES)
-        area = models.ForeignKey(GameArea, null=True, blank=True)
-        unit = models.ForeignKey(Unit, null=True, blank=True)
+        area = models.ForeignKey(GameArea, null=True, blank=True, on_delete=models.CASCADE)
+        unit = models.ForeignKey(Unit, null=True, blank=True, on_delete=models.CASCADE)
         confirmed = models.BooleanField(default=False)
 
         def save(self, *args, **kwargs):
@@ -3947,8 +3947,8 @@ class Rebellion(models.Model):
         Rebellion was placed. Rebellion.garrisoned is True if the Rebellion is
         in a garrisoned city.
         """
-        area = models.OneToOneField(GameArea)
-        player = models.ForeignKey(Player)
+        area = models.OneToOneField(GameArea, on_delete=models.CASCADE)
+        player = models.ForeignKey(Player, on_delete=models.CASCADE)
         garrisoned = models.BooleanField(default=False)
         """
         A rebellion marked as repressed will be deleted at the end of the season
@@ -3992,7 +3992,7 @@ class Credit(models.Model):
         """ A Credit describes a quantity of money that a player has borrowed from the bank.
         This class is meant to substitute the class Loan that was deprecated to allow multiple loans
         per player."""
-        player = models.ForeignKey(Player)
+        player = models.ForeignKey(Player, on_delete=models.CASCADE)
         principal = models.PositiveIntegerField(default=0)
         debt = models.PositiveIntegerField(default=0)
         season = models.PositiveIntegerField(choices=SEASONS)
@@ -4005,7 +4005,7 @@ class Credit(models.Model):
 class Loan(models.Model):
         """ A Loan describes a quantity of money that a player borrows from the bank, with a term
         This class is DEPRECATED and must be removed when all the version 2 games are finished."""
-        player = models.OneToOneField(Player)
+        player = models.OneToOneField(Player, on_delete=models.CASCADE)
         debt = models.PositiveIntegerField(default=0)
         season = models.PositiveIntegerField(choices=SEASONS)
         year = models.PositiveIntegerField(default=0)
@@ -4015,8 +4015,8 @@ class Loan(models.Model):
 
 class Assassin(models.Model):
         """ An Assassin represents a counter that a Player owns, to murder the leader of a country """
-        owner = models.ForeignKey(Player)
-        target = models.ForeignKey(Country)
+        owner = models.ForeignKey(Player, on_delete=models.CASCADE)
+        target = models.ForeignKey(Country, on_delete=models.CASCADE)
 
         def __str__(self):
                 return _("%(owner)s may assassinate %(target)s") % {'owner': self.owner, 'target': self.target, }
@@ -4024,8 +4024,8 @@ class Assassin(models.Model):
 class Assassination(models.Model):
         """ An Assassination describes an attempt made by a Player to murder the leader of another
         Country, spending some Ducats """
-        killer = models.ForeignKey(Player, related_name="assassination_attempts")
-        target = models.ForeignKey(Player, related_name="assassination_targets")
+        killer = models.ForeignKey(Player, related_name="assassination_attempts", on_delete=models.CASCADE)
+        target = models.ForeignKey(Player, related_name="assassination_targets", on_delete=models.CASCADE)
         ducats = models.PositiveIntegerField(default=0)
 
         def __str__(self):
@@ -4046,9 +4046,9 @@ class Assassination(models.Model):
 class Whisper(models.Model):
         """ A whisper is an _anonymous_ message that is shown in the game screen. """
         created_at = models.DateTimeField(auto_now_add=True)
-        user = models.ForeignKey(User)
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
         as_admin = models.BooleanField(default=False)
-        game = models.ForeignKey(Game)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
         text = models.CharField(max_length=140,
                 help_text=_("limit of 140 characters"))
         order = models.PositiveIntegerField(editable=False, default=0)
@@ -4088,8 +4088,8 @@ models.signals.pre_save.connect(whisper_order, sender=Whisper)
 class Invitation(models.Model):
         """ A private game accepts only users that have been invited by the creator
         of the game. """
-        game = models.ForeignKey(Game)
-        user = models.ForeignKey(User)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
         message = models.TextField(default="", blank=True)
 
         class Meta:
@@ -4107,8 +4107,8 @@ def notify_new_invitation(sender, instance, created, raw, **kw):
 models.signals.post_save.connect(notify_new_invitation, sender=Invitation)
 
 class Journal(models.Model):
-        user = models.ForeignKey(User)
-        game = models.ForeignKey(Game)
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
         content = models.TextField(default="", blank=True)
 
         class Meta:
@@ -4123,8 +4123,8 @@ class Journal(models.Model):
         excerpt = property(_get_excerpt)
 
 class GameRoute(models.Model):
-        game = models.ForeignKey(Game)
-        trade_route = models.ForeignKey(TradeRoute)
+        game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        trade_route = models.ForeignKey(TradeRoute, on_delete=models.CASCADE)
         safe = models.BooleanField(default=True)
 
         class Meta:
@@ -4152,8 +4152,8 @@ class GameRoute(models.Model):
                 self.save()
 
 class Diplomat(models.Model):
-        player = models.ForeignKey(Player)
-        area = models.ForeignKey(GameArea)
+        player = models.ForeignKey(Player, on_delete=models.CASCADE)
+        area = models.ForeignKey(GameArea, on_delete=models.CASCADE)
 
         class Meta:
                 unique_together = (('player', 'area'),)
