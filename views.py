@@ -33,7 +33,7 @@ from django.db.models import Q, F, Sum, Count
 from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.decorators import method_decorator
