@@ -31,7 +31,7 @@ import os.path
 
 ## django
 from django.db import models
-from django.db.models import permalink, Q, F, Count, Sum, Avg, Max
+from django.db.models import Q, F, Count, Sum, Avg, Max
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.cache import cache
 from django.core.mail import mail_admins
@@ -41,6 +41,7 @@ import django.forms as forms
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.defaultfilters import capfirst, timesince, force_escape
+from django.urls import reverse
 
 if "pinax.notifications" in settings.INSTALLED_APPS:
         from pinax.notifications import models as notification
@@ -244,8 +245,7 @@ class Game(models.Model):
                 return self.title
 
         def get_absolute_url(self):
-                return ('show-game', None, {'slug': self.slug})
-        get_absolute_url = models.permalink(get_absolute_url)
+                return reverse('show-game', None, {'slug': self.slug})
 
         def _is_team_game(self):
                 return self.teams > 1
